@@ -66,8 +66,9 @@
         @php $authUser = auth()->user(); @endphp
         <nav class="navbar navbar-expand-lg navbar-dark app-navbar shadow-sm">
             <div class="container">
-                <a class="navbar-brand fw-semibold" href="{{ route('dashboard') }}">
-                    <i class="bi bi-people-fill me-1"></i> Gestion des Stagiaires
+                <a class="navbar-brand fw-semibold d-flex align-items-center" href="{{ route('dashboard') }}">
+                    <img src="{{ asset('images/ALTEN-Logo.wine.png') }}" alt="Alten Logo" style="height: 40px; margin-right: 15px;">
+                    <span><i class="bi bi-people-fill me-1"></i> Gestion des Stagiaires</span>
                 </a>
 
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
