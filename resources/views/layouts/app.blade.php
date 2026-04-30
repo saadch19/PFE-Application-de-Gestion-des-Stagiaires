@@ -95,7 +95,9 @@
                     </ul>
 
                     <div class="d-flex align-items-center gap-3 text-white">
-                        <small>{{ $authUser->full_name }} ({{ $authUser->role?->name }})</small>
+                        <a class="btn btn-sm btn-outline-light" href="{{ route('profile.edit') }}">
+                            {{ $authUser->full_name }} ({{ $authUser->role?->name }})
+                        </a>
                         <form action="{{ route('logout') }}" method="POST">
                             @csrf
                             <button class="btn btn-sm btn-light" type="submit">Se deconnecter</button>
