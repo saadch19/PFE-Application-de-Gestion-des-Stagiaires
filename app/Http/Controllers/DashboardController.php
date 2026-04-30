@@ -46,6 +46,29 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        return view('dashboard.index', compact('stats', 'latestTasks', 'latestRequests'));
+        $evaluatedInterns = collect();
+
+        if ($user->hasRole('Administrateur', 'Responsable de competence')) {
+            $evaluatedInterns = Intern::query()
+                ->with(['user', 'absences', 'internships.tasks'])
+                ->where('is_archived', false)
+                ->latest()
+                ->take(5)
+                ->get();
+        } elseif ($user->hasRole('Stagiaire') && $user->intern !== null) {
+            $evaluatedInterns = collect([
+                $user->intern->load(['user', 'absences', 'internships.tasks']),
+            ]);
+        }
+
+        $smartAlerts = $evaluatedInterns
+            ->flatMap(fn (Intern $intern) => collect($intern->smartAlerts())->map(fn (array $alert) => [
+                'intern' => $intern,
+                'alert' => $alert,
+            ]))
+            ->take(8)
+            ->values();
+
+        return view('dashboard.index', compact('stats', 'latestTasks', 'latestRequests', 'evaluatedInterns', 'smartAlerts'));
     }
 }

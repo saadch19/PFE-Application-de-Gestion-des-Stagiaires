@@ -53,6 +53,7 @@
                                 </span>
                             </td>
                             <td class="text-end">
+                                <a href="{{ route('interns.show', $intern) }}" class="btn btn-sm btn-outline-secondary">Voir</a>
                                 <a href="{{ route('interns.edit', $intern) }}" class="btn btn-sm btn-outline-primary">Modifier</a>
 
                                 @if(! $intern->is_archived)

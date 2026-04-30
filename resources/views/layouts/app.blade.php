@@ -11,8 +11,8 @@
 
     <style>
         :root {
-            --bg-gradient-start: #f6f6f0;
-            --bg-gradient-end: #dbeee3;
+            --bg-gradient-start: #eef9f1;
+            --bg-gradient-end: #cfe9d8;
             --surface: #ffffff;
             --text-main: #21313d;
             --brand: #2e6f5f;
@@ -21,8 +21,46 @@
 
         body {
             min-height: 100vh;
-            background: radial-gradient(circle at 10% 0%, var(--bg-gradient-end), var(--bg-gradient-start));
+            background:
+                radial-gradient(circle at 15% 10%, rgba(77, 184, 112, 0.32), transparent 28rem),
+                radial-gradient(circle at 85% 20%, rgba(45, 125, 87, 0.26), transparent 30rem),
+                radial-gradient(circle at 70% 90%, rgba(151, 216, 170, 0.32), transparent 26rem),
+                linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+            background-size: 135% 135%, 130% 130%, 140% 140%, 100% 100%;
+            background-attachment: fixed;
             color: var(--text-main);
+            overflow-x: hidden;
+            position: relative;
+            animation: softGreenBackground 12s ease-in-out infinite alternate;
+        }
+
+        body::before,
+        body::after {
+            content: "";
+            position: fixed;
+            z-index: -1;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        body::before {
+            top: 8rem;
+            left: -7rem;
+            width: 22rem;
+            height: 22rem;
+            background: rgba(112, 204, 135, 0.18);
+            filter: blur(1rem);
+            animation: floatingGreenHalo 10s ease-in-out infinite;
+        }
+
+        body::after {
+            right: -8rem;
+            bottom: -7rem;
+            width: 26rem;
+            height: 26rem;
+            background: rgba(45, 125, 87, 0.14);
+            filter: blur(1.2rem);
+            animation: floatingGreenHalo 14s ease-in-out infinite reverse;
         }
 
         .app-navbar {
@@ -57,6 +95,27 @@
             to {
                 opacity: 1;
                 transform: translateY(0);
+            }
+        }
+
+        @keyframes softGreenBackground {
+            from {
+                background-position: 0% 0%, 100% 10%, 70% 100%, 0 0;
+            }
+            to {
+                background-position: 18% 12%, 78% 28%, 88% 76%, 0 0;
+            }
+        }
+
+        @keyframes floatingGreenHalo {
+            0% {
+                transform: translate3d(0, 0, 0) scale(1);
+            }
+            50% {
+                transform: translate3d(2rem, 1.5rem, 0) scale(1.08);
+            }
+            100% {
+                transform: translate3d(0.5rem, -1rem, 0) scale(0.96);
             }
         }
     </style>

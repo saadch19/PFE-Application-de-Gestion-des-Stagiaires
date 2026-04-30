@@ -45,6 +45,71 @@
     </div>
 </div>
 
+@if($evaluatedInterns->isNotEmpty())
+    <div class="row g-4 mb-4">
+        <div class="col-lg-7 fade-in">
+            <div class="card card-soft h-100">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Scores automatiques des stagiaires</h2>
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Stagiaire</th>
+                                    <th>Score</th>
+                                    <th>Statut</th>
+                                    <th class="text-end">Detail</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($evaluatedInterns as $intern)
+                                    @php $score = $intern->performanceScore(); @endphp
+                                    <tr>
+                                        <td>{{ $intern->user?->full_name ?? 'Non lie' }}</td>
+                                        <td>
+                                            <div class="fw-semibold">{{ $score['score'] }}/100</div>
+                                            <div class="progress" style="height: 6px;">
+                                                <div class="progress-bar bg-{{ $score['badge'] }}" style="width: {{ $score['score'] }}%"></div>
+                                            </div>
+                                        </td>
+                                        <td><span class="badge text-bg-{{ $score['badge'] }}">{{ $score['label'] }}</span></td>
+                                        <td class="text-end">
+                                            @if(auth()->user()->hasRole('Administrateur', 'Responsable de competence'))
+                                                <a href="{{ route('interns.show', $intern) }}" class="btn btn-sm btn-outline-primary">Voir</a>
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5 fade-in">
+            <div class="card card-soft h-100">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Alertes intelligentes</h2>
+                    @forelse($smartAlerts as $item)
+                        <div class="alert alert-warning py-2 mb-2">
+                            <div class="fw-semibold">{{ $item['intern']->user?->full_name ?? 'Stagiaire non lie' }}</div>
+                            <div>{{ $item['alert']['message'] }}</div>
+                            @isset($item['alert']['task'])
+                                <small class="text-muted">Tache : {{ $item['alert']['task']->title }}</small>
+                            @endisset
+                        </div>
+                    @empty
+                        <p class="text-muted mb-0">Aucune alerte detectee pour le moment.</p>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+    </div>
+@endif
+
 <div class="row g-4">
     <div class="col-lg-6 fade-in">
         <div class="card card-soft h-100">

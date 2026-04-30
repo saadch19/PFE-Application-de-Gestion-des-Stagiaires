@@ -32,7 +32,7 @@ Route::middleware('auth')->group(function (): void {
     });
 
     Route::middleware('role:Administrateur,Responsable de competence')->group(function (): void {
-        Route::resource('interns', InternController::class)->except(['show']);
+        Route::resource('interns', InternController::class);
         Route::patch('/interns/{intern}/archive', [InternController::class, 'archive'])->name('interns.archive');
         Route::patch('/interns/{intern}/restore', [InternController::class, 'restore'])->name('interns.restore');
 

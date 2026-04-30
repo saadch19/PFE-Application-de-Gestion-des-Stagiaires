@@ -46,6 +46,23 @@ class InternController extends Controller
         return view('interns.create', compact('users'));
     }
 
+    public function show(Intern $intern): View
+    {
+        $intern->load([
+            'user',
+            'absences.recordedBy',
+            'internships.tasks.assignedTo',
+            'internships.supervisor',
+            'internships.responsible',
+        ]);
+
+        $score = $intern->performanceScore();
+        $alerts = $intern->smartAlerts();
+        $tasks = $intern->evaluationTasks();
+
+        return view('interns.show', compact('intern', 'score', 'alerts', 'tasks'));
+    }
+
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
