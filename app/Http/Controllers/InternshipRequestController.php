@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Absence;
 use App\Models\InternshipRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -44,13 +46,15 @@ class InternshipRequestController extends Controller
         }
 
         $validated = $request->validate([
-            'type' => ['required', Rule::in(['prolongation', 'attestation', 'autre'])],
+            'type' => ['required', Rule::in(['prolongation', 'attestation', 'absence', 'autre'])],
+            'motif_absence' => ['required_if:type,absence', 'nullable', 'string', 'max:255'],
             'message' => ['required', 'string'],
         ]);
 
         InternshipRequest::query()->create([
             'intern_id' => $user->intern->id,
             'type' => $validated['type'],
+            'motif_absence' => $validated['type'] === 'absence' ? $validated['motif_absence'] : null,
             'message' => $validated['message'],
             'status' => 'en_attente',
         ]);
@@ -70,10 +74,28 @@ class InternshipRequestController extends Controller
             'status' => ['required', Rule::in(['acceptee', 'refusee'])],
         ]);
 
-        $requestItem->update([
-            'status' => $validated['status'],
-            'processed_by' => $user->id,
-        ]);
+        DB::transaction(function () use ($requestItem, $validated, $user): void {
+            $requestItem->update([
+                'status' => $validated['status'],
+                'processed_by' => $user->id,
+            ]);
+
+            if (
+                $validated['status'] === 'acceptee'
+                && $requestItem->type === 'absence'
+                && $requestItem->absence_generated_at === null
+            ) {
+                Absence::query()->create([
+                    'intern_id' => $requestItem->intern_id,
+                    'date_absence' => today(),
+                    'reason' => $requestItem->motif_absence ?? $requestItem->message,
+                    'justified' => true,
+                    'recorded_by' => $user->id,
+                ]);
+
+                $requestItem->update(['absence_generated_at' => now()]);
+            }
+        });
 
         return back()->with('success', 'Demande traitee.');
     }

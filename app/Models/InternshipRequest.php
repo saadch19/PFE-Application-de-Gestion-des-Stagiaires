@@ -15,10 +15,19 @@ class InternshipRequest extends Model
     protected $fillable = [
         'intern_id',
         'type',
+        'motif_absence',
         'message',
         'status',
         'processed_by',
+        'absence_generated_at',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'absence_generated_at' => 'datetime',
+        ];
+    }
 
     public function intern(): BelongsTo
     {

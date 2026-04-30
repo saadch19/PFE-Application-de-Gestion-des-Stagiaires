@@ -34,8 +34,18 @@
                     @forelse($requests as $requestItem)
                         <tr>
                             <td>{{ $requestItem->intern->user?->full_name ?? $requestItem->intern->cin }}</td>
-                            <td>{{ ucfirst($requestItem->type) }}</td>
-                            <td>{{ \Illuminate\Support\Str::limit($requestItem->message, 80) }}</td>
+                            <td>
+                                {{ ucfirst($requestItem->type) }}
+                                @if($requestItem->type === 'absence' && $requestItem->absence_generated_at !== null)
+                                    <span class="badge text-bg-success ms-1">Absence creee</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if($requestItem->type === 'absence' && $requestItem->motif_absence)
+                                    <div><strong>Motif :</strong> {{ \Illuminate\Support\Str::limit($requestItem->motif_absence, 60) }}</div>
+                                @endif
+                                <div>{{ \Illuminate\Support\Str::limit($requestItem->message, 80) }}</div>
+                            </td>
                             <td><span class="badge text-bg-info">{{ $requestItem->status }}</span></td>
                             <td>{{ $requestItem->processedBy?->full_name ?? '-' }}</td>
                             <td class="text-end">
