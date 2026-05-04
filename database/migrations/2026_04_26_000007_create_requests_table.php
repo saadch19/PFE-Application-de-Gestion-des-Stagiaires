@@ -11,10 +11,12 @@ return new class extends Migration
         Schema::create('requests', function (Blueprint $table) {
             $table->id();
             $table->foreignId('intern_id')->constrained('interns')->cascadeOnDelete();
-            $table->enum('type', ['prolongation', 'attestation', 'autre']);
+            $table->enum('type', ['prolongation', 'attestation', 'absence', 'autre']);
+            $table->string('motif_absence', 255)->nullable();
             $table->text('message');
             $table->enum('status', ['en_attente', 'acceptee', 'refusee'])->default('en_attente');
             $table->foreignId('processed_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamp('absence_generated_at')->nullable();
             $table->timestamps();
         });
     }
