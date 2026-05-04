@@ -10,40 +10,20 @@
     </div>
 </div>
 
-<div class="row g-3 mb-4">
-    <div class="col-sm-6 col-lg-3 fade-in">
-        <div class="card card-soft stat-card h-100">
-            <div class="card-body">
-                <div class="text-muted">Utilisateurs</div>
-                <div class="display-6 fw-semibold">{{ $stats['users'] }}</div>
+@if(!empty($statCards))
+    <div class="row g-3 mb-4">
+        @foreach($statCards as $card)
+            <div class="col-sm-6 col-lg-3 fade-in">
+                <div class="card card-soft stat-card h-100">
+                    <div class="card-body">
+                        <div class="text-muted">{{ $card['label'] }}</div>
+                        <div class="display-6 fw-semibold">{{ $card['value'] }}</div>
+                    </div>
+                </div>
             </div>
-        </div>
+        @endforeach
     </div>
-    <div class="col-sm-6 col-lg-3 fade-in">
-        <div class="card card-soft stat-card h-100">
-            <div class="card-body">
-                <div class="text-muted">Stagiaires</div>
-                <div class="display-6 fw-semibold">{{ $stats['interns'] }}</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-sm-6 col-lg-3 fade-in">
-        <div class="card card-soft stat-card h-100">
-            <div class="card-body">
-                <div class="text-muted">Stages en cours</div>
-                <div class="display-6 fw-semibold">{{ $stats['active_internships'] }}</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-sm-6 col-lg-3 fade-in">
-        <div class="card card-soft stat-card h-100">
-            <div class="card-body">
-                <div class="text-muted">Demandes en attente</div>
-                <div class="display-6 fw-semibold">{{ $stats['pending_requests'] }}</div>
-            </div>
-        </div>
-    </div>
-</div>
+@endif
 
 @if($evaluatedInterns->isNotEmpty())
     <div class="row g-4 mb-4">
