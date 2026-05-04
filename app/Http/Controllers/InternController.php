@@ -6,8 +6,10 @@ use App\Models\Intern;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Carbon\Carbon;
 
 class InternController extends Controller
 {
@@ -65,15 +67,33 @@ class InternController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
+        $validator = Validator::make($request->all(), [
             'user_id' => ['nullable', 'exists:users,id', 'unique:interns,user_id'],
             'cin' => ['required', 'string', 'max:40', 'unique:interns,cin'],
             'school' => ['required', 'string', 'max:120'],
             'specialty' => ['required', 'string', 'max:120'],
             'phone' => ['nullable', 'string', 'max:30'],
-            'start_date' => ['required', 'date'],
-            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+            'start_date' => ['required', 'date_format:d/m/Y'],
+            'end_date' => ['required', 'date_format:d/m/Y'],
         ]);
+
+        $validator->after(function ($validator) use ($request) {
+            if ($validator->errors()->has('start_date') || $validator->errors()->has('end_date')) {
+                return;
+            }
+
+            $startDate = Carbon::createFromFormat('d/m/Y', $request->input('start_date'));
+            $endDate = Carbon::createFromFormat('d/m/Y', $request->input('end_date'));
+
+            if ($endDate->lt($startDate)) {
+                $validator->errors()->add('end_date', 'La date de fin doit etre apres ou egale a la date de debut.');
+            }
+        });
+
+        $validated = $validator->validated();
+
+        $validated['start_date'] = Carbon::createFromFormat('d/m/Y', $validated['start_date'])->toDateString();
+        $validated['end_date'] = Carbon::createFromFormat('d/m/Y', $validated['end_date'])->toDateString();
 
         Intern::query()->create($validated + ['is_archived' => false]);
 
@@ -97,7 +117,7 @@ class InternController extends Controller
 
     public function update(Request $request, Intern $intern): RedirectResponse
     {
-        $validated = $request->validate([
+        $validator = Validator::make($request->all(), [
             'user_id' => [
                 'nullable',
                 'exists:users,id',
@@ -107,9 +127,27 @@ class InternController extends Controller
             'school' => ['required', 'string', 'max:120'],
             'specialty' => ['required', 'string', 'max:120'],
             'phone' => ['nullable', 'string', 'max:30'],
-            'start_date' => ['required', 'date'],
-            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+            'start_date' => ['required', 'date_format:d/m/Y'],
+            'end_date' => ['required', 'date_format:d/m/Y'],
         ]);
+
+        $validator->after(function ($validator) use ($request) {
+            if ($validator->errors()->has('start_date') || $validator->errors()->has('end_date')) {
+                return;
+            }
+
+            $startDate = Carbon::createFromFormat('d/m/Y', $request->input('start_date'));
+            $endDate = Carbon::createFromFormat('d/m/Y', $request->input('end_date'));
+
+            if ($endDate->lt($startDate)) {
+                $validator->errors()->add('end_date', 'La date de fin doit etre apres ou egale a la date de debut.');
+            }
+        });
+
+        $validated = $validator->validated();
+
+        $validated['start_date'] = Carbon::createFromFormat('d/m/Y', $validated['start_date'])->toDateString();
+        $validated['end_date'] = Carbon::createFromFormat('d/m/Y', $validated['end_date'])->toDateString();
 
         $intern->update($validated);
 

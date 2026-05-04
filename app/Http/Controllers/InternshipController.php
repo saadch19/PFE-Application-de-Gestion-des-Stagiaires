@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Intern;
 use App\Models\Internship;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -48,17 +50,54 @@ class InternshipController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
+        $validator = Validator::make($request->all(), [
             'title' => ['required', 'string', 'max:180'],
             'description' => ['nullable', 'string'],
             'department' => ['required', 'string', 'max:120'],
-            'start_date' => ['required', 'date'],
-            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+            'start_date' => ['required', 'date_format:d/m/Y'],
+            'end_date' => ['required', 'date_format:d/m/Y'],
             'status' => ['required', Rule::in(['planifie', 'en_cours', 'termine'])],
             'intern_id' => ['required', 'exists:interns,id'],
             'supervisor_id' => ['nullable', 'exists:users,id'],
             'responsible_id' => ['nullable', 'exists:users,id'],
         ]);
+
+        $validator->after(function ($validator) use ($request) {
+            if ($validator->errors()->has('start_date') || $validator->errors()->has('end_date')) {
+                return;
+            }
+
+            $internId = $request->input('intern_id');
+            $start = $request->input('start_date');
+            $end = $request->input('end_date');
+
+            if ($internId && $start && $end) {
+                $intern = Intern::query()->find($internId);
+
+                if ($intern) {
+                    $startDate = Carbon::createFromFormat('d/m/Y', $start);
+                    $endDate = Carbon::createFromFormat('d/m/Y', $end);
+
+                    if ($endDate->lt($startDate)) {
+                        $validator->errors()->add('end_date', 'La date de fin doit etre apres ou egale a la date de debut.');
+                    }
+
+                    $internStart = $intern->start_date?->copy()->startOfDay();
+                    $internEnd = $intern->end_date?->copy()->endOfDay();
+
+                    if ($internStart && $internEnd) {
+                        if ($startDate->lt($internStart) || $endDate->gt($internEnd)) {
+                            $validator->errors()->add('start_date', 'La periode du stage doit etre comprise dans la periode du stagiaire.');
+                        }
+                    }
+                }
+            }
+        });
+
+        $validated = $validator->validated();
+
+        $validated['start_date'] = Carbon::createFromFormat('d/m/Y', $validated['start_date'])->toDateString();
+        $validated['end_date'] = Carbon::createFromFormat('d/m/Y', $validated['end_date'])->toDateString();
 
         Internship::query()->create($validated);
 
@@ -86,17 +125,54 @@ class InternshipController extends Controller
 
     public function update(Request $request, Internship $internship): RedirectResponse
     {
-        $validated = $request->validate([
+        $validator = Validator::make($request->all(), [
             'title' => ['required', 'string', 'max:180'],
             'description' => ['nullable', 'string'],
             'department' => ['required', 'string', 'max:120'],
-            'start_date' => ['required', 'date'],
-            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+            'start_date' => ['required', 'date_format:d/m/Y'],
+            'end_date' => ['required', 'date_format:d/m/Y'],
             'status' => ['required', Rule::in(['planifie', 'en_cours', 'termine'])],
             'intern_id' => ['required', 'exists:interns,id'],
             'supervisor_id' => ['nullable', 'exists:users,id'],
             'responsible_id' => ['nullable', 'exists:users,id'],
         ]);
+
+        $validator->after(function ($validator) use ($request) {
+            if ($validator->errors()->has('start_date') || $validator->errors()->has('end_date')) {
+                return;
+            }
+
+            $internId = $request->input('intern_id');
+            $start = $request->input('start_date');
+            $end = $request->input('end_date');
+
+            if ($internId && $start && $end) {
+                $intern = Intern::query()->find($internId);
+
+                if ($intern) {
+                    $startDate = Carbon::createFromFormat('d/m/Y', $start);
+                    $endDate = Carbon::createFromFormat('d/m/Y', $end);
+
+                    if ($endDate->lt($startDate)) {
+                        $validator->errors()->add('end_date', 'La date de fin doit etre apres ou egale a la date de debut.');
+                    }
+
+                    $internStart = $intern->start_date?->copy()->startOfDay();
+                    $internEnd = $intern->end_date?->copy()->endOfDay();
+
+                    if ($internStart && $internEnd) {
+                        if ($startDate->lt($internStart) || $endDate->gt($internEnd)) {
+                            $validator->errors()->add('start_date', 'La periode du stage doit etre comprise dans la periode du stagiaire.');
+                        }
+                    }
+                }
+            }
+        });
+
+        $validated = $validator->validated();
+
+        $validated['start_date'] = Carbon::createFromFormat('d/m/Y', $validated['start_date'])->toDateString();
+        $validated['end_date'] = Carbon::createFromFormat('d/m/Y', $validated['end_date'])->toDateString();
 
         $internship->update($validated);
 

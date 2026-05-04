@@ -52,12 +52,12 @@
 
     <div class="col-md-4">
         <label for="start_date" class="form-label">Date debut</label>
-        <input type="date" class="form-control" id="start_date" name="start_date" value="{{ old('start_date', isset($internship) ? $internship->start_date?->format('Y-m-d') : '') }}" required>
+        <input type="text" class="form-control js-date" id="start_date" name="start_date" value="{{ old('start_date', isset($internship) ? $internship->start_date?->format('d/m/Y') : '') }}" placeholder="jj/mm/aaaa" autocomplete="off" required>
     </div>
 
     <div class="col-md-4">
         <label for="end_date" class="form-label">Date fin</label>
-        <input type="date" class="form-control" id="end_date" name="end_date" value="{{ old('end_date', isset($internship) ? $internship->end_date?->format('Y-m-d') : '') }}" required>
+        <input type="text" class="form-control js-date" id="end_date" name="end_date" value="{{ old('end_date', isset($internship) ? $internship->end_date?->format('d/m/Y') : '') }}" placeholder="jj/mm/aaaa" autocomplete="off" required>
     </div>
 
     <div class="col-md-4">
