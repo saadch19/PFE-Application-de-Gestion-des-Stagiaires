@@ -17,6 +17,8 @@ class InternController extends Controller
     {
         $search = (string) $request->string('search');
         $showArchived = $request->boolean('archived');
+        $today = today()->toDateString();
+        $completedCutoff = today()->subDay()->toDateString();
 
         $interns = Intern::query()
             ->with('user')
@@ -29,7 +31,8 @@ class InternController extends Controller
                         ->orWhereHas('user', fn ($userQuery) => $userQuery->where('full_name', 'like', "%{$search}%"));
                 });
             })
-            ->latest()
+            ->orderByRaw('CASE WHEN is_archived = 1 THEN 2 WHEN end_date < ? THEN 1 ELSE 0 END', [$completedCutoff])
+            ->orderByDesc('start_date')
             ->paginate(12)
             ->withQueryString();
 

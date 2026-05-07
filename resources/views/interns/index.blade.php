@@ -39,6 +39,9 @@
                 </thead>
                 <tbody>
                     @forelse($interns as $intern)
+                        @php
+                            $isCompleted = $intern->end_date !== null && $intern->end_date->lt(today()->subDay());
+                        @endphp
                         <tr>
                             <td>{{ $intern->cin }}</td>
                             <td>{{ $intern->user?->full_name ?? 'Non lie' }}</td>
@@ -48,25 +51,25 @@
                             </td>
                             <td>{{ $intern->start_date?->format('d/m/Y') }} - {{ $intern->end_date?->format('d/m/Y') }}</td>
                             <td>
-                                <span class="badge {{ $intern->is_archived ? 'text-bg-secondary' : 'text-bg-success' }}">
-                                    {{ $intern->is_archived ? 'Archive' : 'Actif' }}
+                                <span class="badge {{ $intern->is_archived ? 'text-bg-secondary' : ($isCompleted ? 'text-bg-warning' : 'text-bg-success') }}">
+                                    {{ $intern->is_archived ? 'Archive' : ($isCompleted ? 'Termine' : 'Actif') }}
                                 </span>
                             </td>
                             <td class="text-end">
                                 <a href="{{ route('interns.show', $intern) }}" class="btn btn-sm btn-outline-secondary">Voir</a>
                                 <a href="{{ route('interns.edit', $intern) }}" class="btn btn-sm btn-outline-primary">Modifier</a>
 
-                                @if(! $intern->is_archived)
-                                    <form action="{{ route('interns.archive', $intern) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        @method('PATCH')
-                                        <button class="btn btn-sm btn-outline-warning" type="submit">Archiver</button>
-                                    </form>
-                                @else
+                                @if($intern->is_archived)
                                     <form action="{{ route('interns.restore', $intern) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('PATCH')
                                         <button class="btn btn-sm btn-outline-success" type="submit">Restaurer</button>
+                                    </form>
+                                @elseif($isCompleted)
+                                    <form action="{{ route('interns.archive', $intern) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button class="btn btn-sm btn-outline-warning" type="submit">Archiver</button>
                                     </form>
                                 @endif
 
