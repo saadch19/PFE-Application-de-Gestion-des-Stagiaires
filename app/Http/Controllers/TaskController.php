@@ -21,6 +21,11 @@ class TaskController extends Controller
         $tasks = Task::query()
             ->with(['internship.intern.user', 'assignedBy', 'assignedTo'])
             ->when($user->hasRole('Stagiaire'), fn ($query) => $query->where('assigned_to', $user->id))
+            ->when($user->hasRole('Encadrant'), function ($query) use ($user) {
+                $query->whereHas('assignedTo.intern.internships', function ($internshipQuery) use ($user) {
+                    $internshipQuery->where('supervisor_id', $user->id);
+                });
+            })
             ->when($status !== '', fn ($query) => $query->where('status', $status))
             ->latest()
             ->paginate(12)
@@ -31,15 +36,22 @@ class TaskController extends Controller
 
     public function create(): View
     {
+        $user = auth()->user();
+
         $internships = Internship::query()
             ->with('intern.user')
             ->whereIn('status', ['planifie', 'en_cours'])
+            ->when($user->hasRole('Encadrant'), fn ($query) => $query->where('supervisor_id', $user->id))
             ->orderBy('title')
             ->get();
 
         $users = User::query()
             ->with('role')
             ->where('is_active', true)
+            ->whereHas('role', fn ($query) => $query->where('name', 'Stagiaire'))
+            ->when($user->hasRole('Encadrant'), function ($query) use ($user) {
+                $query->whereHas('intern.internships', fn ($internshipQuery) => $internshipQuery->where('supervisor_id', $user->id));
+            })
             ->orderBy('full_name')
             ->get();
 
@@ -64,15 +76,22 @@ class TaskController extends Controller
 
     public function edit(Task $task): View
     {
+        $user = auth()->user();
+
         $internships = Internship::query()
             ->with('intern.user')
             ->whereIn('status', ['planifie', 'en_cours'])
+            ->when($user->hasRole('Encadrant'), fn ($query) => $query->where('supervisor_id', $user->id))
             ->orderBy('title')
             ->get();
 
         $users = User::query()
             ->with('role')
             ->where('is_active', true)
+            ->whereHas('role', fn ($query) => $query->where('name', 'Stagiaire'))
+            ->when($user->hasRole('Encadrant'), function ($query) use ($user) {
+                $query->whereHas('intern.internships', fn ($internshipQuery) => $internshipQuery->where('supervisor_id', $user->id));
+            })
             ->orderBy('full_name')
             ->get();
 

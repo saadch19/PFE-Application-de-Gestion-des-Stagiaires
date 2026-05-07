@@ -26,3 +26,4 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 DOCUMENTATION_GESTION_STAGIAIRES.md
+/database/seeders/LocalDemoSeeder.php

@@ -20,6 +20,9 @@ class InternshipRequestController extends Controller
             ->with(['intern.user', 'processedBy'])
             ->when($user->hasRole('Stagiaire') && $user->intern !== null, fn ($query) => $query->where('intern_id', $user->intern->id))
             ->when($user->hasRole('Stagiaire') && $user->intern === null, fn ($query) => $query->whereRaw('1 = 0'))
+            ->when($user->hasRole('Encadrant'), function ($query) use ($user) {
+                $query->whereHas('intern.internships', fn ($internshipQuery) => $internshipQuery->where('supervisor_id', $user->id));
+            })
             ->latest()
             ->paginate(12);
 
