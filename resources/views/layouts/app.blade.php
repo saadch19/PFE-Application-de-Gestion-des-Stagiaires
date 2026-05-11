@@ -68,6 +68,25 @@
             background: linear-gradient(120deg, #1f4d43, #335f8f);
         }
 
+        .app-navbar .nav-link {
+            border-radius: 0.5rem;
+            color: rgba(255, 255, 255, 0.78);
+            font-weight: 500;
+            padding-left: 0.75rem;
+            padding-right: 0.75rem;
+            transition: color 0.2s ease, background-color 0.2s ease;
+        }
+
+        .app-navbar .nav-link:hover,
+        .app-navbar .nav-link.active {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.18);
+        }
+
+        .app-navbar .nav-link.active {
+            box-shadow: inset 0 -3px 0 #ddf36a;
+        }
+
         .card-soft {
             border: none;
             border-radius: 1rem;
@@ -137,21 +156,21 @@
 
                 <div class="collapse navbar-collapse" id="mainNavbar">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li class="nav-item"><a class="nav-link" href="{{ route('dashboard') }}">Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">Dashboard</a></li>
 
                         @if($authUser->hasRole('Administrateur'))
-                            <li class="nav-item"><a class="nav-link" href="{{ route('users.index') }}">Utilisateurs</a></li>
+                            <li class="nav-item"><a class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}" href="{{ route('users.index') }}">Utilisateurs</a></li>
                         @endif
 
                         @if($authUser->hasRole('Administrateur', 'Responsable de competence'))
-                            <li class="nav-item"><a class="nav-link" href="{{ route('interns.index') }}">Stagiaires</a></li>
-                            <li class="nav-item"><a class="nav-link" href="{{ route('internships.index') }}">Stages</a></li>
-                            <li class="nav-item"><a class="nav-link" href="{{ route('absences.index') }}">Absences</a></li>
+                            <li class="nav-item"><a class="nav-link {{ request()->routeIs('interns.*') ? 'active' : '' }}" href="{{ route('interns.index') }}">Stagiaires</a></li>
+                            <li class="nav-item"><a class="nav-link {{ request()->routeIs('internships.*') ? 'active' : '' }}" href="{{ route('internships.index') }}">Stages</a></li>
+                            <li class="nav-item"><a class="nav-link {{ request()->routeIs('absences.*') ? 'active' : '' }}" href="{{ route('absences.index') }}">Absences</a></li>
                         @endif
 
-                        <li class="nav-item"><a class="nav-link" href="{{ route('tasks.index') }}">Taches</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ route('requests.index') }}">Demandes</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ route('messages.index') }}">Messages</a></li>
+                        <li class="nav-item"><a class="nav-link {{ request()->routeIs('tasks.*') ? 'active' : '' }}" href="{{ route('tasks.index') }}">Taches</a></li>
+                        <li class="nav-item"><a class="nav-link {{ request()->routeIs('requests.*') ? 'active' : '' }}" href="{{ route('requests.index') }}">Demandes</a></li>
+                        <li class="nav-item"><a class="nav-link {{ request()->routeIs('messages.*') ? 'active' : '' }}" href="{{ route('messages.index') }}">Messages</a></li>
                     </ul>
 
                     <div class="d-flex align-items-center gap-3 text-white">

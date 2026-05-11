@@ -33,6 +33,10 @@
                     <button type="submit" class="btn btn-success w-100">Se connecter</button>
                 </form>
 
+                <div class="text-center mt-3">
+                    <a href="{{ route('forgot.options') }}" class="small">Identifiant ou mot de passe oublie ?</a>
+                </div>
+
                 <div class="mt-4 small text-muted">
                     Compte demo admin: admin@internships.local / password123
                 </div>

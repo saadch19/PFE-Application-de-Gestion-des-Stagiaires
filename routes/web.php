@@ -18,6 +18,11 @@ Route::redirect('/', '/login');
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('login.perform');
+    Route::get('/compte-oublie', [AuthController::class, 'showForgotOptions'])->name('forgot.options');
+    Route::get('/identifiant-oublie', [AuthController::class, 'showForgotIdentifier'])->name('forgot.identifier');
+    Route::post('/identifiant-oublie', [AuthController::class, 'forgotIdentifier'])->name('forgot.identifier.perform');
+    Route::get('/mot-de-passe-oublie', [AuthController::class, 'showForgotPassword'])->name('forgot.password');
+    Route::post('/mot-de-passe-oublie', [AuthController::class, 'forgotPassword'])->name('forgot.password.perform');
 });
 
 Route::middleware('auth')->group(function (): void {
