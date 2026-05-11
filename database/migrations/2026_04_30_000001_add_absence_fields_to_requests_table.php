@@ -11,10 +11,17 @@ return new class extends Migration
     {
         DB::statement("ALTER TABLE requests MODIFY type ENUM('prolongation', 'attestation', 'absence', 'autre') NOT NULL");
 
-        Schema::table('requests', function (Blueprint $table) {
-            $table->string('motif_absence', 255)->nullable()->after('type');
-            $table->timestamp('absence_generated_at')->nullable()->after('processed_by');
-        });
+        if (! Schema::hasColumn('requests', 'motif_absence')) {
+            Schema::table('requests', function (Blueprint $table) {
+                $table->string('motif_absence', 255)->nullable()->after('type');
+            });
+        }
+
+        if (! Schema::hasColumn('requests', 'absence_generated_at')) {
+            Schema::table('requests', function (Blueprint $table) {
+                $table->timestamp('absence_generated_at')->nullable()->after('processed_by');
+            });
+        }
     }
 
     public function down(): void
@@ -23,9 +30,17 @@ return new class extends Migration
             ->where('type', 'absence')
             ->update(['type' => 'autre']);
 
-        Schema::table('requests', function (Blueprint $table) {
-            $table->dropColumn(['motif_absence', 'absence_generated_at']);
-        });
+        if (Schema::hasColumn('requests', 'motif_absence')) {
+            Schema::table('requests', function (Blueprint $table) {
+                $table->dropColumn('motif_absence');
+            });
+        }
+
+        if (Schema::hasColumn('requests', 'absence_generated_at')) {
+            Schema::table('requests', function (Blueprint $table) {
+                $table->dropColumn('absence_generated_at');
+            });
+        }
 
         DB::statement("ALTER TABLE requests MODIFY type ENUM('prolongation', 'attestation', 'autre') NOT NULL");
     }
