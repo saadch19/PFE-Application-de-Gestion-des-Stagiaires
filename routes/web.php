@@ -47,10 +47,16 @@ Route::middleware('auth')->group(function (): void {
         Route::resource('absences', AbsenceController::class)->except(['show']);
     });
 
-    Route::get('/tasks', [TaskController::class, 'index'])->name('tasks.index');
-    Route::patch('/tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('tasks.status');
+    Route::middleware('role:Encadrant')->group(function (): void {
+        Route::get('/mes-stagiaires', [InternshipController::class, 'myInterns'])->name('supervisor.interns');
+    });
 
-    Route::middleware('role:Administrateur,Responsable de competence,Encadrant')->group(function (): void {
+    Route::middleware('role:Administrateur,Encadrant,Stagiaire')->group(function (): void {
+        Route::get('/tasks', [TaskController::class, 'index'])->name('tasks.index');
+        Route::patch('/tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('tasks.status');
+    });
+
+    Route::middleware('role:Administrateur,Encadrant')->group(function (): void {
         Route::get('/tasks/create', [TaskController::class, 'create'])->name('tasks.create');
         Route::post('/tasks', [TaskController::class, 'store'])->name('tasks.store');
         Route::get('/tasks/{task}/edit', [TaskController::class, 'edit'])->name('tasks.edit');

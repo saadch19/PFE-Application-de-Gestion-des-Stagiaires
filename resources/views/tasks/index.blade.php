@@ -3,7 +3,7 @@
 @section('title', 'Taches')
 
 @section('content')
-@php $canManage = auth()->user()->hasRole('Administrateur', 'Responsable de competence', 'Encadrant'); @endphp
+@php $canManage = auth()->user()->hasRole('Administrateur', 'Encadrant'); @endphp
 
 <div class="card card-soft fade-in">
     <div class="card-body">

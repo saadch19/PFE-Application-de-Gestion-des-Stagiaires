@@ -168,7 +168,13 @@
                             <li class="nav-item"><a class="nav-link {{ request()->routeIs('absences.*') ? 'active' : '' }}" href="{{ route('absences.index') }}">Absences</a></li>
                         @endif
 
-                        <li class="nav-item"><a class="nav-link {{ request()->routeIs('tasks.*') ? 'active' : '' }}" href="{{ route('tasks.index') }}">Taches</a></li>
+                        @if($authUser->hasRole('Encadrant'))
+                            <li class="nav-item"><a class="nav-link {{ request()->routeIs('supervisor.interns') ? 'active' : '' }}" href="{{ route('supervisor.interns') }}">Stagiaires</a></li>
+                        @endif
+
+                        @if(! $authUser->hasRole('Responsable de competence'))
+                            <li class="nav-item"><a class="nav-link {{ request()->routeIs('tasks.*') ? 'active' : '' }}" href="{{ route('tasks.index') }}">Taches</a></li>
+                        @endif
                         <li class="nav-item"><a class="nav-link {{ request()->routeIs('requests.*') ? 'active' : '' }}" href="{{ route('requests.index') }}">Demandes</a></li>
                         <li class="nav-item"><a class="nav-link {{ request()->routeIs('messages.*') ? 'active' : '' }}" href="{{ route('messages.index') }}">Messages</a></li>
                     </ul>

@@ -29,6 +29,21 @@ class InternshipController extends Controller
         return view('internships.index', compact('internships', 'status'));
     }
 
+    public function myInterns(Request $request): View
+    {
+        $status = (string) $request->string('status');
+
+        $internships = Internship::query()
+            ->with(['intern.user'])
+            ->where('supervisor_id', $request->user()->id)
+            ->when($status !== '', fn ($query) => $query->where('status', $status))
+            ->orderBy('start_date')
+            ->paginate(12)
+            ->withQueryString();
+
+        return view('internships.my-interns', compact('internships', 'status'));
+    }
+
     public function create(): View
     {
         $interns = Intern::query()->where('is_archived', false)->orderBy('cin')->get();

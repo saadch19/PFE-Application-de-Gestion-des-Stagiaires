@@ -3,6 +3,8 @@
 @section('title', 'Detail stagiaire')
 
 @section('content')
+@php $canViewInternTasks = ! auth()->user()->hasRole('Responsable de competence'); @endphp
+
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 fade-in">
     <div>
         <h1 class="h3 mb-1">{{ $intern->user?->full_name ?? 'Stagiaire non lie' }}</h1>
@@ -99,34 +101,36 @@
         </div>
     </div>
 
-    <div class="col-lg-7 fade-in">
-        <div class="card card-soft h-100">
-            <div class="card-body">
-                <h2 class="h5 mb-3">Taches du stagiaire</h2>
-                <div class="table-responsive">
-                    <table class="table align-middle">
-                        <thead>
-                            <tr>
-                                <th>Titre</th>
-                                <th>Date limite</th>
-                                <th>Statut</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($tasks as $task)
+    @if($canViewInternTasks)
+        <div class="col-lg-7 fade-in">
+            <div class="card card-soft h-100">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Taches du stagiaire</h2>
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead>
                                 <tr>
-                                    <td>{{ $task->title }}</td>
-                                    <td>{{ $task->due_date?->format('d/m/Y') ?? '-' }}</td>
-                                    <td><span class="badge text-bg-secondary">{{ $task->status }}</span></td>
+                                    <th>Titre</th>
+                                    <th>Date limite</th>
+                                    <th>Statut</th>
                                 </tr>
-                            @empty
-                                <tr><td colspan="3" class="text-muted">Aucune tache liee au stagiaire.</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @forelse($tasks as $task)
+                                    <tr>
+                                        <td>{{ $task->title }}</td>
+                                        <td>{{ $task->due_date?->format('d/m/Y') ?? '-' }}</td>
+                                        <td><span class="badge text-bg-secondary">{{ $task->status }}</span></td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="3" class="text-muted">Aucune tache liee au stagiaire.</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    @endif
 </div>
 @endsection

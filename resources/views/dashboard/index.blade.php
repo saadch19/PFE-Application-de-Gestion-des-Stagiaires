@@ -77,9 +77,9 @@
                         <div class="alert alert-warning py-2 mb-2">
                             <div class="fw-semibold">{{ $item['intern']->user?->full_name ?? 'Stagiaire non lie' }}</div>
                             <div>{{ $item['alert']['message'] }}</div>
-                            @isset($item['alert']['task'])
+                            @if($canViewTasks && isset($item['alert']['task']))
                                 <small class="text-muted">Tache : {{ $item['alert']['task']->title }}</small>
-                            @endisset
+                            @endif
                         </div>
                     @empty
                         <p class="text-muted mb-0">Aucune alerte detectee pour le moment.</p>
@@ -91,35 +91,37 @@
 @endif
 
 <div class="row g-4">
-    <div class="col-lg-6 fade-in">
-        <div class="card card-soft h-100">
-            <div class="card-body">
-                <h2 class="h5 mb-3">Dernieres taches</h2>
-                <div class="table-responsive">
-                    <table class="table align-middle">
-                        <thead>
-                            <tr>
-                                <th>Titre</th>
-                                <th>Assignee a</th>
-                                <th>Statut</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($latestTasks as $task)
+    @if($canViewTasks)
+        <div class="col-lg-6 fade-in">
+            <div class="card card-soft h-100">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Dernieres taches</h2>
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead>
                                 <tr>
-                                    <td>{{ $task->title }}</td>
-                                    <td>{{ $task->assignedTo?->full_name }}</td>
-                                    <td><span class="badge text-bg-secondary">{{ $task->status }}</span></td>
+                                    <th>Titre</th>
+                                    <th>Assignee a</th>
+                                    <th>Statut</th>
                                 </tr>
-                            @empty
-                                <tr><td colspan="3" class="text-muted">Aucune tache pour le moment.</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @forelse($latestTasks as $task)
+                                    <tr>
+                                        <td>{{ $task->title }}</td>
+                                        <td>{{ $task->assignedTo?->full_name }}</td>
+                                        <td><span class="badge text-bg-secondary">{{ $task->status }}</span></td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="3" class="text-muted">Aucune tache pour le moment.</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    @endif
 
     <div class="col-lg-6 fade-in">
         <div class="card card-soft h-100">

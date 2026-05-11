@@ -17,6 +17,7 @@ class DashboardController extends Controller
         $user = auth()->user();
         $isAdmin = $user->hasRole('Administrateur');
         $isManager = $user->hasRole('Responsable de competence', 'Encadrant');
+        $canViewTasks = ! $user->hasRole('Responsable de competence');
         $isIntern = $user->hasRole('Stagiaire');
 
         $managedInternIds = collect();
@@ -96,19 +97,23 @@ class DashboardController extends Controller
             ];
         }
 
-        $latestTasks = Task::query()
-            ->with(['assignedBy', 'assignedTo'])
-            ->when($isIntern, fn ($query) => $query->where('assigned_to', $user->id))
-            ->when($isManager, function ($query) use ($managedInternIds) {
-                if ($managedInternIds->isEmpty()) {
-                    $query->whereRaw('1 = 0');
-                } else {
-                    $query->whereHas('internship', fn ($subQuery) => $subQuery->whereIn('intern_id', $managedInternIds));
-                }
-            })
-            ->latest()
-            ->take(5)
-            ->get();
+        $latestTasks = collect();
+
+        if ($canViewTasks) {
+            $latestTasks = Task::query()
+                ->with(['assignedBy', 'assignedTo'])
+                ->when($isIntern, fn ($query) => $query->where('assigned_to', $user->id))
+                ->when($isManager, function ($query) use ($managedInternIds) {
+                    if ($managedInternIds->isEmpty()) {
+                        $query->whereRaw('1 = 0');
+                    } else {
+                        $query->whereHas('internship', fn ($subQuery) => $subQuery->whereIn('intern_id', $managedInternIds));
+                    }
+                })
+                ->latest()
+                ->take(5)
+                ->get();
+        }
 
         $latestRequests = InternshipRequest::query()
             ->with(['intern.user', 'processedBy'])
@@ -150,13 +155,15 @@ class DashboardController extends Controller
         }
 
         $smartAlerts = $evaluatedInterns
-            ->flatMap(fn (Intern $intern) => collect($intern->smartAlerts())->map(fn (array $alert) => [
-                'intern' => $intern,
-                'alert' => $alert,
-            ]))
+            ->flatMap(fn (Intern $intern) => collect($intern->smartAlerts())
+                ->when(! $canViewTasks, fn ($alerts) => $alerts->reject(fn (array $alert): bool => $alert['type'] === 'task'))
+                ->map(fn (array $alert) => [
+                    'intern' => $intern,
+                    'alert' => $alert,
+                ]))
             ->take(8)
             ->values();
 
-        return view('dashboard.index', compact('stats', 'statCards', 'latestTasks', 'latestRequests', 'evaluatedInterns', 'smartAlerts'));
+        return view('dashboard.index', compact('stats', 'statCards', 'latestTasks', 'latestRequests', 'evaluatedInterns', 'smartAlerts', 'canViewTasks'));
     }
 }

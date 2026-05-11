@@ -127,7 +127,7 @@ class TaskController extends Controller
 
         $canUpdate = $user->id === $task->assigned_to
             || $user->id === $task->assigned_by
-            || $user->hasRole('Administrateur', 'Responsable de competence', 'Encadrant');
+            || $user->hasRole('Administrateur', 'Encadrant');
 
         if (! $canUpdate) {
             abort(403, 'Non autorise a modifier cette tache.');
