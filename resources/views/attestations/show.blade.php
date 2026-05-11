@@ -9,6 +9,10 @@
 
 <div class="card card-soft fade-in" id="attestation-card">
     <div class="card-body p-4 p-md-5">
+        <div class="attestation-header mb-4">
+            <img src="{{ asset('images/ALTEN-Logo.wine.png') }}" alt="ALTEN" class="attestation-logo">
+        </div>
+
         <div class="text-center mb-4">
             <h1 class="h3 mb-1">Attestation de stage</h1>
             <p class="text-muted mb-0">Generee automatiquement par la plateforme</p>
@@ -50,6 +54,18 @@
 </div>
 
 <style>
+    .attestation-header {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+    }
+
+    .attestation-logo {
+        height: 76px;
+        width: auto;
+        object-fit: contain;
+    }
+
     @media print {
         .navbar, .alert, .btn, footer {
             display: none !important;
@@ -62,6 +78,10 @@
         #attestation-card {
             box-shadow: none !important;
             border: 1px solid #ddd;
+        }
+
+        .attestation-logo {
+            height: 86px;
         }
     }
 </style>

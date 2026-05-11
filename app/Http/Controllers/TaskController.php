@@ -9,6 +9,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class TaskController extends Controller
@@ -46,7 +47,7 @@ class TaskController extends Controller
             ->get();
 
         $users = User::query()
-            ->with('role')
+            ->with(['role', 'intern'])
             ->where('is_active', true)
             ->whereHas('role', fn ($query) => $query->where('name', 'Stagiaire'))
             ->when($user->hasRole('Encadrant'), function ($query) use ($user) {
@@ -69,6 +70,8 @@ class TaskController extends Controller
             'status' => ['required', Rule::in(['a_faire', 'en_cours', 'termine'])],
         ]);
 
+        $this->validateDueDateLimit($validated);
+
         Task::query()->create($validated + ['assigned_by' => $request->user()->id]);
 
         return redirect()->route('tasks.index')->with('success', 'Tache creee avec succes.');
@@ -86,7 +89,7 @@ class TaskController extends Controller
             ->get();
 
         $users = User::query()
-            ->with('role')
+            ->with(['role', 'intern'])
             ->where('is_active', true)
             ->whereHas('role', fn ($query) => $query->where('name', 'Stagiaire'))
             ->when($user->hasRole('Encadrant'), function ($query) use ($user) {
@@ -108,6 +111,8 @@ class TaskController extends Controller
             'due_date' => ['nullable', 'date'],
             'status' => ['required', Rule::in(['a_faire', 'en_cours', 'termine'])],
         ]);
+
+        $this->validateDueDateLimit($validated);
 
         $task->update($validated);
 
@@ -140,5 +145,45 @@ class TaskController extends Controller
         $task->update(['status' => $validated['status']]);
 
         return response()->json(['message' => 'Statut de la tache mis a jour.']);
+    }
+
+    private function validateDueDateLimit(array $validated): void
+    {
+        $dueDate = $validated['due_date'] ?? null;
+        $internshipId = $validated['internship_id'] ?? null;
+
+        if ($internshipId !== null) {
+            $internship = Internship::query()
+                ->with('intern')
+                ->find($internshipId);
+
+            if ($internship?->intern?->user_id !== null && (int) $validated['assigned_to'] !== (int) $internship->intern->user_id) {
+                throw ValidationException::withMessages([
+                    'assigned_to' => 'Cette tache doit etre assignee au stagiaire lie au stage selectionne.',
+                ]);
+            }
+
+            if ($dueDate !== null && $internship?->end_date !== null && $internship->end_date->lt($dueDate)) {
+                throw ValidationException::withMessages([
+                    'due_date' => 'La date limite ne doit pas depasser la date de fin du stage.',
+                ]);
+            }
+
+            return;
+        }
+
+        if ($dueDate === null) {
+            return;
+        }
+
+        $assignedUser = User::query()
+            ->with('intern')
+            ->find($validated['assigned_to']);
+
+        if ($assignedUser?->intern?->end_date !== null && $assignedUser->intern->end_date->lt($dueDate)) {
+            throw ValidationException::withMessages([
+                'due_date' => 'La date limite ne doit pas depasser la date de fin du stage du stagiaire.',
+            ]);
+        }
     }
 }
