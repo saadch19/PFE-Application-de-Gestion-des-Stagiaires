@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Intern;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -41,14 +44,7 @@ class InternController extends Controller
 
     public function create(): View
     {
-        $users = User::query()
-            ->where('is_active', true)
-            ->whereHas('role', fn ($query) => $query->where('name', 'Stagiaire'))
-            ->whereDoesntHave('intern')
-            ->orderBy('full_name')
-            ->get();
-
-        return view('interns.create', compact('users'));
+        return view('interns.create');
     }
 
     public function show(Intern $intern): View
@@ -71,7 +67,9 @@ class InternController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validator = Validator::make($request->all(), [
-            'user_id' => ['nullable', 'exists:users,id', 'unique:interns,user_id'],
+            'full_name' => ['required', 'string', 'max:120'],
+            'email' => ['required', 'email', 'max:120', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
             'cin' => ['required', 'string', 'max:40', 'unique:interns,cin'],
             'school' => ['required', 'string', 'max:120'],
             'specialty' => ['required', 'string', 'max:120'],
@@ -98,34 +96,45 @@ class InternController extends Controller
         $validated['start_date'] = Carbon::createFromFormat('d/m/Y', $validated['start_date'])->toDateString();
         $validated['end_date'] = Carbon::createFromFormat('d/m/Y', $validated['end_date'])->toDateString();
 
-        Intern::query()->create($validated + ['is_archived' => false]);
+        $roleId = Role::query()->where('name', 'Stagiaire')->value('id');
+
+        DB::transaction(function () use ($validated, $roleId): void {
+            $user = User::query()->create([
+                'full_name' => $validated['full_name'],
+                'email' => $validated['email'],
+                'password_hash' => Hash::make($validated['password']),
+                'role_id' => $roleId,
+                'is_active' => true,
+            ]);
+
+            Intern::query()->create([
+                'user_id' => $user->id,
+                'cin' => $validated['cin'],
+                'school' => $validated['school'],
+                'specialty' => $validated['specialty'],
+                'phone' => $validated['phone'] ?? null,
+                'start_date' => $validated['start_date'],
+                'end_date' => $validated['end_date'],
+                'is_archived' => false,
+            ]);
+        });
 
         return redirect()->route('interns.index')->with('success', 'Stagiaire ajoute.');
     }
 
     public function edit(Intern $intern): View
     {
-        $users = User::query()
-            ->where('is_active', true)
-            ->whereHas('role', fn ($query) => $query->where('name', 'Stagiaire'))
-            ->where(function ($query) use ($intern) {
-                $query->whereDoesntHave('intern')
-                    ->orWhere('id', $intern->user_id);
-            })
-            ->orderBy('full_name')
-            ->get();
+        $intern->load('user');
 
-        return view('interns.edit', compact('intern', 'users'));
+        return view('interns.edit', compact('intern'));
     }
 
     public function update(Request $request, Intern $intern): RedirectResponse
     {
         $validator = Validator::make($request->all(), [
-            'user_id' => [
-                'nullable',
-                'exists:users,id',
-                Rule::unique('interns', 'user_id')->ignore($intern->id),
-            ],
+            'full_name' => ['required', 'string', 'max:120'],
+            'email' => ['required', 'email', 'max:120', Rule::unique('users', 'email')->ignore($intern->user_id)],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'cin' => ['required', 'string', 'max:40', Rule::unique('interns', 'cin')->ignore($intern->id)],
             'school' => ['required', 'string', 'max:120'],
             'specialty' => ['required', 'string', 'max:120'],
@@ -152,7 +161,38 @@ class InternController extends Controller
         $validated['start_date'] = Carbon::createFromFormat('d/m/Y', $validated['start_date'])->toDateString();
         $validated['end_date'] = Carbon::createFromFormat('d/m/Y', $validated['end_date'])->toDateString();
 
-        $intern->update($validated);
+        $roleId = Role::query()->where('name', 'Stagiaire')->value('id');
+
+        DB::transaction(function () use ($intern, $validated, $roleId): void {
+            $userPayload = [
+                'full_name' => $validated['full_name'],
+                'email' => $validated['email'],
+                'role_id' => $roleId,
+                'is_active' => true,
+            ];
+
+            if (! empty($validated['password'])) {
+                $userPayload['password_hash'] = Hash::make($validated['password']);
+            }
+
+            if ($intern->user) {
+                $intern->user->update($userPayload);
+                $userId = $intern->user->id;
+            } else {
+                $userPayload['password_hash'] = Hash::make($validated['password'] ?: 'password123');
+                $userId = User::query()->create($userPayload)->id;
+            }
+
+            $intern->update([
+                'user_id' => $userId,
+                'cin' => $validated['cin'],
+                'school' => $validated['school'],
+                'specialty' => $validated['specialty'],
+                'phone' => $validated['phone'] ?? null,
+                'start_date' => $validated['start_date'],
+                'end_date' => $validated['end_date'],
+            ]);
+        });
 
         return redirect()->route('interns.index')->with('success', 'Stagiaire mis a jour.');
     }

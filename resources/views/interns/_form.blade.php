@@ -1,27 +1,37 @@
+@php $linkedUser = $intern->user ?? null; @endphp
+
 <div class="row g-3">
     <div class="col-md-6">
-        <label for="user_id" class="form-label">Compte stagiaire lie (optionnel)</label>
-        <select class="form-select" id="user_id" name="user_id">
-            <option value="">Aucun</option>
-            @foreach($users as $linkedUser)
-                <option value="{{ $linkedUser->id }}" @selected((string) old('user_id', $intern->user_id ?? '') === (string) $linkedUser->id)>
-                    {{ $linkedUser->full_name }} ({{ $linkedUser->email }})
-                </option>
-            @endforeach
-        </select>
+        <label for="full_name" class="form-label">Nom complet du stagiaire</label>
+        <input type="text" class="form-control" id="full_name" name="full_name" value="{{ old('full_name', $linkedUser?->full_name ?? '') }}" required>
     </div>
 
-    <div class="col-md-3">
+    <div class="col-md-6">
+        <label for="email" class="form-label">Identifiant / email</label>
+        <input type="email" class="form-control" id="email" name="email" value="{{ old('email', $linkedUser?->email ?? '') }}" required>
+    </div>
+
+    <div class="col-md-6">
+        <label for="password" class="form-label">Mot de passe {{ isset($intern) ? '(laisser vide pour conserver)' : '' }}</label>
+        <input type="password" class="form-control" id="password" name="password" {{ isset($intern) ? '' : 'required' }}>
+    </div>
+
+    <div class="col-md-6">
+        <label for="password_confirmation" class="form-label">Confirmer le mot de passe</label>
+        <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" {{ isset($intern) ? '' : 'required' }}>
+    </div>
+
+    <div class="col-md-4">
         <label for="cin" class="form-label">CIN</label>
         <input type="text" class="form-control" id="cin" name="cin" value="{{ old('cin', $intern->cin ?? '') }}" required>
     </div>
 
-    <div class="col-md-3">
+    <div class="col-md-4">
         <label for="phone" class="form-label">Telephone</label>
         <input type="text" class="form-control" id="phone" name="phone" value="{{ old('phone', $intern->phone ?? '') }}">
     </div>
 
-    <div class="col-md-6">
+    <div class="col-md-4">
         <label for="school" class="form-label">Ecole</label>
         <input type="text" class="form-control" id="school" name="school" value="{{ old('school', $intern->school ?? '') }}" required>
     </div>
