@@ -146,7 +146,7 @@
         <nav class="navbar navbar-expand-lg navbar-dark app-navbar shadow-sm">
             <div class="container">
                 <a class="navbar-brand fw-semibold d-flex align-items-center" href="{{ route('dashboard') }}">
-                    <img src="{{ asset('images/ALTEN-Logo.wine.png') }}" alt="Alten Logo" style="height: 40px; margin-right: 15px;">
+                    <img src="{{ asset('images/ALTEN-Logo.wine.png') }}" alt="Alten Logo" style="height: 52px; margin-right: 15px;">
                     <span><i class="bi bi-people-fill me-1"></i> Gestion des Stagiaires</span>
                 </a>
 
