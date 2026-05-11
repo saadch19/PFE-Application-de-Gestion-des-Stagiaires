@@ -27,7 +27,7 @@
                         <th>Message</th>
                         <th>Statut</th>
                         <th>Traitee par</th>
-                        <th class="text-end">Actions</th>
+                        <th class="text-end" style="min-width: 250px;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -48,27 +48,29 @@
                             </td>
                             <td><span class="badge text-bg-info">{{ $requestItem->status }}</span></td>
                             <td>{{ $requestItem->processedBy?->full_name ?? '-' }}</td>
-                            <td class="text-end">
-                                @if($canProcess && $requestItem->status === 'en_attente')
-                                    <form action="{{ route('requests.process', $requestItem) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        @method('PATCH')
-                                        <input type="hidden" name="status" value="acceptee">
-                                        <button type="submit" class="btn btn-sm btn-outline-success">Accepter</button>
-                                    </form>
-                                    <form action="{{ route('requests.process', $requestItem) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        @method('PATCH')
-                                        <input type="hidden" name="status" value="refusee">
-                                        <button type="submit" class="btn btn-sm btn-outline-warning">Refuser</button>
-                                    </form>
-                                @endif
+                            <td>
+                                <div class="d-flex justify-content-end gap-2 flex-nowrap">
+                                    @if($canProcess && $requestItem->status === 'en_attente')
+                                        <form action="{{ route('requests.process', $requestItem) }}" method="POST">
+                                            @csrf
+                                            @method('PATCH')
+                                            <input type="hidden" name="status" value="acceptee">
+                                            <button type="submit" class="btn btn-sm btn-outline-success text-nowrap">Accepter</button>
+                                        </form>
+                                        <form action="{{ route('requests.process', $requestItem) }}" method="POST">
+                                            @csrf
+                                            @method('PATCH')
+                                            <input type="hidden" name="status" value="refusee">
+                                            <button type="submit" class="btn btn-sm btn-outline-warning text-nowrap">Refuser</button>
+                                        </form>
+                                    @endif
 
-                                <form action="{{ route('requests.destroy', $requestItem) }}" method="POST" class="d-inline" onsubmit="return confirm('Supprimer cette demande ?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">Supprimer</button>
-                                </form>
+                                    <form action="{{ route('requests.destroy', $requestItem) }}" method="POST" onsubmit="return confirm('Supprimer cette demande ?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-outline-danger text-nowrap">Supprimer</button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     @empty
