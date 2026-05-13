@@ -29,7 +29,7 @@ class InternshipController extends Controller
         return view('internships.index', compact('internships', 'status'));
     }
 
-    public function myInterns(Request $request): View
+    public function supervisorIndex(Request $request): View
     {
         $status = (string) $request->string('status');
 
@@ -42,6 +42,42 @@ class InternshipController extends Controller
             ->withQueryString();
 
         return view('internships.my-interns', compact('internships', 'status'));
+    }
+
+    public function supervisorShow(Request $request, Internship $internship): View
+    {
+        if ($internship->supervisor_id !== $request->user()->id) {
+            abort(403, 'Acces refuse a ce stage.');
+        }
+
+        $internship->load(['interns.user', 'responsible', 'supervisor', 'tasks.assignedTo']);
+
+        $tasks = $internship->tasks;
+        $totalTasks = $tasks->count();
+        $doneTasks = $tasks->where('status', 'termine')->count();
+        $openTasks = $tasks->whereIn('status', ['a_faire', 'en_cours'])->count();
+        $overdueTasks = $tasks->filter(function ($task) {
+            return $task->due_date !== null
+                && $task->status !== 'termine'
+                && $task->due_date->lt(today());
+        })->count();
+
+        $taskStats = compact('totalTasks', 'doneTasks', 'openTasks', 'overdueTasks');
+
+        return view('internships.supervisor-show', compact('internship', 'tasks', 'taskStats'));
+    }
+
+    public function supervisorValidate(Request $request, Internship $internship): RedirectResponse
+    {
+        if ($internship->supervisor_id !== $request->user()->id) {
+            abort(403, 'Action non autorisee.');
+        }
+
+        if ($internship->status !== 'termine') {
+            $internship->update(['status' => 'termine']);
+        }
+
+        return back()->with('success', 'Fin de stage validee.');
     }
 
     public function create(): View

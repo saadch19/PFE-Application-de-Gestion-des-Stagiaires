@@ -270,13 +270,15 @@
                         @endif
 
                         @if($authUser->hasRole('Encadrant'))
-                            <li class="nav-item"><a class="nav-link {{ request()->routeIs('supervisor.interns') ? 'active' : '' }}" href="{{ route('supervisor.interns') }}">Stagiaires</a></li>
+                            <li class="nav-item"><a class="nav-link {{ request()->routeIs('supervisor.internships*') ? 'active' : '' }}" href="{{ route('supervisor.internships') }}">Stages</a></li>
                         @endif
 
                         @if(! $authUser->hasRole('Responsable de competence'))
                             <li class="nav-item"><a class="nav-link {{ request()->routeIs('tasks.*') ? 'active' : '' }}" href="{{ route('tasks.index') }}">Taches</a></li>
                         @endif
-                        <li class="nav-item"><a class="nav-link {{ request()->routeIs('requests.*') ? 'active' : '' }}" href="{{ route('requests.index') }}">Demandes</a></li>
+                        @if($authUser->hasRole('Administrateur', 'Responsable de competence', 'Stagiaire'))
+                            <li class="nav-item"><a class="nav-link {{ request()->routeIs('requests.*') ? 'active' : '' }}" href="{{ route('requests.index') }}">Demandes</a></li>
+                        @endif
                         <li class="nav-item"><a class="nav-link {{ request()->routeIs('messages.*') ? 'active' : '' }}" href="{{ route('messages.index') }}">Messages</a></li>
                     </ul>
 

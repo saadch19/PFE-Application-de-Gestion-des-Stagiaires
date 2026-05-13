@@ -3,7 +3,15 @@
 @section('title', 'Detail stagiaire')
 
 @section('content')
-@php $canViewInternTasks = ! auth()->user()->hasRole('Responsable de competence'); @endphp
+@php
+    $canViewInternTasks = ! auth()->user()->hasRole('Responsable de competence');
+    $supervisors = $intern->internships
+        ->pluck('supervisor')
+        ->filter()
+        ->unique('id')
+        ->pluck('full_name')
+        ->values();
+@endphp
 
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 fade-in">
     <div>
@@ -88,6 +96,8 @@
                     <dd class="col-sm-8">{{ $intern->phone ?? '-' }}</dd>
                     <dt class="col-sm-4">Periode</dt>
                     <dd class="col-sm-8">{{ $intern->start_date?->format('d/m/Y') }} - {{ $intern->end_date?->format('d/m/Y') }}</dd>
+                    <dt class="col-sm-4">Encadrant</dt>
+                    <dd class="col-sm-8">{{ $supervisors->isNotEmpty() ? $supervisors->join(', ') : '-' }}</dd>
                     <dt class="col-sm-4">Absences</dt>
                     <dd class="col-sm-8">{{ $intern->absenceCount() }}</dd>
                     <dt class="col-sm-4">Etat</dt>

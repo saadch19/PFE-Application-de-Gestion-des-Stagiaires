@@ -66,9 +66,13 @@ class TaskController extends Controller
             'assigned_to' => ['required', 'exists:users,id'],
             'title' => ['required', 'string', 'max:180'],
             'details' => ['nullable', 'string'],
-            'due_date' => ['nullable', 'date'],
+            'due_date' => ['nullable', 'date_format:d/m/Y'],
             'status' => ['required', Rule::in(['a_faire', 'en_cours', 'termine'])],
         ]);
+
+        if (! empty($validated['due_date'])) {
+            $validated['due_date'] = \Carbon\Carbon::createFromFormat('d/m/Y', $validated['due_date'])->toDateString();
+        }
 
         $this->validateDueDateLimit($validated);
 
@@ -108,9 +112,13 @@ class TaskController extends Controller
             'assigned_to' => ['required', 'exists:users,id'],
             'title' => ['required', 'string', 'max:180'],
             'details' => ['nullable', 'string'],
-            'due_date' => ['nullable', 'date'],
+            'due_date' => ['nullable', 'date_format:d/m/Y'],
             'status' => ['required', Rule::in(['a_faire', 'en_cours', 'termine'])],
         ]);
+
+        if (! empty($validated['due_date'])) {
+            $validated['due_date'] = \Carbon\Carbon::createFromFormat('d/m/Y', $validated['due_date'])->toDateString();
+        }
 
         $this->validateDueDateLimit($validated);
 
@@ -154,36 +162,48 @@ class TaskController extends Controller
 
         if ($internshipId !== null) {
             $internship = Internship::query()
-                ->with('intern')
+                ->with('interns')
                 ->find($internshipId);
 
-            if ($internship?->intern?->user_id !== null && (int) $validated['assigned_to'] !== (int) $internship->intern->user_id) {
+            $allowedAssigneeIds = $internship?->interns
+                ?->pluck('user_id')
+                ->filter()
+                ->map(fn ($id) => (int) $id)
+                ->all() ?? [];
+
+            if (! empty($allowedAssigneeIds) && ! in_array((int) $validated['assigned_to'], $allowedAssigneeIds, true)) {
                 throw ValidationException::withMessages([
                     'assigned_to' => 'Cette tache doit etre assignee au stagiaire lie au stage selectionne.',
                 ]);
             }
 
-            if ($dueDate !== null && $internship?->end_date !== null && $internship->end_date->lt($dueDate)) {
-                throw ValidationException::withMessages([
-                    'due_date' => 'La date limite ne doit pas depasser la date de fin du stage.',
-                ]);
+            if ($dueDate !== null) {
+                $dueDateValue = $dueDate instanceof \Carbon\CarbonInterface
+                    ? $dueDate
+                    : \Carbon\Carbon::parse($dueDate);
+
+                if ($internship?->start_date !== null && $internship->start_date->gt($dueDateValue)) {
+                    throw ValidationException::withMessages([
+                        'due_date' => 'La date limite doit etre apres la date de debut du stage.',
+                    ]);
+                }
+
+                if ($internship?->end_date !== null && $internship->end_date->lt($dueDateValue)) {
+                    throw ValidationException::withMessages([
+                        'due_date' => 'La date limite ne doit pas depasser la date de fin du stage.',
+                    ]);
+                }
+
+                if ($internship?->end_date === null || $internship?->start_date === null) {
+                    throw ValidationException::withMessages([
+                        'due_date' => 'La date limite ne peut pas etre definie sans dates de stage.',
+                    ]);
+                }
             }
 
             return;
         }
 
-        if ($dueDate === null) {
-            return;
-        }
-
-        $assignedUser = User::query()
-            ->with('intern')
-            ->find($validated['assigned_to']);
-
-        if ($assignedUser?->intern?->end_date !== null && $assignedUser->intern->end_date->lt($dueDate)) {
-            throw ValidationException::withMessages([
-                'due_date' => 'La date limite ne doit pas depasser la date de fin du stage du stagiaire.',
-            ]);
-        }
+        return;
     }
 }

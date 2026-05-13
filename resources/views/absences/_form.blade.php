@@ -13,7 +13,7 @@
 
     <div class="col-md-3">
         <label for="date_absence" class="form-label">Date absence</label>
-        <input type="date" class="form-control" id="date_absence" name="date_absence" value="{{ old('date_absence', isset($absence) ? $absence->date_absence?->format('Y-m-d') : '') }}" required>
+        <input type="text" class="form-control js-date" id="date_absence" name="date_absence" value="{{ old('date_absence', isset($absence) ? $absence->date_absence?->format('d/m/Y') : '') }}" placeholder="jj/mm/aaaa" autocomplete="off" required>
     </div>
 
     <div class="col-md-3 d-flex align-items-end">
