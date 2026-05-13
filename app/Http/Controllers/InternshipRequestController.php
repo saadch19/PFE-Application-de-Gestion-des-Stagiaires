@@ -23,6 +23,7 @@ class InternshipRequestController extends Controller
             ->when($user->hasRole('Encadrant'), function ($query) use ($user) {
                 $query->whereHas('intern.internships', fn ($internshipQuery) => $internshipQuery->where('supervisor_id', $user->id));
             })
+            ->orderByRaw("CASE WHEN status = 'en_attente' THEN 0 ELSE 1 END")
             ->latest()
             ->paginate(12);
 

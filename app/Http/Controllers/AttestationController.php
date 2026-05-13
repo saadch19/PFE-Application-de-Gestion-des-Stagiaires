@@ -21,13 +21,13 @@ class AttestationController extends Controller
 
         $intern->load('user');
 
-        $internship = $intern->internships()
-            ->with(['supervisor', 'responsible'])
-            ->latest('end_date')
-            ->first();
+        $internships = $intern->internships()
+            ->with(['supervisor', 'responsible', 'interns'])
+            ->orderByDesc('end_date')
+            ->get();
 
         $generatedAt = now();
 
-        return view('attestations.show', compact('intern', 'internship', 'generatedAt'));
+        return view('attestations.show', compact('intern', 'internships', 'generatedAt'));
     }
 }

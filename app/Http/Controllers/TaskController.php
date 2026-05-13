@@ -20,7 +20,7 @@ class TaskController extends Controller
         $status = (string) $request->string('status');
 
         $tasks = Task::query()
-            ->with(['internship.intern.user', 'assignedBy', 'assignedTo'])
+            ->with(['internship.interns.user', 'assignedBy', 'assignedTo'])
             ->when($user->hasRole('Stagiaire'), fn ($query) => $query->where('assigned_to', $user->id))
             ->when($user->hasRole('Encadrant'), function ($query) use ($user) {
                 $query->whereHas('assignedTo.intern.internships', function ($internshipQuery) use ($user) {

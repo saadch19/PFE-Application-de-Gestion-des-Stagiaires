@@ -64,12 +64,6 @@
                                             <button type="submit" class="btn btn-sm btn-outline-warning text-nowrap">Refuser</button>
                                         </form>
                                     @endif
-
-                                    <form action="{{ route('requests.destroy', $requestItem) }}" method="POST" onsubmit="return confirm('Supprimer cette demande ?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-outline-danger text-nowrap">Supprimer</button>
-                                    </form>
                                 </div>
                             </td>
                         </tr>

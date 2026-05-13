@@ -57,10 +57,6 @@ class DashboardController extends Controller
             ];
         } elseif ($isIntern && $user->intern !== null) {
             $stats = [
-                'active_internships' => Internship::query()
-                    ->where('status', 'en_cours')
-                    ->whereHas('interns', fn ($query) => $query->where('interns.id', $user->intern->id))
-                    ->count(),
                 'pending_requests' => InternshipRequest::query()
                     ->where('intern_id', $user->intern->id)
                     ->where('status', 'en_attente')
@@ -93,7 +89,6 @@ class DashboardController extends Controller
             ];
         } elseif ($isIntern) {
             $statCards = [
-                ['label' => 'Mes stages actifs', 'value' => $stats['active_internships'] ?? 0],
                 ['label' => 'Mes demandes en attente', 'value' => $stats['pending_requests'] ?? 0],
                 ['label' => 'Mes taches ouvertes', 'value' => $stats['my_open_tasks'] ?? 0],
                 ['label' => 'Messages non lus', 'value' => $stats['unread_messages'] ?? 0],

@@ -24,13 +24,15 @@
             a effectue un stage au sein de l'entreprise.
         </p>
 
-        @if($internship)
-            <p>
-                Stage: <strong>{{ $internship->title }}</strong><br>
-                Departement: <strong>{{ $internship->department }}</strong><br>
-                Periode: <strong>{{ $internship->start_date?->format('d/m/Y') }} au {{ $internship->end_date?->format('d/m/Y') }}</strong><br>
-                Encadrant: <strong>{{ $internship->supervisor?->full_name ?? 'Non assigne' }}</strong>
-            </p>
+        @if($internships->isNotEmpty())
+            @foreach($internships as $internship)
+                <p>
+                    Stage: <strong>{{ $internship->title }}@if($internship->interns->count() > 1) (en groupe)@endif</strong><br>
+                    Departement: <strong>{{ $internship->department }}</strong><br>
+                    Periode: <strong>{{ $internship->start_date?->format('d/m/Y') }} au {{ $internship->end_date?->format('d/m/Y') }}</strong><br>
+                    Encadrant: <strong>{{ $internship->supervisor?->full_name ?? 'Non assigne' }}</strong>
+                </p>
+            @endforeach
         @else
             <p><em>Aucun stage associe n'a ete trouve pour ce stagiaire.</em></p>
         @endif

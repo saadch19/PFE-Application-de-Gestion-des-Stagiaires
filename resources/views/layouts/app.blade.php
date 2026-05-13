@@ -181,8 +181,19 @@
                     </ul>
 
                     <div class="d-flex align-items-center gap-3 text-white">
+                        @php
+                            $profileLabel = $authUser->full_name . ' (' . ($authUser->role?->name ?? '-') . ')';
+                            if ($authUser->hasRole('Stagiaire') && $authUser->intern !== null) {
+                                $isActiveIntern = $authUser->intern
+                                    ->internships()
+                                    ->where('status', 'en_cours')
+                                    ->exists();
+                                $profileLabel = $authUser->full_name
+                                    . ' (' . ($authUser->role?->name ?? '-') . '/' . ($isActiveIntern ? 'actif' : 'inactif') . ')';
+                            }
+                        @endphp
                         <a class="btn btn-sm btn-outline-light" href="{{ route('profile.edit') }}">
-                            {{ $authUser->full_name }} ({{ $authUser->role?->name }})
+                            {{ $profileLabel }}
                         </a>
                         <form action="{{ route('logout') }}" method="POST">
                             @csrf
