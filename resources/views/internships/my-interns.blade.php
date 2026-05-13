@@ -1,14 +1,14 @@
 @extends('layouts.app')
 
-@section('title', 'Mes stagiaires')
+@section('title', 'Mes stages')
 
 @section('content')
 <div class="card card-soft fade-in">
     <div class="card-body">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
             <div>
-                <h1 class="h4 mb-1">Mes stagiaires</h1>
-                <p class="text-muted mb-0">Stagiaires affectes a vous avec leurs projets et periodes de stage.</p>
+                <h1 class="h4 mb-1">Mes stages</h1>
+                <p class="text-muted mb-0">Stages affectes a vous avec leurs stagiaires et periodes.</p>
             </div>
         </div>
 
@@ -30,12 +30,13 @@
             <table class="table table-hover align-middle">
                 <thead>
                     <tr>
-                        <th>Stagiaire</th>
+                        <th>Stagiaires</th>
                         <th>Projet</th>
                         <th>Departement</th>
                         <th>Date debut</th>
                         <th>Date fin</th>
                         <th>Statut</th>
+                        <th class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -62,6 +63,16 @@
                                 <span class="badge text-bg-{{ $internship->status === 'termine' ? 'secondary' : ($internship->status === 'en_cours' ? 'success' : 'info') }}">
                                     {{ str_replace('_', ' ', $internship->status) }}
                                 </span>
+                            </td>
+                            <td class="text-end">
+                                <a href="{{ route('supervisor.internships.show', $internship) }}" class="btn btn-sm btn-outline-primary">Details</a>
+                                @if($internship->status !== 'termine')
+                                    <form action="{{ route('supervisor.internships.validate', $internship) }}" method="POST" class="d-inline" onsubmit="return confirm('Valider la fin de ce stage ?')">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button class="btn btn-sm btn-outline-success" type="submit">Valider fin</button>
+                                    </form>
+                                @endif
                             </td>
                         </tr>
                     @empty
