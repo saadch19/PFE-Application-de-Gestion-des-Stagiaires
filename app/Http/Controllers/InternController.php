@@ -42,6 +42,33 @@ class InternController extends Controller
         return view('interns.index', compact('interns', 'search', 'showArchived'));
     }
 
+    public function supervisorIndex(Request $request): View
+    {
+        $search = (string) $request->string('search');
+        $showArchived = false;
+        $highlightInternId = $request->integer('highlight');
+        $completedCutoff = today()->subDay()->toDateString();
+
+        $interns = Intern::query()
+            ->with('user')
+            ->where('is_archived', false)
+            ->whereHas('internships', fn ($query) => $query->where('supervisor_id', $request->user()->id))
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($subQuery) use ($search) {
+                    $subQuery->where('cin', 'like', "%{$search}%")
+                        ->orWhere('school', 'like', "%{$search}%")
+                        ->orWhere('specialty', 'like', "%{$search}%")
+                        ->orWhereHas('user', fn ($userQuery) => $userQuery->where('full_name', 'like', "%{$search}%"));
+                });
+            })
+            ->orderByRaw('CASE WHEN end_date < ? THEN 1 ELSE 0 END', [$completedCutoff])
+            ->orderByDesc('start_date')
+            ->paginate(12)
+            ->withQueryString();
+
+        return view('interns.index', compact('interns', 'search', 'showArchived', 'highlightInternId'));
+    }
+
     public function create(): View
     {
         return view('interns.create');
@@ -62,6 +89,19 @@ class InternController extends Controller
         $tasks = $intern->evaluationTasks();
 
         return view('interns.show', compact('intern', 'score', 'alerts', 'tasks'));
+    }
+
+    public function supervisorShow(Request $request, Intern $intern): View
+    {
+        $isAssignedToSupervisor = $intern->internships()
+            ->where('supervisor_id', $request->user()->id)
+            ->exists();
+
+        if (! $isAssignedToSupervisor) {
+            abort(403, 'Acces refuse a ce stagiaire.');
+        }
+
+        return $this->show($intern);
     }
 
     public function store(Request $request): RedirectResponse

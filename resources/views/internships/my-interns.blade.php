@@ -30,26 +30,16 @@
             <table class="table table-hover align-middle">
                 <thead>
                     <tr>
-                        <th>Stagiaires</th>
-                        <th>Projet</th>
+                        <th>Titre du stage</th>
                         <th>Departement</th>
-                        <th>Date debut</th>
-                        <th>Date fin</th>
+                        <th>Periode</th>
                         <th>Statut</th>
-                        <th class="text-end">Actions</th>
+                        <th>Stagiaires</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($internships as $internship)
                         <tr>
-                            <td>
-                                @forelse($internship->interns as $intern)
-                                    <div class="fw-semibold">{{ $intern->user?->full_name ?? 'Stagiaire non lie' }}</div>
-                                    <small class="text-muted">{{ $intern->school }} - {{ $intern->specialty }}</small>
-                                @empty
-                                    <div class="text-muted">Aucun stagiaire lie</div>
-                                @endforelse
-                            </td>
                             <td>
                                 <div>{{ $internship->title }}</div>
                                 @if($internship->description)
@@ -57,26 +47,27 @@
                                 @endif
                             </td>
                             <td>{{ $internship->department }}</td>
-                            <td>{{ $internship->start_date?->format('d/m/Y') ?? '-' }}</td>
-                            <td>{{ $internship->end_date?->format('d/m/Y') ?? '-' }}</td>
+                            <td>{{ $internship->start_date?->format('d/m/Y') ?? '-' }} - {{ $internship->end_date?->format('d/m/Y') ?? '-' }}</td>
                             <td>
                                 <span class="badge text-bg-{{ $internship->status === 'termine' ? 'secondary' : ($internship->status === 'en_cours' ? 'success' : 'info') }}">
                                     {{ str_replace('_', ' ', $internship->status) }}
                                 </span>
                             </td>
-                            <td class="text-end">
-                                <a href="{{ route('supervisor.internships.show', $internship) }}" class="btn btn-sm btn-outline-primary">Details</a>
-                                @if($internship->status !== 'termine')
-                                    <form action="{{ route('supervisor.internships.validate', $internship) }}" method="POST" class="d-inline" onsubmit="return confirm('Valider la fin de ce stage ?')">
-                                        @csrf
-                                        @method('PATCH')
-                                        <button class="btn btn-sm btn-outline-success" type="submit">Valider fin</button>
-                                    </form>
-                                @endif
+                            <td>
+                                @forelse($internship->interns as $intern)
+                                    <a
+                                        href="{{ route('supervisor.interns', ['highlight' => $intern->id]) }}"
+                                        class="btn btn-sm btn-outline-success me-1 mb-1"
+                                    >
+                                        {{ $intern->user?->full_name ?? $intern->cin }}
+                                    </a>
+                                @empty
+                                    <div class="text-muted">Aucun stagiaire lie</div>
+                                @endforelse
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="text-center text-muted">Aucun stagiaire ne vous est affecte pour le moment.</td></tr>
+                        <tr><td colspan="5" class="text-center text-muted">Aucun stage ne vous est affecte pour le moment.</td></tr>
                     @endforelse
                 </tbody>
             </table>

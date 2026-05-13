@@ -270,7 +270,8 @@
                         @endif
 
                         @if($authUser->hasRole('Encadrant'))
-                            <li class="nav-item"><a class="nav-link {{ request()->routeIs('supervisor.internships*') ? 'active' : '' }}" href="{{ route('supervisor.internships') }}">Stages</a></li>
+                            <li class="nav-item"><a class="nav-link {{ request()->routeIs('supervisor.interns', 'supervisor.interns.show') ? 'active' : '' }}" href="{{ route('supervisor.interns') }}">Stagiaires</a></li>
+                            <li class="nav-item"><a class="nav-link {{ request()->routeIs('supervisor.internships', 'supervisor.internships.show') ? 'active' : '' }}" href="{{ route('supervisor.internships') }}">Stages</a></li>
                         @endif
 
                         @if(! $authUser->hasRole('Responsable de competence'))

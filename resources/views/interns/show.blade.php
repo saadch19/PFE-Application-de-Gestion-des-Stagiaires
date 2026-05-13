@@ -5,6 +5,7 @@
 @section('content')
 @php
     $canViewInternTasks = ! auth()->user()->hasRole('Responsable de competence');
+    $isSupervisor = auth()->user()->hasRole('Encadrant');
     $supervisors = $intern->internships
         ->pluck('supervisor')
         ->filter()
@@ -19,8 +20,10 @@
         <p class="text-muted mb-0">{{ $intern->school }} - {{ $intern->specialty }}</p>
     </div>
     <div class="d-flex gap-2">
-        <a href="{{ route('interns.index') }}" class="btn btn-outline-secondary btn-sm">Retour</a>
-        <a href="{{ route('interns.edit', $intern) }}" class="btn btn-outline-primary btn-sm">Modifier</a>
+        <a href="{{ $isSupervisor ? route('supervisor.interns') : route('interns.index') }}" class="btn btn-outline-secondary btn-sm">Retour</a>
+        @unless($isSupervisor)
+            <a href="{{ route('interns.edit', $intern) }}" class="btn btn-outline-primary btn-sm">Modifier</a>
+        @endunless
     </div>
 </div>
 
