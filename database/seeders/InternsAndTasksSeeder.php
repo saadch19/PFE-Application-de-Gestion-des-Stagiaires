@@ -96,9 +96,8 @@ class InternsAndTasksSeeder extends Seeder
 
             // Create internship for each intern
             $internship = Internship::query()->updateOrCreate(
-                ['intern_id' => $intern->id],
+                ['title' => 'Stage en ' . $data['specialty']],
                 [
-                    'title' => 'Stage en ' . $data['specialty'],
                     'description' => 'Stage pratique en ' . $data['specialty'] . ' au sein de l\'entreprise.',
                     'department' => 'Informatique',
                     'start_date' => $data['start_date'],
@@ -108,6 +107,8 @@ class InternsAndTasksSeeder extends Seeder
                     'responsible_id' => $responsable->id,
                 ]
             );
+
+            $internship->interns()->syncWithoutDetaching([$intern->id]);
 
             // Create different tasks for each intern
             $tasksData = [

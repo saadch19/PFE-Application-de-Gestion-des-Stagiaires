@@ -9,13 +9,24 @@
         <select class="form-select" id="internship_id" name="internship_id">
             <option value="">Aucun</option>
             @foreach($internships as $internship)
+                @php
+                    $internLabels = $internship->interns
+                        ->map(fn ($intern) => $intern->user?->full_name ?? $intern->cin)
+                        ->join(', ');
+                    $internUserIds = $internship->interns
+                        ->map(fn ($intern) => $intern->user_id)
+                        ->filter()
+                        ->unique()
+                        ->values()
+                        ->all();
+                @endphp
                 <option
                     value="{{ $internship->id }}"
                     data-end-date="{{ $internship->end_date?->format('Y-m-d') }}"
-                    data-user-id="{{ $internship->intern?->user_id }}"
+                    data-user-ids="{{ implode(',', $internUserIds) }}"
                     @selected((string) old('internship_id', $task->internship_id ?? '') === (string) $internship->id)
                 >
-                    {{ $internship->title }} - {{ $internship->intern->user?->full_name ?? $internship->intern->cin }}
+                    {{ $internship->title }}{{ $internLabels ? ' - ' . $internLabels : '' }}
                 </option>
             @endforeach
         </select>
@@ -70,10 +81,13 @@
             const internshipEndDate = selectedInternship.data('end-date');
             const assigneeEndDate = selectedAssignee.data('end-date');
             const maxDate = internshipEndDate || assigneeEndDate || '';
-            const internshipUserId = selectedInternship.data('user-id');
+            const internshipUserIds = String(selectedInternship.data('user-ids') || '')
+                .split(',')
+                .map(value => value.trim())
+                .filter(Boolean);
 
-            if (internshipUserId) {
-                $assignee.val(String(internshipUserId));
+            if (internshipUserIds.length === 1) {
+                $assignee.val(String(internshipUserIds[0]));
             }
 
             $dueDate.attr('max', maxDate);

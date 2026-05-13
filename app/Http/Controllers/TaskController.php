@@ -40,7 +40,7 @@ class TaskController extends Controller
         $user = auth()->user();
 
         $internships = Internship::query()
-            ->with('intern.user')
+            ->with('interns.user')
             ->whereIn('status', ['planifie', 'en_cours'])
             ->when($user->hasRole('Encadrant'), fn ($query) => $query->where('supervisor_id', $user->id))
             ->orderBy('title')
@@ -82,7 +82,7 @@ class TaskController extends Controller
         $user = auth()->user();
 
         $internships = Internship::query()
-            ->with('intern.user')
+            ->with('interns.user')
             ->whereIn('status', ['planifie', 'en_cours'])
             ->when($user->hasRole('Encadrant'), fn ($query) => $query->where('supervisor_id', $user->id))
             ->orderBy('title')

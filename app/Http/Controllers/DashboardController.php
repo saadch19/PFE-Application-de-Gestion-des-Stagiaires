@@ -23,10 +23,13 @@ class DashboardController extends Controller
         $managedInternIds = collect();
 
         if ($isManager) {
-            $managedInternIds = Internship::query()
-                ->when($user->hasRole('Responsable de competence'), fn ($query) => $query->orWhere('responsible_id', $user->id))
-                ->when($user->hasRole('Encadrant'), fn ($query) => $query->orWhere('supervisor_id', $user->id))
-                ->pluck('intern_id')
+            $managedInternIds = Intern::query()
+                ->whereHas('internships', function ($query) use ($user) {
+                    $query
+                        ->when($user->hasRole('Responsable de competence'), fn ($subQuery) => $subQuery->orWhere('responsible_id', $user->id))
+                        ->when($user->hasRole('Encadrant'), fn ($subQuery) => $subQuery->orWhere('supervisor_id', $user->id));
+                })
+                ->pluck('id')
                 ->unique()
                 ->values();
         }
@@ -44,8 +47,8 @@ class DashboardController extends Controller
             $stats = [
                 'interns' => $managedInternIds->count(),
                 'active_internships' => Internship::query()
-                    ->whereIn('intern_id', $managedInternIds)
                     ->where('status', 'en_cours')
+                    ->whereHas('interns', fn ($query) => $query->whereIn('interns.id', $managedInternIds))
                     ->count(),
                 'pending_requests' => InternshipRequest::query()
                     ->whereIn('intern_id', $managedInternIds)
@@ -55,8 +58,8 @@ class DashboardController extends Controller
         } elseif ($isIntern && $user->intern !== null) {
             $stats = [
                 'active_internships' => Internship::query()
-                    ->where('intern_id', $user->intern->id)
                     ->where('status', 'en_cours')
+                    ->whereHas('interns', fn ($query) => $query->where('interns.id', $user->intern->id))
                     ->count(),
                 'pending_requests' => InternshipRequest::query()
                     ->where('intern_id', $user->intern->id)
@@ -107,7 +110,7 @@ class DashboardController extends Controller
                     if ($managedInternIds->isEmpty()) {
                         $query->whereRaw('1 = 0');
                     } else {
-                        $query->whereHas('internship', fn ($subQuery) => $subQuery->whereIn('intern_id', $managedInternIds));
+                        $query->whereHas('internship.interns', fn ($subQuery) => $subQuery->whereIn('interns.id', $managedInternIds));
                     }
                 })
                 ->latest()

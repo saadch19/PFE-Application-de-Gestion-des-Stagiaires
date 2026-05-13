@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 
@@ -37,9 +38,10 @@ class Intern extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function internships(): HasMany
+    public function internships(): BelongsToMany
     {
-        return $this->hasMany(Internship::class);
+        return $this->belongsToMany(Internship::class, 'internship_intern')
+            ->withTimestamps();
     }
 
     public function absences(): HasMany

@@ -19,3 +19,16 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    $(function () {
+        if ($.fn.select2) {
+            $('.js-interns').select2({
+                placeholder: 'Selectionner des stagiaires',
+                width: '100%'
+            });
+        }
+    });
+</script>
+@endpush

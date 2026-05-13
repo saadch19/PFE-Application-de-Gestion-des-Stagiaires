@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Internship extends Model
@@ -18,7 +19,6 @@ class Internship extends Model
         'start_date',
         'end_date',
         'status',
-        'intern_id',
         'supervisor_id',
         'responsible_id',
     ];
@@ -31,9 +31,10 @@ class Internship extends Model
         ];
     }
 
-    public function intern(): BelongsTo
+    public function interns(): BelongsToMany
     {
-        return $this->belongsTo(Intern::class);
+        return $this->belongsToMany(Intern::class, 'internship_intern')
+            ->withTimestamps();
     }
 
     public function supervisor(): BelongsTo

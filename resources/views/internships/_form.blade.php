@@ -15,15 +15,18 @@
     </div>
 
     <div class="col-md-4">
-        <label for="intern_id" class="form-label">Stagiaire</label>
-        <select class="form-select" id="intern_id" name="intern_id" required>
-            <option value="">Selectionner</option>
+        <label for="intern_ids" class="form-label">Stagiaires</label>
+        @php
+            $selectedInterns = old('intern_ids', isset($internship) ? $internship->interns->pluck('id')->all() : []);
+        @endphp
+        <select class="form-select js-interns" id="intern_ids" name="intern_ids[]" multiple required>
             @foreach($interns as $intern)
-                <option value="{{ $intern->id }}" @selected((string) old('intern_id', $internship->intern_id ?? '') === (string) $intern->id)>
+                <option value="{{ $intern->id }}" @selected(in_array($intern->id, (array) $selectedInterns, true))>
                     {{ $intern->cin }} - {{ $intern->user?->full_name ?? 'Sans compte' }}
                 </option>
             @endforeach
         </select>
+        <small class="text-muted">Vous pouvez selectionner plusieurs stagiaires.</small>
     </div>
 
     <div class="col-md-4">

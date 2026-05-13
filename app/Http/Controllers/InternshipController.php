@@ -20,7 +20,7 @@ class InternshipController extends Controller
         $status = (string) $request->string('status');
 
         $internships = Internship::query()
-            ->with(['intern.user', 'supervisor', 'responsible'])
+            ->with(['interns.user', 'supervisor', 'responsible'])
             ->when($status !== '', fn ($query) => $query->where('status', $status))
             ->latest()
             ->paginate(12)
@@ -34,7 +34,7 @@ class InternshipController extends Controller
         $status = (string) $request->string('status');
 
         $internships = Internship::query()
-            ->with(['intern.user'])
+            ->with(['interns.user'])
             ->where('supervisor_id', $request->user()->id)
             ->when($status !== '', fn ($query) => $query->where('status', $status))
             ->orderBy('start_date')
@@ -72,7 +72,8 @@ class InternshipController extends Controller
             'start_date' => ['required', 'date_format:d/m/Y'],
             'end_date' => ['required', 'date_format:d/m/Y'],
             'status' => ['required', Rule::in(['planifie', 'en_cours', 'termine'])],
-            'intern_id' => ['required', 'exists:interns,id'],
+            'intern_ids' => ['required', 'array', 'min:1'],
+            'intern_ids.*' => ['exists:interns,id'],
             'supervisor_id' => ['nullable', 'exists:users,id'],
             'responsible_id' => ['nullable', 'exists:users,id'],
         ]);
@@ -82,27 +83,31 @@ class InternshipController extends Controller
                 return;
             }
 
-            $internId = $request->input('intern_id');
             $start = $request->input('start_date');
             $end = $request->input('end_date');
+            $internIds = (array) $request->input('intern_ids', []);
 
-            if ($internId && $start && $end) {
-                $intern = Intern::query()->find($internId);
+            if ($start && $end) {
+                $startDate = Carbon::createFromFormat('d/m/Y', $start);
+                $endDate = Carbon::createFromFormat('d/m/Y', $end);
 
-                if ($intern) {
-                    $startDate = Carbon::createFromFormat('d/m/Y', $start);
-                    $endDate = Carbon::createFromFormat('d/m/Y', $end);
+                if ($endDate->lt($startDate)) {
+                    $validator->errors()->add('end_date', 'La date de fin doit etre apres ou egale a la date de debut.');
+                    return;
+                }
 
-                    if ($endDate->lt($startDate)) {
-                        $validator->errors()->add('end_date', 'La date de fin doit etre apres ou egale a la date de debut.');
-                    }
+                if (! empty($internIds)) {
+                    $interns = Intern::query()->whereIn('id', $internIds)->get();
 
-                    $internStart = $intern->start_date?->copy()->startOfDay();
-                    $internEnd = $intern->end_date?->copy()->endOfDay();
+                    foreach ($interns as $intern) {
+                        $internStart = $intern->start_date?->copy()->startOfDay();
+                        $internEnd = $intern->end_date?->copy()->endOfDay();
 
-                    if ($internStart && $internEnd) {
-                        if ($startDate->lt($internStart) || $endDate->gt($internEnd)) {
-                            $validator->errors()->add('start_date', 'La periode du stage doit etre comprise dans la periode du stagiaire.');
+                        if ($internStart && $internEnd) {
+                            if ($startDate->lt($internStart) || $endDate->gt($internEnd)) {
+                                $validator->errors()->add('start_date', 'La periode du stage doit etre comprise dans la periode du stagiaire.');
+                                break;
+                            }
                         }
                     }
                 }
@@ -114,13 +119,19 @@ class InternshipController extends Controller
         $validated['start_date'] = Carbon::createFromFormat('d/m/Y', $validated['start_date'])->toDateString();
         $validated['end_date'] = Carbon::createFromFormat('d/m/Y', $validated['end_date'])->toDateString();
 
-        Internship::query()->create($validated);
+        $internIds = $validated['intern_ids'];
+        unset($validated['intern_ids']);
+
+        $internship = Internship::query()->create($validated);
+        $internship->interns()->sync($internIds);
 
         return redirect()->route('internships.index')->with('success', 'Stage cree avec succes.');
     }
 
     public function edit(Internship $internship): View
     {
+        $internship->load('interns');
+
         $interns = Intern::query()->where('is_archived', false)->orderBy('cin')->get();
 
         $supervisors = User::query()
@@ -147,7 +158,8 @@ class InternshipController extends Controller
             'start_date' => ['required', 'date_format:d/m/Y'],
             'end_date' => ['required', 'date_format:d/m/Y'],
             'status' => ['required', Rule::in(['planifie', 'en_cours', 'termine'])],
-            'intern_id' => ['required', 'exists:interns,id'],
+            'intern_ids' => ['required', 'array', 'min:1'],
+            'intern_ids.*' => ['exists:interns,id'],
             'supervisor_id' => ['nullable', 'exists:users,id'],
             'responsible_id' => ['nullable', 'exists:users,id'],
         ]);
@@ -157,27 +169,31 @@ class InternshipController extends Controller
                 return;
             }
 
-            $internId = $request->input('intern_id');
             $start = $request->input('start_date');
             $end = $request->input('end_date');
+            $internIds = (array) $request->input('intern_ids', []);
 
-            if ($internId && $start && $end) {
-                $intern = Intern::query()->find($internId);
+            if ($start && $end) {
+                $startDate = Carbon::createFromFormat('d/m/Y', $start);
+                $endDate = Carbon::createFromFormat('d/m/Y', $end);
 
-                if ($intern) {
-                    $startDate = Carbon::createFromFormat('d/m/Y', $start);
-                    $endDate = Carbon::createFromFormat('d/m/Y', $end);
+                if ($endDate->lt($startDate)) {
+                    $validator->errors()->add('end_date', 'La date de fin doit etre apres ou egale a la date de debut.');
+                    return;
+                }
 
-                    if ($endDate->lt($startDate)) {
-                        $validator->errors()->add('end_date', 'La date de fin doit etre apres ou egale a la date de debut.');
-                    }
+                if (! empty($internIds)) {
+                    $interns = Intern::query()->whereIn('id', $internIds)->get();
 
-                    $internStart = $intern->start_date?->copy()->startOfDay();
-                    $internEnd = $intern->end_date?->copy()->endOfDay();
+                    foreach ($interns as $intern) {
+                        $internStart = $intern->start_date?->copy()->startOfDay();
+                        $internEnd = $intern->end_date?->copy()->endOfDay();
 
-                    if ($internStart && $internEnd) {
-                        if ($startDate->lt($internStart) || $endDate->gt($internEnd)) {
-                            $validator->errors()->add('start_date', 'La periode du stage doit etre comprise dans la periode du stagiaire.');
+                        if ($internStart && $internEnd) {
+                            if ($startDate->lt($internStart) || $endDate->gt($internEnd)) {
+                                $validator->errors()->add('start_date', 'La periode du stage doit etre comprise dans la periode du stagiaire.');
+                                break;
+                            }
                         }
                     }
                 }
@@ -189,7 +205,11 @@ class InternshipController extends Controller
         $validated['start_date'] = Carbon::createFromFormat('d/m/Y', $validated['start_date'])->toDateString();
         $validated['end_date'] = Carbon::createFromFormat('d/m/Y', $validated['end_date'])->toDateString();
 
+        $internIds = $validated['intern_ids'];
+        unset($validated['intern_ids']);
+
         $internship->update($validated);
+        $internship->interns()->sync($internIds);
 
         return redirect()->route('internships.index')->with('success', 'Stage mis a jour.');
     }

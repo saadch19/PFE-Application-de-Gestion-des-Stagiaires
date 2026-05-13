@@ -42,8 +42,12 @@
                     @forelse($internships as $internship)
                         <tr>
                             <td>
-                                <div class="fw-semibold">{{ $internship->intern->user?->full_name ?? 'Stagiaire non lie' }}</div>
-                                <small class="text-muted">{{ $internship->intern->school }} - {{ $internship->intern->specialty }}</small>
+                                @forelse($internship->interns as $intern)
+                                    <div class="fw-semibold">{{ $intern->user?->full_name ?? 'Stagiaire non lie' }}</div>
+                                    <small class="text-muted">{{ $intern->school }} - {{ $intern->specialty }}</small>
+                                @empty
+                                    <div class="text-muted">Aucun stagiaire lie</div>
+                                @endforelse
                             </td>
                             <td>
                                 <div>{{ $internship->title }}</div>

@@ -43,7 +43,13 @@
                                 <div>{{ $internship->title }}</div>
                                 <small class="text-muted">{{ $internship->department }}</small>
                             </td>
-                            <td>{{ $internship->intern->user?->full_name ?? $internship->intern->cin }}</td>
+                            <td>
+                                @if($internship->interns->isEmpty())
+                                    -
+                                @else
+                                    {{ $internship->interns->map(fn ($intern) => $intern->user?->full_name ?? $intern->cin)->join(', ') }}
+                                @endif
+                            </td>
                             <td>{{ $internship->supervisor?->full_name ?? 'Non assigne' }}</td>
                             <td>{{ $internship->start_date?->format('d/m/Y') }} - {{ $internship->end_date?->format('d/m/Y') }}</td>
                             <td>

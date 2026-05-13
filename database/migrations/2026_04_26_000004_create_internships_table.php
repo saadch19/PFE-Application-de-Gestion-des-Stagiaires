@@ -16,7 +16,7 @@ return new class extends Migration
             $table->date('start_date');
             $table->date('end_date');
             $table->enum('status', ['planifie', 'en_cours', 'termine'])->default('planifie');
-            $table->foreignId('intern_id')->constrained('interns')->cascadeOnDelete();
+            $table->foreignId('intern_id')->nullable()->constrained('interns')->nullOnDelete();
             $table->foreignId('supervisor_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('responsible_id')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
