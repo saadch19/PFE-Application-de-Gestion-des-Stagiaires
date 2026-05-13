@@ -69,6 +69,25 @@
             background: linear-gradient(120deg, #1f4d43, #335f8f);
         }
 
+        .app-navbar > .container,
+        main.container {
+            max-width: min(100% - 2rem, 1500px);
+        }
+
+        .app-navbar .navbar-brand {
+            min-width: 0;
+            white-space: normal;
+        }
+
+        .app-navbar .navbar-brand img {
+            height: clamp(48px, 5vw, 68px) !important;
+            flex: 0 0 auto;
+        }
+
+        .app-navbar .navbar-brand span {
+            line-height: 1.15;
+        }
+
         .app-navbar .nav-link {
             border-radius: 0.5rem;
             color: rgba(255, 255, 255, 0.78);
@@ -93,6 +112,26 @@
             border-radius: 1rem;
             box-shadow: 0 15px 45px rgba(33, 49, 61, 0.08);
             background: var(--surface);
+        }
+
+        .card-soft .card-body {
+            padding: clamp(1rem, 1.8vw, 1.5rem);
+        }
+
+        .table-responsive {
+            border-radius: 0.75rem;
+        }
+
+        .table {
+            min-width: 640px;
+        }
+
+        .btn,
+        .badge,
+        .form-control,
+        .form-select,
+        .select2-container {
+            max-width: 100%;
         }
 
         .stat-card {
@@ -139,12 +178,73 @@
                 transform: translate3d(0.5rem, -1rem, 0) scale(0.96);
             }
         }
+
+        @media (max-width: 1199.98px) {
+            .app-navbar .navbar-collapse {
+                padding-top: 1rem;
+            }
+
+            .app-navbar .nav-link {
+                margin-bottom: 0.25rem;
+            }
+
+            .app-navbar .navbar-collapse > .d-flex {
+                align-items: stretch !important;
+                flex-wrap: wrap;
+                gap: 0.5rem !important;
+                padding-top: 0.5rem;
+            }
+
+            .app-navbar .navbar-collapse > .d-flex .btn,
+            .app-navbar .navbar-collapse > .d-flex form,
+            .app-navbar .navbar-collapse > .d-flex button {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            body {
+                background-attachment: scroll;
+            }
+
+            .app-navbar > .container,
+            main.container {
+                max-width: calc(100% - 1rem);
+            }
+
+            main.container {
+                padding-top: 1rem !important;
+                padding-bottom: 1rem !important;
+            }
+
+            .app-navbar .navbar-brand {
+                max-width: calc(100% - 4rem);
+                font-size: 0.95rem;
+            }
+
+            .card-soft {
+                border-radius: 0.75rem;
+            }
+
+            .display-5 {
+                font-size: 2rem;
+            }
+
+            .display-6 {
+                font-size: 1.75rem;
+            }
+
+            .table {
+                min-width: 560px;
+                font-size: 0.9rem;
+            }
+        }
     </style>
 </head>
 <body>
     @auth
         @php $authUser = auth()->user(); @endphp
-        <nav class="navbar navbar-expand-lg navbar-dark app-navbar shadow-sm">
+        <nav class="navbar navbar-expand-xl navbar-dark app-navbar shadow-sm">
             <div class="container">
                 <a class="navbar-brand fw-semibold d-flex align-items-center" href="{{ route('dashboard') }}">
                     <img src="{{ asset('images/ALTEN-Logo.wine.png') }}" alt="Alten Logo" style="height: 68px; margin-right: 15px;">
