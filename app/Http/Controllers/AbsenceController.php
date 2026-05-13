@@ -34,10 +34,12 @@ class AbsenceController extends Controller
     {
         $validated = $request->validate([
             'intern_id' => ['required', 'exists:interns,id'],
-            'date_absence' => ['required', 'date'],
+            'date_absence' => ['required', 'date_format:d/m/Y'],
             'reason' => ['required', 'string', 'max:255'],
             'justified' => ['nullable', 'boolean'],
         ]);
+
+        $validated['date_absence'] = \Carbon\Carbon::createFromFormat('d/m/Y', $validated['date_absence'])->toDateString();
 
         Absence::query()->create($validated + [
             'justified' => $request->boolean('justified'),
@@ -61,10 +63,12 @@ class AbsenceController extends Controller
     {
         $validated = $request->validate([
             'intern_id' => ['required', 'exists:interns,id'],
-            'date_absence' => ['required', 'date'],
+            'date_absence' => ['required', 'date_format:d/m/Y'],
             'reason' => ['required', 'string', 'max:255'],
             'justified' => ['nullable', 'boolean'],
         ]);
+
+        $validated['date_absence'] = \Carbon\Carbon::createFromFormat('d/m/Y', $validated['date_absence'])->toDateString();
 
         $absence->update($validated + ['justified' => $request->boolean('justified')]);
 

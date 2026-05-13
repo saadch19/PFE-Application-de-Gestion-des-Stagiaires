@@ -22,6 +22,7 @@
                 @endphp
                 <option
                     value="{{ $internship->id }}"
+                    data-start-date="{{ $internship->start_date?->format('Y-m-d') }}"
                     data-end-date="{{ $internship->end_date?->format('Y-m-d') }}"
                     data-user-ids="{{ implode(',', $internUserIds) }}"
                     @selected((string) old('internship_id', $task->internship_id ?? '') === (string) $internship->id)
@@ -50,7 +51,7 @@
 
     <div class="col-md-3">
         <label for="due_date" class="form-label">Date limite</label>
-        <input type="date" class="form-control" id="due_date" name="due_date" value="{{ old('due_date', isset($task) ? $task->due_date?->format('Y-m-d') : '') }}">
+        <input type="text" class="form-control js-date" id="due_date" name="due_date" value="{{ old('due_date', isset($task) ? $task->due_date?->format('d/m/Y') : '') }}" placeholder="jj/mm/aaaa" autocomplete="off">
     </div>
 
     <div class="col-md-3">
@@ -75,12 +76,32 @@
         const $assignee = $('#assigned_to');
         const $dueDate = $('#due_date');
 
+        function getPicker() {
+            if (! $dueDate[0]) {
+                return null;
+            }
+
+            if ($dueDate[0]._flatpickr) {
+                return $dueDate[0]._flatpickr;
+            }
+
+            if (window.flatpickr) {
+                return flatpickr($dueDate[0], {
+                    dateFormat: 'd/m/Y',
+                    allowInput: true,
+                    locale: 'fr'
+                });
+            }
+
+            return null;
+        }
+
         function applyDueDateLimit() {
             const selectedInternship = $internship.find(':selected');
-            const selectedAssignee = $assignee.find(':selected');
+            const internshipStartDate = selectedInternship.data('start-date');
             const internshipEndDate = selectedInternship.data('end-date');
-            const assigneeEndDate = selectedAssignee.data('end-date');
-            const maxDate = internshipEndDate || assigneeEndDate || '';
+            const internshipId = String($internship.val() || '');
+            const hasInternship = internshipId !== '';
             const internshipUserIds = String(selectedInternship.data('user-ids') || '')
                 .split(',')
                 .map(value => value.trim())
@@ -90,10 +111,28 @@
                 $assignee.val(String(internshipUserIds[0]));
             }
 
-            $dueDate.attr('max', maxDate);
+            const picker = getPicker();
 
-            if (maxDate && $dueDate.val() && $dueDate.val() > maxDate) {
-                $dueDate.val(maxDate);
+            if (picker) {
+                const minDate = hasInternship && internshipStartDate
+                    ? flatpickr.parseDate(internshipStartDate, 'Y-m-d')
+                    : null;
+                const maxDate = hasInternship && internshipEndDate
+                    ? flatpickr.parseDate(internshipEndDate, 'Y-m-d')
+                    : null;
+
+                picker.set('minDate', minDate);
+                picker.set('maxDate', maxDate);
+
+                if (picker.selectedDates.length > 0) {
+                    const selected = picker.selectedDates[0];
+
+                    if (minDate && selected < minDate) {
+                        picker.setDate(minDate, true);
+                    } else if (maxDate && selected > maxDate) {
+                        picker.setDate(maxDate, true);
+                    }
+                }
             }
         }
 
