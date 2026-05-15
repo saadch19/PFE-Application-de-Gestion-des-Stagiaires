@@ -50,6 +50,8 @@
                     @forelse($interns as $intern)
                         @php
                             $isCompleted = $intern->end_date !== null && $intern->end_date->lt(today()->subDay());
+                            $hasAssignedInternship = $intern->internships
+                                ->contains(fn ($internship) => $internship->supervisor_id !== null);
                             $showHighlight = (int) $highlightInternId === (int) $intern->id;
                         @endphp
                         <tr @class(['table-success' => $showHighlight])>
@@ -61,8 +63,8 @@
                             </td>
                             <td>{{ $intern->start_date?->format('d/m/Y') }} - {{ $intern->end_date?->format('d/m/Y') }}</td>
                             <td>
-                                <span class="badge {{ $intern->is_archived ? 'text-bg-secondary' : ($isCompleted ? 'text-bg-warning' : 'text-bg-success') }}">
-                                    {{ $intern->is_archived ? 'Archive' : ($isCompleted ? 'Termine' : 'Actif') }}
+                                <span class="badge {{ $intern->is_archived ? 'text-bg-secondary' : ($isCompleted ? 'text-bg-warning' : ($hasAssignedInternship ? 'text-bg-success' : 'text-bg-info')) }}">
+                                    {{ $intern->is_archived ? 'Archive' : ($isCompleted ? 'Termine' : ($hasAssignedInternship ? 'Actif' : 'En attente')) }}
                                 </span>
                             </td>
                             <td class="text-end">
@@ -77,7 +79,7 @@
                                             @method('PATCH')
                                             <button class="btn btn-sm btn-outline-success" type="submit">Restaurer</button>
                                         </form>
-                                    @elseif($isCompleted)
+                                    @else
                                         <form action="{{ route('interns.archive', $intern) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('PATCH')
@@ -86,12 +88,6 @@
                                     @endif
 
                                     <a href="{{ route('attestations.show', $intern) }}" class="btn btn-sm btn-outline-info">Attestation</a>
-
-                                    <form action="{{ route('interns.destroy', $intern) }}" method="POST" class="d-inline" onsubmit="return confirm('Supprimer ce stagiaire ?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button class="btn btn-sm btn-outline-danger" type="submit">Supprimer</button>
-                                    </form>
                                 @endunless
                             </td>
                         </tr>
