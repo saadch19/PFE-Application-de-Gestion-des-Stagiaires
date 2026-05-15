@@ -52,6 +52,7 @@ Route::middleware('auth')->group(function (): void {
         Route::get('/mes-stagiaires/{intern}', [InternController::class, 'supervisorShow'])->name('supervisor.interns.show');
         Route::get('/mes-stages', [InternshipController::class, 'supervisorIndex'])->name('supervisor.internships');
         Route::get('/mes-stages/{internship}', [InternshipController::class, 'supervisorShow'])->name('supervisor.internships.show');
+        Route::patch('/mes-stages/{internship}/valider-fin', [InternshipController::class, 'supervisorValidate'])->name('supervisor.internships.validate');
     });
 
     Route::middleware('role:Administrateur,Encadrant,Stagiaire')->group(function (): void {

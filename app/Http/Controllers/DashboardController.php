@@ -8,10 +8,14 @@ use App\Models\InternshipRequest;
 use App\Models\Message;
 use App\Models\Task;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
+    private const RECENT_LIMIT = 3;
+
     public function index(): View
     {
         $user = auth()->user();
@@ -25,9 +29,7 @@ class DashboardController extends Controller
         if ($isManager) {
             $managedInternIds = Intern::query()
                 ->whereHas('internships', function ($query) use ($user) {
-                    $query
-                        ->when($user->hasRole('Responsable de competence'), fn ($subQuery) => $subQuery->orWhere('responsible_id', $user->id))
-                        ->when($user->hasRole('Encadrant'), fn ($subQuery) => $subQuery->orWhere('supervisor_id', $user->id));
+                    $this->scopeManagedInternships($query, $user);
                 })
                 ->pluck('id')
                 ->unique()
@@ -101,15 +103,19 @@ class DashboardController extends Controller
             $latestTasks = Task::query()
                 ->with(['assignedBy', 'assignedTo'])
                 ->when($isIntern, fn ($query) => $query->where('assigned_to', $user->id))
-                ->when($isManager, function ($query) use ($managedInternIds) {
+                ->when($isManager, function ($query) use ($managedInternIds, $user) {
                     if ($managedInternIds->isEmpty()) {
                         $query->whereRaw('1 = 0');
                     } else {
-                        $query->whereHas('internship.interns', fn ($subQuery) => $subQuery->whereIn('interns.id', $managedInternIds));
+                        $query
+                            ->whereHas('internship.interns', fn ($subQuery) => $subQuery->whereIn('interns.id', $managedInternIds))
+                            ->whereHas('internship', function ($subQuery) use ($user) {
+                                $this->scopeManagedInternships($subQuery, $user);
+                            });
                     }
                 })
                 ->latest()
-                ->take(5)
+                ->take(self::RECENT_LIMIT)
                 ->get();
         }
 
@@ -125,43 +131,90 @@ class DashboardController extends Controller
                 }
             })
             ->latest()
-            ->take(5)
+            ->take(self::RECENT_LIMIT)
             ->get();
 
-        $evaluatedInterns = collect();
+        $allEvaluatedInterns = collect();
+        $alertEvaluatedInterns = collect();
 
         if ($isAdmin) {
-            $evaluatedInterns = Intern::query()
+            $allEvaluatedInterns = Intern::query()
                 ->with(['user', 'absences', 'internships.tasks'])
                 ->where('is_archived', false)
                 ->latest()
-                ->take(5)
                 ->get();
+            $alertEvaluatedInterns = $allEvaluatedInterns;
         } elseif ($isManager) {
-            $evaluatedInterns = Intern::query()
+            $allEvaluatedInterns = Intern::query()
                 ->with(['user', 'absences', 'internships.tasks'])
                 ->where('is_archived', false)
                 ->when($managedInternIds->isEmpty(), fn ($query) => $query->whereRaw('1 = 0'))
                 ->when($managedInternIds->isNotEmpty(), fn ($query) => $query->whereIn('id', $managedInternIds))
                 ->latest()
-                ->take(5)
+                ->get();
+
+            $alertEvaluatedInterns = Intern::query()
+                ->with([
+                    'user',
+                    'absences',
+                    'internships' => function ($query) use ($user) {
+                        $this->scopeManagedInternships($query, $user);
+                    },
+                    'internships.tasks',
+                ])
+                ->where('is_archived', false)
+                ->when($managedInternIds->isEmpty(), fn ($query) => $query->whereRaw('1 = 0'))
+                ->when($managedInternIds->isNotEmpty(), fn ($query) => $query->whereIn('id', $managedInternIds))
+                ->latest()
                 ->get();
         } elseif ($isIntern && $user->intern !== null) {
-            $evaluatedInterns = collect([
+            $allEvaluatedInterns = collect([
                 $user->intern->load(['user', 'absences', 'internships.tasks']),
             ]);
+            $alertEvaluatedInterns = $allEvaluatedInterns;
         }
 
-        $smartAlerts = $evaluatedInterns
+        $sortedInternsByScore = $allEvaluatedInterns
+            ->sortByDesc(fn (Intern $intern): int => $intern->performanceScore()['score'])
+            ->values();
+
+        $scoresPage = max(1, (int) request()->query('scores_page', 1));
+
+        $evaluatedInterns = new LengthAwarePaginator(
+            $sortedInternsByScore->forPage($scoresPage, self::RECENT_LIMIT)->values(),
+            $sortedInternsByScore->count(),
+            self::RECENT_LIMIT,
+            $scoresPage,
+            [
+                'path' => request()->url(),
+                'pageName' => 'scores_page',
+                'query' => request()->except('scores_page'),
+            ]
+        );
+
+        $smartAlerts = $alertEvaluatedInterns
             ->flatMap(fn (Intern $intern) => collect($intern->smartAlerts())
                 ->when(! $canViewTasks, fn ($alerts) => $alerts->reject(fn (array $alert): bool => $alert['type'] === 'task'))
                 ->map(fn (array $alert) => [
                     'intern' => $intern,
                     'alert' => $alert,
                 ]))
-            ->take(8)
+            ->take(self::RECENT_LIMIT)
             ->values();
 
         return view('dashboard.index', compact('stats', 'statCards', 'latestTasks', 'latestRequests', 'evaluatedInterns', 'smartAlerts', 'canViewTasks'));
+    }
+
+    private function scopeManagedInternships($query, User $user): void
+    {
+        $query->where(function (Builder $subQuery) use ($user): void {
+            if ($user->hasRole('Responsable de competence')) {
+                $subQuery->orWhere('responsible_id', $user->id);
+            }
+
+            if ($user->hasRole('Encadrant')) {
+                $subQuery->orWhere('supervisor_id', $user->id);
+            }
+        });
     }
 }

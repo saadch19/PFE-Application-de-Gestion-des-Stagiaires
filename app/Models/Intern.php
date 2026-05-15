@@ -58,8 +58,13 @@ class Intern extends Model
     {
         $this->loadMissing('internships.tasks');
 
+        if ($this->user_id === null) {
+            return collect();
+        }
+
         return $this->internships
             ->flatMap(fn (Internship $internship) => $internship->tasks)
+            ->filter(fn (Task $task): bool => (int) $task->assigned_to === (int) $this->user_id)
             ->unique('id')
             ->values();
     }

@@ -58,12 +58,14 @@
                             </td>
                             <td class="text-end">
                                 @if($canManage)
-                                    <a href="{{ route('tasks.edit', $task) }}" class="btn btn-sm btn-outline-primary">Modifier</a>
-                                    <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="d-inline" onsubmit="return confirm('Supprimer cette tache ?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button class="btn btn-sm btn-outline-danger" type="submit">Supprimer</button>
-                                    </form>
+                                    <div class="d-inline-flex align-items-center justify-content-end gap-1 flex-nowrap">
+                                        <a href="{{ route('tasks.edit', $task) }}" class="btn btn-sm btn-outline-primary">Modifier</a>
+                                        <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="m-0" onsubmit="return confirm('Supprimer cette tache ?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="btn btn-sm btn-outline-danger text-nowrap" type="submit">Supprimer</button>
+                                        </form>
+                                    </div>
                                 @endif
                             </td>
                         </tr>

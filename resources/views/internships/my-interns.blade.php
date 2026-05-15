@@ -35,6 +35,7 @@
                         <th>Periode</th>
                         <th>Statut</th>
                         <th>Stagiaires</th>
+                        <th class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -65,9 +66,21 @@
                                     <div class="text-muted">Aucun stagiaire lie</div>
                                 @endforelse
                             </td>
+                            <td class="text-end">
+                                <div class="d-inline-flex align-items-center justify-content-end gap-1 flex-nowrap">
+                                <a href="{{ route('supervisor.internships.show', $internship) }}" class="btn btn-sm btn-outline-primary">Consulter</a>
+                                @if($internship->status !== 'termine')
+                                    <form action="{{ route('supervisor.internships.validate', $internship) }}" method="POST" class="m-0" onsubmit="return confirm('Valider la fin de ce stage ?')">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button class="btn btn-sm btn-success text-nowrap" type="submit">Valider fin</button>
+                                    </form>
+                                @endif
+                                </div>
+                            </td>
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="text-center text-muted">Aucun stage ne vous est affecte pour le moment.</td></tr>
+                        <tr><td colspan="6" class="text-center text-muted">Aucun stage ne vous est affecte pour le moment.</td></tr>
                     @endforelse
                 </tbody>
             </table>

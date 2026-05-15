@@ -25,7 +25,7 @@
     </div>
 @endif
 
-@if($evaluatedInterns->isNotEmpty())
+@if($evaluatedInterns->count() > 0)
     <div class="row g-4 mb-4">
         <div class="col-lg-7 fade-in">
             <div class="card card-soft h-100">
@@ -56,6 +56,8 @@
                                         <td class="text-end">
                                             @if(auth()->user()->hasRole('Administrateur', 'Responsable de competence'))
                                                 <a href="{{ route('interns.show', $intern) }}" class="btn btn-sm btn-outline-primary">Voir</a>
+                                            @elseif(auth()->user()->hasRole('Encadrant'))
+                                                <a href="{{ route('supervisor.interns.show', $intern) }}" class="btn btn-sm btn-outline-primary">Voir</a>
                                             @else
                                                 <span class="text-muted">-</span>
                                             @endif
@@ -65,6 +67,27 @@
                             </tbody>
                         </table>
                     </div>
+                    @if($evaluatedInterns->hasPages())
+                        <div class="d-flex justify-content-between align-items-center gap-2 mt-3">
+                            <a
+                                href="{{ $evaluatedInterns->previousPageUrl() ?? '#' }}"
+                                class="btn btn-sm btn-outline-secondary {{ $evaluatedInterns->onFirstPage() ? 'disabled' : '' }}"
+                                @if($evaluatedInterns->onFirstPage()) aria-disabled="true" @endif
+                            >
+                                Precedent
+                            </a>
+                            <span class="text-muted small">
+                                Page {{ $evaluatedInterns->currentPage() }} / {{ $evaluatedInterns->lastPage() }}
+                            </span>
+                            <a
+                                href="{{ $evaluatedInterns->nextPageUrl() ?? '#' }}"
+                                class="btn btn-sm btn-outline-secondary {{ $evaluatedInterns->hasMorePages() ? '' : 'disabled' }}"
+                                @if(! $evaluatedInterns->hasMorePages()) aria-disabled="true" @endif
+                            >
+                                Suivant
+                            </a>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -74,12 +97,13 @@
                 <div class="card-body">
                     <h2 class="h5 mb-3">Alertes intelligentes</h2>
                     @forelse($smartAlerts as $item)
-                        <div class="alert alert-warning py-2 mb-2">
+                        <div class="alert alert-warning alert-dismissible fade show py-2 pe-5 mb-2" role="alert">
                             <div class="fw-semibold">{{ $item['intern']->user?->full_name ?? 'Stagiaire non lie' }}</div>
                             <div>{{ $item['alert']['message'] }}</div>
                             @if($canViewTasks && isset($item['alert']['task']))
                                 <small class="text-muted">Tache : {{ $item['alert']['task']->title }}</small>
                             @endif
+                            <button type="button" class="btn-close py-3" data-bs-dismiss="alert" aria-label="Fermer"></button>
                         </div>
                     @empty
                         <p class="text-muted mb-0">Aucune alerte detectee pour le moment.</p>
@@ -96,27 +120,20 @@
             <div class="card card-soft h-100">
                 <div class="card-body">
                     <h2 class="h5 mb-3">Dernieres taches</h2>
-                    <div class="table-responsive">
-                        <table class="table align-middle">
-                            <thead>
-                                <tr>
-                                    <th>Titre</th>
-                                    <th>Assignee a</th>
-                                    <th>Statut</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($latestTasks as $task)
-                                    <tr>
-                                        <td>{{ $task->title }}</td>
-                                        <td>{{ $task->assignedTo?->full_name }}</td>
-                                        <td><span class="badge text-bg-secondary">{{ $task->status }}</span></td>
-                                    </tr>
-                                @empty
-                                    <tr><td colspan="3" class="text-muted">Aucune tache pour le moment.</td></tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                    <div class="d-grid gap-2">
+                        @forelse($latestTasks as $task)
+                            <div class="border-bottom pb-2">
+                                <div class="d-flex justify-content-between align-items-start gap-3">
+                                    <div class="min-w-0">
+                                        <div class="fw-semibold text-break">{{ $task->title }}</div>
+                                        <small class="text-muted">Assignee a : {{ $task->assignedTo?->full_name ?? '-' }}</small>
+                                    </div>
+                                    <span class="badge text-bg-secondary flex-shrink-0">{{ $task->status }}</span>
+                                </div>
+                            </div>
+                        @empty
+                            <p class="text-muted mb-0">Aucune tache pour le moment.</p>
+                        @endforelse
                     </div>
                 </div>
             </div>
@@ -127,27 +144,20 @@
         <div class="card card-soft h-100">
             <div class="card-body">
                 <h2 class="h5 mb-3">Dernieres demandes</h2>
-                <div class="table-responsive">
-                    <table class="table align-middle">
-                        <thead>
-                            <tr>
-                                <th>Stagiaire</th>
-                                <th>Type</th>
-                                <th>Statut</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($latestRequests as $requestItem)
-                                <tr>
-                                    <td>{{ $requestItem->intern->user?->full_name ?? 'Non lie' }}</td>
-                                    <td>{{ $requestItem->type }}</td>
-                                    <td><span class="badge text-bg-info">{{ $requestItem->status }}</span></td>
-                                </tr>
-                            @empty
-                                <tr><td colspan="3" class="text-muted">Aucune demande recente.</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                <div class="d-grid gap-2">
+                    @forelse($latestRequests as $requestItem)
+                        <div class="border-bottom pb-2">
+                            <div class="d-flex justify-content-between align-items-start gap-3">
+                                <div class="min-w-0">
+                                    <div class="fw-semibold text-break">{{ $requestItem->intern->user?->full_name ?? 'Non lie' }}</div>
+                                    <small class="text-muted">Type : {{ $requestItem->type }}</small>
+                                </div>
+                                <span class="badge text-bg-info flex-shrink-0">{{ $requestItem->status }}</span>
+                            </div>
+                        </div>
+                    @empty
+                        <p class="text-muted mb-0">Aucune demande recente.</p>
+                    @endforelse
                 </div>
             </div>
         </div>

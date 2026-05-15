@@ -8,7 +8,16 @@
         <h1 class="h4 mb-1">Consulter le stage</h1>
         <p class="text-muted mb-0">Informations generales du stage.</p>
     </div>
-    <a href="{{ route('supervisor.internships') }}" class="btn btn-outline-secondary btn-sm">Retour</a>
+    <div class="d-flex flex-wrap gap-2">
+        @if($internship->status !== 'termine')
+            <form action="{{ route('supervisor.internships.validate', $internship) }}" method="POST" onsubmit="return confirm('Valider la fin de ce stage ?')">
+                @csrf
+                @method('PATCH')
+                <button class="btn btn-success btn-sm" type="submit">Valider fin de stage</button>
+            </form>
+        @endif
+        <a href="{{ route('supervisor.internships') }}" class="btn btn-outline-secondary btn-sm">Retour</a>
+    </div>
 </div>
 
 <div class="card card-soft fade-in">

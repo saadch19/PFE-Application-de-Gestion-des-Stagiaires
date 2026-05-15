@@ -73,11 +73,12 @@
             <div class="card-body">
                 <h2 class="h5 mb-3">Alertes intelligentes</h2>
                 @forelse($alerts as $alert)
-                    <div class="alert alert-warning py-2 mb-2">
+                    <div class="alert alert-warning alert-dismissible fade show py-2 pe-5 mb-2" role="alert">
                         <div>{{ $alert['message'] }}</div>
                         @isset($alert['task'])
                             <small class="text-muted">Tache : {{ $alert['task']->title }}</small>
                         @endisset
+                        <button type="button" class="btn-close py-3" data-bs-dismiss="alert" aria-label="Fermer"></button>
                     </div>
                 @empty
                     <p class="text-muted mb-0">Aucune alerte detectee pour ce stagiaire.</p>
