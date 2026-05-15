@@ -79,7 +79,7 @@
                                             @method('PATCH')
                                             <button class="btn btn-sm btn-outline-success" type="submit">Restaurer</button>
                                         </form>
-                                    @else
+                                    @elseif($isCompleted)
                                         <form action="{{ route('interns.archive', $intern) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('PATCH')
