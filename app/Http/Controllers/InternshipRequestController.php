@@ -241,9 +241,15 @@ class InternshipRequestController extends Controller
             return back()->with('error', 'L attestation doit etre generee avant impression.');
         }
 
+        $payload = [
+            'attestation_printed_at' => $requestItem->attestation_printed_at ?? now(),
+        ];
+
         if ($requestItem->workflow_status !== 'attestation_recuperee') {
-            $requestItem->update(['workflow_status' => 'attestation_imprimee']);
+            $payload['workflow_status'] = 'attestation_imprimee';
         }
+
+        $requestItem->update($payload);
 
         return back()->with('success', 'Attestation marquee comme imprimee.');
     }
@@ -260,7 +266,10 @@ class InternshipRequestController extends Controller
             return back()->with('error', 'L attestation doit etre generee avant recuperation.');
         }
 
-        $requestItem->update(['workflow_status' => 'attestation_recuperee']);
+        $requestItem->update([
+            'workflow_status' => 'attestation_recuperee',
+            'attestation_recovered_at' => $requestItem->attestation_recovered_at ?? now(),
+        ]);
 
         return back()->with('success', 'Attestation marquee comme recuperee.');
     }
@@ -278,7 +287,10 @@ class InternshipRequestController extends Controller
         }
 
         DB::transaction(function () use ($requestItem, $user): void {
-            $requestItem->update(['workflow_status' => 'attestation_archivee']);
+            $requestItem->update([
+                'workflow_status' => 'attestation_archivee',
+                'attestation_archived_at' => $requestItem->attestation_archived_at ?? now(),
+            ]);
 
             if ($requestItem->intern?->user_id !== null) {
                 Message::query()->create([

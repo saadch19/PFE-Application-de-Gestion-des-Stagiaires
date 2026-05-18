@@ -34,41 +34,57 @@
                                 @statusBadge($requestItem->workflow_status)
                             </td>
                             <td class="text-end">
-                                <div class="d-inline-flex justify-content-end gap-1 flex-nowrap">
-                                    <a href="{{ route('interns.show', $requestItem->intern) }}" class="btn btn-sm btn-outline-secondary text-nowrap">Voir</a>
+                                <div class="d-inline-flex justify-content-end align-items-center gap-2 flex-nowrap">
                                     @if($requestItem->workflow_status === 'transmise_rh')
-                                        <a href="{{ route('attestations.show', $requestItem->intern) }}" class="btn btn-sm btn-outline-primary text-nowrap">Generer attestation</a>
-                                    @endif
-                                    @if($requestItem->workflow_status === 'transmise_rh')
+                                        <a href="{{ route('attestations.show', $requestItem->intern) }}" class="btn btn-sm btn-primary text-nowrap">Generer attestation</a>
                                         <form action="{{ route('requests.rh-complete', $requestItem) }}" method="POST" class="m-0">
                                             @csrf
                                             @method('PATCH')
                                             <button class="btn btn-sm btn-success text-nowrap" type="submit">Envoyer message</button>
                                         </form>
+                                    @else
+                                        <a href="{{ route('interns.show', $requestItem->intern) }}" class="btn btn-sm btn-outline-secondary text-nowrap">Voir</a>
                                     @endif
-                                    @if(in_array($requestItem->workflow_status, ['attestation_generee', 'attestation_prete', 'attestation_imprimee', 'attestation_recuperee'], true))
-                                        <a href="{{ route('attestations.show', $requestItem->intern) }}" class="btn btn-sm btn-outline-dark text-nowrap">Imprimer</a>
-                                    @endif
-                                    @if(in_array($requestItem->workflow_status, ['attestation_generee', 'attestation_prete'], true))
-                                        <form action="{{ route('requests.rh-printed', $requestItem) }}" method="POST" class="m-0">
-                                            @csrf
-                                            @method('PATCH')
-                                            <button class="btn btn-sm btn-outline-primary text-nowrap" type="submit">Marquer imprimee</button>
-                                        </form>
-                                    @endif
-                                    @if(in_array($requestItem->workflow_status, ['attestation_generee', 'attestation_prete', 'attestation_imprimee'], true))
-                                        <form action="{{ route('requests.rh-recovered', $requestItem) }}" method="POST" class="m-0">
-                                            @csrf
-                                            @method('PATCH')
-                                            <button class="btn btn-sm btn-outline-success text-nowrap" type="submit">Recuperee</button>
-                                        </form>
-                                    @endif
-                                    @if(in_array($requestItem->workflow_status, ['attestation_generee', 'attestation_prete', 'attestation_imprimee', 'attestation_recuperee'], true))
-                                        <form action="{{ route('requests.rh-archive', $requestItem) }}" method="POST" class="m-0" onsubmit="return confirm('Archiver cette attestation ?')">
-                                            @csrf
-                                            @method('PATCH')
-                                            <button class="btn btn-sm btn-outline-warning text-nowrap" type="submit">Archiver</button>
-                                        </form>
+
+                                    @if($requestItem->workflow_status !== 'transmise_rh')
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                Actions
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                @if(in_array($requestItem->workflow_status, ['attestation_generee', 'attestation_prete', 'attestation_imprimee', 'attestation_recuperee'], true))
+                                                    <li><a class="dropdown-item" href="{{ route('attestations.show', $requestItem->intern) }}">Imprimer</a></li>
+                                                @endif
+                                                @if(in_array($requestItem->workflow_status, ['attestation_generee', 'attestation_prete'], true))
+                                                    <li>
+                                                        <form action="{{ route('requests.rh-printed', $requestItem) }}" method="POST" class="m-0">
+                                                            @csrf
+                                                            @method('PATCH')
+                                                            <button class="dropdown-item" type="submit">Marquer imprimee</button>
+                                                        </form>
+                                                    </li>
+                                                @endif
+                                                @if(in_array($requestItem->workflow_status, ['attestation_generee', 'attestation_prete', 'attestation_imprimee'], true))
+                                                    <li>
+                                                        <form action="{{ route('requests.rh-recovered', $requestItem) }}" method="POST" class="m-0">
+                                                            @csrf
+                                                            @method('PATCH')
+                                                            <button class="dropdown-item" type="submit">Recuperee</button>
+                                                        </form>
+                                                    </li>
+                                                @endif
+                                                @if(in_array($requestItem->workflow_status, ['attestation_generee', 'attestation_prete', 'attestation_imprimee', 'attestation_recuperee'], true))
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li>
+                                                        <form action="{{ route('requests.rh-archive', $requestItem) }}" method="POST" class="m-0" onsubmit="return confirm('Archiver cette attestation ?')">
+                                                            @csrf
+                                                            @method('PATCH')
+                                                            <button class="dropdown-item text-warning" type="submit">Archiver</button>
+                                                        </form>
+                                                    </li>
+                                                @endif
+                                            </ul>
+                                        </div>
                                     @endif
                                 </div>
                             </td>

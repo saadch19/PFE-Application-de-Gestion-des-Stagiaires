@@ -30,6 +30,9 @@ class InternshipRequest extends Model
         'sent_to_rh_at',
         'rh_processed_by',
         'rh_processed_at',
+        'attestation_printed_at',
+        'attestation_recovered_at',
+        'attestation_archived_at',
         'absence_generated_at',
     ];
 
@@ -41,6 +44,9 @@ class InternshipRequest extends Model
             'rc_validated_at' => 'datetime',
             'sent_to_rh_at' => 'datetime',
             'rh_processed_at' => 'datetime',
+            'attestation_printed_at' => 'datetime',
+            'attestation_recovered_at' => 'datetime',
+            'attestation_archived_at' => 'datetime',
         ];
     }
 
