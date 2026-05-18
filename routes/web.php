@@ -97,6 +97,8 @@ Route::middleware('auth')->group(function (): void {
         Route::get('/rh/profil', [RhDocumentController::class, 'profile'])->name('rh.profile');
         Route::post('/rh/profil', [RhDocumentController::class, 'updateProfile'])->name('rh.profile.update');
         Route::patch('/requests/{requestItem}/attestation-ready', [InternshipRequestController::class, 'rhComplete'])->name('requests.rh-complete');
+        Route::patch('/requests/{requestItem}/attestation-printed', [InternshipRequestController::class, 'rhMarkPrinted'])->name('requests.rh-printed');
+        Route::patch('/requests/{requestItem}/attestation-recovered', [InternshipRequestController::class, 'rhMarkRecovered'])->name('requests.rh-recovered');
         Route::patch('/requests/{requestItem}/archive-attestation', [InternshipRequestController::class, 'rhArchive'])->name('requests.rh-archive');
     });
 

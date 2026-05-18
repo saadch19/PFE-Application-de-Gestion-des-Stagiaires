@@ -201,7 +201,7 @@ class InternshipRequestController extends Controller
         DB::transaction(function () use ($requestItem, $user): void {
             $requestItem->update([
                 'status' => 'acceptee',
-                'workflow_status' => 'attestation_prete',
+                'workflow_status' => 'attestation_generee',
                 'processed_by' => $user->id,
                 'rh_processed_by' => $user->id,
                 'rh_processed_at' => now(),
@@ -229,6 +229,42 @@ class InternshipRequestController extends Controller
         return back()->with('success', 'Attestation marquee comme prete et message envoye au stagiaire.');
     }
 
+    public function rhMarkPrinted(Request $request, InternshipRequest $requestItem): RedirectResponse
+    {
+        $user = $request->user();
+
+        if (! $user->hasRole('Responsable RH')) {
+            abort(403, 'Action reservee au RH.');
+        }
+
+        if (! in_array($requestItem->workflow_status, ['attestation_generee', 'attestation_prete', 'attestation_imprimee', 'attestation_recuperee'], true)) {
+            return back()->with('error', 'L attestation doit etre generee avant impression.');
+        }
+
+        if ($requestItem->workflow_status !== 'attestation_recuperee') {
+            $requestItem->update(['workflow_status' => 'attestation_imprimee']);
+        }
+
+        return back()->with('success', 'Attestation marquee comme imprimee.');
+    }
+
+    public function rhMarkRecovered(Request $request, InternshipRequest $requestItem): RedirectResponse
+    {
+        $user = $request->user();
+
+        if (! $user->hasRole('Responsable RH')) {
+            abort(403, 'Action reservee au RH.');
+        }
+
+        if (! in_array($requestItem->workflow_status, ['attestation_generee', 'attestation_prete', 'attestation_imprimee'], true)) {
+            return back()->with('error', 'L attestation doit etre generee avant recuperation.');
+        }
+
+        $requestItem->update(['workflow_status' => 'attestation_recuperee']);
+
+        return back()->with('success', 'Attestation marquee comme recuperee.');
+    }
+
     public function rhArchive(Request $request, InternshipRequest $requestItem): RedirectResponse
     {
         $user = $request->user();
@@ -237,7 +273,7 @@ class InternshipRequestController extends Controller
             abort(403, 'Action reservee au RH.');
         }
 
-        if ($requestItem->type !== 'attestation' || $requestItem->rh_processed_at === null) {
+        if ($requestItem->type !== 'attestation' || ! in_array($requestItem->workflow_status, ['attestation_generee', 'attestation_prete', 'attestation_imprimee', 'attestation_recuperee'], true)) {
             return back()->with('error', 'L attestation doit etre generee avant archivage.');
         }
 

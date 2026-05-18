@@ -50,7 +50,7 @@ class DashboardController extends Controller
                     ->count(),
                 'generated_attestations' => InternshipRequest::query()
                     ->where('type', 'attestation')
-                    ->whereNotNull('rh_processed_at')
+                    ->whereIn('workflow_status', ['attestation_generee', 'attestation_prete', 'attestation_imprimee', 'attestation_recuperee', 'attestation_archivee'])
                     ->count(),
                 'pending_requests' => InternshipRequest::query()
                     ->where('status', 'en_attente')

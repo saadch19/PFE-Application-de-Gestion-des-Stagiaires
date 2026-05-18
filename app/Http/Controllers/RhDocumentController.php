@@ -31,7 +31,7 @@ class RhDocumentController extends Controller
         $attestations = InternshipRequest::query()
             ->with(['intern.user', 'intern.internships.supervisor', 'intern.internships.responsible', 'processedBy', 'supervisorValidator', 'rcValidator', 'rhProcessor'])
             ->where('type', 'attestation')
-            ->whereIn('workflow_status', ['transmise_rh', 'attestation_prete'])
+            ->whereIn('workflow_status', ['transmise_rh', 'attestation_generee', 'attestation_prete', 'attestation_imprimee', 'attestation_recuperee'])
             ->orderByRaw("CASE WHEN workflow_status = 'transmise_rh' THEN 0 ELSE 1 END")
             ->latest()
             ->paginate(12);

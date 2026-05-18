@@ -3,6 +3,17 @@
 @section('title', 'Attestations')
 
 @section('content')
+@php
+    $statusLabels = [
+        'transmise_rh' => ['label' => 'En attente', 'class' => 'text-bg-warning'],
+        'attestation_generee' => ['label' => 'Generee', 'class' => 'text-bg-info'],
+        'attestation_prete' => ['label' => 'Generee', 'class' => 'text-bg-info'],
+        'attestation_imprimee' => ['label' => 'Imprimee', 'class' => 'text-bg-primary'],
+        'attestation_recuperee' => ['label' => 'Recuperee', 'class' => 'text-bg-success'],
+        'attestation_archivee' => ['label' => 'Archivee', 'class' => 'text-bg-secondary'],
+    ];
+@endphp
+
 <div class="card card-soft fade-in">
     <div class="card-body">
         <h1 class="h4 mb-3">Attestations</h1>
@@ -27,25 +38,42 @@
                                 <small class="text-muted">{{ $internship?->department ?? '-' }}</small>
                             </td>
                             <td>
-                                <span class="badge {{ $requestItem->workflow_status === 'attestation_prete' ? 'text-bg-success' : 'text-bg-warning' }}">
-                                    {{ $requestItem->workflow_status === 'attestation_prete' ? 'Attestation generee' : 'En attente de generation' }}
+                                @php $status = $statusLabels[$requestItem->workflow_status] ?? ['label' => $requestItem->workflow_status, 'class' => 'text-bg-secondary']; @endphp
+                                <span class="badge {{ $status['class'] }}">
+                                    {{ $status['label'] }}
                                 </span>
                             </td>
                             <td class="text-end">
                                 <div class="d-inline-flex justify-content-end gap-1 flex-nowrap">
                                     <a href="{{ route('interns.show', $requestItem->intern) }}" class="btn btn-sm btn-outline-secondary text-nowrap">Voir</a>
-                                    <a href="{{ route('attestations.show', $requestItem->intern) }}" class="btn btn-sm btn-outline-primary text-nowrap">Generer attestation</a>
-                                    @if($requestItem->workflow_status === 'attestation_prete')
-                                        <a href="{{ route('attestations.show', $requestItem->intern) }}" class="btn btn-sm btn-outline-dark text-nowrap">Imprimer</a>
+                                    @if($requestItem->workflow_status === 'transmise_rh')
+                                        <a href="{{ route('attestations.show', $requestItem->intern) }}" class="btn btn-sm btn-outline-primary text-nowrap">Generer attestation</a>
                                     @endif
-                                    @if($requestItem->workflow_status !== 'attestation_prete')
+                                    @if($requestItem->workflow_status === 'transmise_rh')
                                         <form action="{{ route('requests.rh-complete', $requestItem) }}" method="POST" class="m-0">
                                             @csrf
                                             @method('PATCH')
                                             <button class="btn btn-sm btn-success text-nowrap" type="submit">Envoyer message</button>
                                         </form>
                                     @endif
-                                    @if($requestItem->workflow_status === 'attestation_prete')
+                                    @if(in_array($requestItem->workflow_status, ['attestation_generee', 'attestation_prete', 'attestation_imprimee', 'attestation_recuperee'], true))
+                                        <a href="{{ route('attestations.show', $requestItem->intern) }}" class="btn btn-sm btn-outline-dark text-nowrap">Imprimer</a>
+                                    @endif
+                                    @if(in_array($requestItem->workflow_status, ['attestation_generee', 'attestation_prete'], true))
+                                        <form action="{{ route('requests.rh-printed', $requestItem) }}" method="POST" class="m-0">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button class="btn btn-sm btn-outline-primary text-nowrap" type="submit">Marquer imprimee</button>
+                                        </form>
+                                    @endif
+                                    @if(in_array($requestItem->workflow_status, ['attestation_generee', 'attestation_prete', 'attestation_imprimee'], true))
+                                        <form action="{{ route('requests.rh-recovered', $requestItem) }}" method="POST" class="m-0">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button class="btn btn-sm btn-outline-success text-nowrap" type="submit">Recuperee</button>
+                                        </form>
+                                    @endif
+                                    @if(in_array($requestItem->workflow_status, ['attestation_generee', 'attestation_prete', 'attestation_imprimee', 'attestation_recuperee'], true))
                                         <form action="{{ route('requests.rh-archive', $requestItem) }}" method="POST" class="m-0" onsubmit="return confirm('Archiver cette attestation ?')">
                                             @csrf
                                             @method('PATCH')
