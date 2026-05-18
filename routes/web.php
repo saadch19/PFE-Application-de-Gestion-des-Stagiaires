@@ -89,12 +89,13 @@ Route::middleware('auth')->group(function (): void {
 
     Route::middleware('role:Responsable RH')->group(function (): void {
         Route::redirect('/rh/documents', '/rh/attestations');
-        Route::get('/rh/rapports', [RhDocumentController::class, 'reports'])->name('rh.reports.index');
+        Route::redirect('/rh/rapports', '/rh/attestations')->name('rh.reports.index');
         Route::get('/rh/attestations', [RhDocumentController::class, 'attestations'])->name('rh.attestations.index');
         Route::get('/rh/archives', [RhDocumentController::class, 'archives'])->name('rh.archives.index');
         Route::get('/rh/profil', [RhDocumentController::class, 'profile'])->name('rh.profile');
         Route::post('/rh/profil', [RhDocumentController::class, 'updateProfile'])->name('rh.profile.update');
         Route::patch('/requests/{requestItem}/attestation-ready', [InternshipRequestController::class, 'rhComplete'])->name('requests.rh-complete');
+        Route::patch('/requests/{requestItem}/archive-attestation', [InternshipRequestController::class, 'rhArchive'])->name('requests.rh-archive');
     });
 
     Route::middleware('role:Administrateur,Responsable RH,Responsable de competence,Encadrant,Stagiaire')->group(function (): void {

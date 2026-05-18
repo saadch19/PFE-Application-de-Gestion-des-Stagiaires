@@ -33,13 +33,21 @@
                             </td>
                             <td class="text-end">
                                 <div class="d-inline-flex justify-content-end gap-1 flex-nowrap">
-                                    <a href="{{ route('attestations.show', $requestItem->intern) }}" class="btn btn-sm btn-outline-primary text-nowrap">Previsualiser</a>
-                                    <a href="{{ route('attestations.show', $requestItem->intern) }}" class="btn btn-sm btn-outline-secondary text-nowrap">Imprimer</a>
+                                    <a href="{{ route('interns.show', $requestItem->intern) }}" class="btn btn-sm btn-outline-secondary text-nowrap">Voir</a>
+                                    <a href="{{ route('attestations.show', $requestItem->intern) }}" class="btn btn-sm btn-outline-primary text-nowrap">Generer attestation</a>
+                                    <a href="{{ route('attestations.show', $requestItem->intern) }}" class="btn btn-sm btn-outline-dark text-nowrap">Imprimer</a>
                                     @if($requestItem->workflow_status !== 'attestation_prete')
                                         <form action="{{ route('requests.rh-complete', $requestItem) }}" method="POST" class="m-0">
                                             @csrf
                                             @method('PATCH')
-                                            <button class="btn btn-sm btn-success text-nowrap" type="submit">Envoyer au stagiaire</button>
+                                            <button class="btn btn-sm btn-success text-nowrap" type="submit">Envoyer message</button>
+                                        </form>
+                                    @endif
+                                    @if($requestItem->workflow_status === 'attestation_prete')
+                                        <form action="{{ route('requests.rh-archive', $requestItem) }}" method="POST" class="m-0" onsubmit="return confirm('Archiver cette attestation ?')">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button class="btn btn-sm btn-outline-warning text-nowrap" type="submit">Archiver</button>
                                         </form>
                                     @endif
                                 </div>

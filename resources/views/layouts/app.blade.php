@@ -276,7 +276,6 @@
                         @endif
 
                         @if($authUser->hasRole('Responsable RH'))
-                            <li class="nav-item"><a class="nav-link {{ request()->routeIs('rh.reports.*') ? 'active' : '' }}" href="{{ route('rh.reports.index') }}">Rapports valides</a></li>
                             <li class="nav-item"><a class="nav-link {{ request()->routeIs('rh.attestations.*') ? 'active' : '' }}" href="{{ route('rh.attestations.index') }}">Attestations</a></li>
                             <li class="nav-item"><a class="nav-link {{ request()->routeIs('rh.archives.*') ? 'active' : '' }}" href="{{ route('rh.archives.index') }}">Archives</a></li>
                             <li class="nav-item"><a class="nav-link {{ request()->routeIs('rh.profile') ? 'active' : '' }}" href="{{ route('rh.profile') }}">Profil RH</a></li>

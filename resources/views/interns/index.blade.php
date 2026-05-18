@@ -53,6 +53,15 @@
                             $isCompleted = $intern->end_date !== null && $intern->end_date->lt(today()->subDay());
                             $hasAssignedInternship = $intern->internships
                                 ->contains(fn ($internship) => $internship->supervisor_id !== null);
+                            $attestationRequest = $intern->requests
+                                ->where('type', 'attestation')
+                                ->sortByDesc('created_at')
+                                ->first();
+                            $hasSupervisorValidation = $attestationRequest?->supervisor_validated_at !== null;
+                            $hasRcValidation = $attestationRequest?->rc_validated_at !== null;
+                            $isValidatedForRh = $hasSupervisorValidation || $hasRcValidation;
+                            $canRhEdit = ! $intern->is_archived && ! $isValidatedForRh;
+                            $canShowAttestation = ! $isHr || ($hasSupervisorValidation && $hasRcValidation);
                             $showHighlight = (int) $highlightInternId === (int) $intern->id;
                         @endphp
                         <tr @class(['table-success' => $showHighlight])>
@@ -72,7 +81,9 @@
                                 <a href="{{ $isSupervisor ? route('supervisor.interns.show', $intern) : route('interns.show', $intern) }}" class="btn btn-sm btn-outline-secondary">Voir</a>
 
                                 @unless($isSupervisor)
-                                    <a href="{{ route('interns.edit', $intern) }}" class="btn btn-sm btn-outline-primary">Modifier</a>
+                                    @if(! $isHr || $canRhEdit)
+                                        <a href="{{ route('interns.edit', $intern) }}" class="btn btn-sm btn-outline-primary">Modifier</a>
+                                    @endif
 
                                     @if($intern->is_archived)
                                         <form action="{{ route('interns.restore', $intern) }}" method="POST" class="d-inline">
@@ -88,11 +99,9 @@
                                         </form>
                                     @endif
 
-                                    @if($isHr && $intern->internships->isNotEmpty())
-                                        <a href="{{ route('interns.convention', $intern) }}" class="btn btn-sm btn-outline-success">Convention</a>
+                                    @if($canShowAttestation)
+                                        <a href="{{ route('attestations.show', $intern) }}" class="btn btn-sm btn-outline-info">Attestation</a>
                                     @endif
-
-                                    <a href="{{ route('attestations.show', $intern) }}" class="btn btn-sm btn-outline-info">Attestation</a>
                                 @endunless
                             </td>
                         </tr>

@@ -147,7 +147,7 @@ class InternshipRequestController extends Controller
             'supervisor_validated_at' => now(),
         ]);
 
-        return back()->with('success', 'Stage valide. La demande est transmise au responsable de competence.');
+        return back()->with('success', 'Rapport valide. La demande est transmise au responsable de competence.');
     }
 
     public function rcValidate(Request $request, InternshipRequest $requestItem): RedirectResponse
@@ -216,11 +216,28 @@ class InternshipRequestController extends Controller
         return back()->with('success', 'Attestation marquee comme prete et message envoye au stagiaire.');
     }
 
+    public function rhArchive(Request $request, InternshipRequest $requestItem): RedirectResponse
+    {
+        $user = $request->user();
+
+        if (! $user->hasRole('Responsable RH')) {
+            abort(403, 'Action reservee au RH.');
+        }
+
+        if ($requestItem->type !== 'attestation' || $requestItem->rh_processed_at === null) {
+            return back()->with('error', 'L attestation doit etre generee avant archivage.');
+        }
+
+        $requestItem->update(['workflow_status' => 'attestation_archivee']);
+
+        return back()->with('success', 'Attestation archivee.');
+    }
+
     public function downloadReport(Request $request, InternshipRequest $requestItem): StreamedResponse
     {
         $user = $request->user();
 
-        $canDownload = $user->hasRole('Administrateur', 'Responsable RH', 'Responsable de competence')
+        $canDownload = $user->hasRole('Administrateur', 'Responsable de competence')
             || ($user->hasRole('Encadrant') && $requestItem->intern?->internships()->where('supervisor_id', $user->id)->exists())
             || ($user->hasRole('Stagiaire') && $user->intern !== null && $requestItem->intern_id === $user->intern->id);
 

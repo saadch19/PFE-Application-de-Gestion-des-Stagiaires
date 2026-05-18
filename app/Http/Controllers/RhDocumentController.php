@@ -43,7 +43,7 @@ class RhDocumentController extends Controller
         $attestations = InternshipRequest::query()
             ->with(['intern.user', 'rhProcessor'])
             ->where('type', 'attestation')
-            ->where('workflow_status', 'attestation_prete')
+            ->where('workflow_status', 'attestation_archivee')
             ->latest('rh_processed_at')
             ->paginate(12);
 

@@ -73,7 +73,7 @@
                                         <form action="{{ route('requests.supervisor-validate', $requestItem) }}" method="POST">
                                             @csrf
                                             @method('PATCH')
-                                            <button type="submit" class="btn btn-sm btn-outline-success text-nowrap">Valider stage</button>
+                                            <button type="submit" class="btn btn-sm btn-outline-success text-nowrap">Valider rapport</button>
                                         </form>
                                     @elseif($requestItem->type === 'attestation' && $canRcValidate && $requestItem->workflow_status === 'attente_validation_rc')
                                         <form action="{{ route('requests.rc-validate', $requestItem) }}" method="POST">

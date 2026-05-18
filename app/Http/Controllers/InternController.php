@@ -24,7 +24,7 @@ class InternController extends Controller
         $completedCutoff = today()->subDay()->toDateString();
 
         $interns = Intern::query()
-            ->with(['user', 'internships'])
+            ->with(['user', 'internships', 'requests'])
             ->when(! $showArchived, fn ($query) => $query->where('is_archived', false))
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($subQuery) use ($search) {
@@ -50,7 +50,7 @@ class InternController extends Controller
         $completedCutoff = today()->subDay()->toDateString();
 
         $interns = Intern::query()
-            ->with(['user', 'internships'])
+            ->with(['user', 'internships', 'requests'])
             ->where('is_archived', false)
             ->whereHas('internships', fn ($query) => $query->where('supervisor_id', $request->user()->id))
             ->when($search !== '', function ($query) use ($search) {
