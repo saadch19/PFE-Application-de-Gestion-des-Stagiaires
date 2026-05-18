@@ -68,9 +68,7 @@
 
             <dt class="col-sm-3">Statut</dt>
             <dd class="col-sm-9">
-                <span class="badge text-bg-{{ $internship->status === 'termine' ? 'secondary' : ($internship->status === 'en_cours' ? 'success' : 'info') }}">
-                    {{ str_replace('_', ' ', $internship->status) }}
-                </span>
+                @statusBadge($internship->status)
             </dd>
 
             <dt class="col-sm-3">Note</dt>

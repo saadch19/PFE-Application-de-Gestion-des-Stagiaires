@@ -128,7 +128,7 @@
                                         <div class="fw-semibold text-break">{{ $task->title }}</div>
                                         <small class="text-muted">Assignee a : {{ $task->assignedTo?->full_name ?? '-' }}</small>
                                     </div>
-                                    <span class="badge text-bg-secondary flex-shrink-0">{{ $task->status }}</span>
+                                    <span class="flex-shrink-0">@statusBadge($task->status)</span>
                                 </div>
                             </div>
                         @empty
@@ -152,7 +152,7 @@
                                     <div class="fw-semibold text-break">{{ $requestItem->intern->user?->full_name ?? 'Non lie' }}</div>
                                     <small class="text-muted">Type : {{ $requestItem->type }}</small>
                                 </div>
-                                <span class="badge text-bg-info flex-shrink-0">{{ $requestItem->status }}</span>
+                                <span class="flex-shrink-0">@statusBadge($requestItem->status)</span>
                             </div>
                         </div>
                     @empty

@@ -50,9 +50,7 @@
                             <td>{{ $internship->department }}</td>
                             <td>{{ $internship->start_date?->format('d/m/Y') ?? '-' }} - {{ $internship->end_date?->format('d/m/Y') ?? '-' }}</td>
                             <td>
-                                <span class="badge text-bg-{{ $internship->status === 'termine' ? 'secondary' : ($internship->status === 'en_cours' ? 'success' : 'info') }}">
-                                    {{ str_replace('_', ' ', $internship->status) }}
-                                </span>
+                                @statusBadge($internship->status)
                             </td>
                             <td>
                                 @forelse($internship->interns as $intern)

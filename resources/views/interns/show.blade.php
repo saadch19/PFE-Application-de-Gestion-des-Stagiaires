@@ -125,9 +125,7 @@
                     <dd class="col-sm-8">{{ $attestationRequest?->rh_processed_at ? 'Generee' : '-' }}</dd>
                     <dt class="col-sm-4">Etat</dt>
                     <dd class="col-sm-8">
-                        <span class="badge {{ $intern->is_archived ? 'text-bg-secondary' : 'text-bg-success' }}">
-                            {{ $intern->is_archived ? 'Archive' : 'Actif' }}
-                        </span>
+                        @statusBadge($intern->is_archived ? 'archive' : 'en_cours')
                     </dd>
                 </dl>
             </div>
@@ -153,7 +151,7 @@
                                     <tr>
                                         <td>{{ $task->title }}</td>
                                         <td>{{ $task->due_date?->format('d/m/Y') ?? '-' }}</td>
-                                        <td><span class="badge text-bg-secondary">{{ $task->status }}</span></td>
+                                        <td>@statusBadge($task->status)</td>
                                     </tr>
                                 @empty
                                     <tr><td colspan="3" class="text-muted">Aucune tache liee au stagiaire.</td></tr>

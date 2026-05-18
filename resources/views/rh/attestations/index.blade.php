@@ -3,17 +3,6 @@
 @section('title', 'Attestations')
 
 @section('content')
-@php
-    $statusLabels = [
-        'transmise_rh' => ['label' => 'En attente', 'class' => 'text-bg-warning'],
-        'attestation_generee' => ['label' => 'Generee', 'class' => 'text-bg-info'],
-        'attestation_prete' => ['label' => 'Generee', 'class' => 'text-bg-info'],
-        'attestation_imprimee' => ['label' => 'Imprimee', 'class' => 'text-bg-primary'],
-        'attestation_recuperee' => ['label' => 'Recuperee', 'class' => 'text-bg-success'],
-        'attestation_archivee' => ['label' => 'Archivee', 'class' => 'text-bg-secondary'],
-    ];
-@endphp
-
 <div class="card card-soft fade-in">
     <div class="card-body">
         <h1 class="h4 mb-3">Attestations</h1>
@@ -24,6 +13,7 @@
                     <tr>
                         <th>Stagiaire</th>
                         <th>Stage</th>
+                        <th>Workflow</th>
                         <th>Etat</th>
                         <th class="text-end">Actions</th>
                     </tr>
@@ -38,10 +28,10 @@
                                 <small class="text-muted">{{ $internship?->department ?? '-' }}</small>
                             </td>
                             <td>
-                                @php $status = $statusLabels[$requestItem->workflow_status] ?? ['label' => $requestItem->workflow_status, 'class' => 'text-bg-secondary']; @endphp
-                                <span class="badge {{ $status['class'] }}">
-                                    {{ $status['label'] }}
-                                </span>
+                                @include('partials.attestation-timeline', ['requestItem' => $requestItem])
+                            </td>
+                            <td>
+                                @statusBadge($requestItem->workflow_status)
                             </td>
                             <td class="text-end">
                                 <div class="d-inline-flex justify-content-end gap-1 flex-nowrap">
@@ -84,7 +74,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="4" class="text-center text-muted">Aucune attestation a traiter.</td></tr>
+                        <tr><td colspan="5" class="text-center text-muted">Aucune attestation a traiter.</td></tr>
                     @endforelse
                 </tbody>
             </table>

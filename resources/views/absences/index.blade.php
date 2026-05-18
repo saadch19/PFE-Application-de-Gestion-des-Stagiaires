@@ -51,7 +51,7 @@
                             <td>{{ $absence->intern->user?->full_name ?? $absence->intern->cin }}</td>
                             <td>{{ $absence->date_absence?->format('d/m/Y') }}</td>
                             <td>{{ $absence->reason }}</td>
-                            <td><span class="badge {{ $absence->justified ? 'text-bg-success' : 'text-bg-warning' }}">{{ $absence->justified ? 'Oui' : 'Non' }}</span></td>
+                            <td>@statusBadge($absence->justified ? 'valide' : 'en_attente')</td>
                             <td>{{ $absence->recordedBy?->full_name }}</td>
                             @unless($isHr)
                                 <td class="text-end">

@@ -71,9 +71,7 @@
                             </td>
                             <td>{{ $intern->start_date?->format('d/m/Y') }} - {{ $intern->end_date?->format('d/m/Y') }}</td>
                             <td>
-                                <span class="badge {{ $intern->is_archived ? 'text-bg-secondary' : ($isCompleted ? 'text-bg-warning' : ($hasAssignedInternship ? 'text-bg-success' : 'text-bg-info')) }}">
-                                    {{ $intern->is_archived ? 'Archive' : ($isCompleted ? 'Termine' : ($hasAssignedInternship ? 'Actif' : 'En attente')) }}
-                                </span>
+                                @statusBadge($intern->is_archived ? 'archive' : ($isCompleted ? 'termine' : ($hasAssignedInternship ? 'en_cours' : 'en_attente')))
                             </td>
                             <td class="text-end">
                                 <a href="{{ $isSupervisor ? route('supervisor.interns.show', $intern) : route('interns.show', $intern) }}" class="btn btn-sm btn-outline-secondary">Voir</a>

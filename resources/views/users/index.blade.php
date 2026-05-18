@@ -37,9 +37,7 @@
                             <td>{{ $user->email }}</td>
                             <td>{{ $user->role?->name }}</td>
                             <td>
-                                <span class="badge {{ $user->is_active ? 'text-bg-success' : 'text-bg-secondary' }}">
-                                    {{ $user->is_active ? 'Actif' : 'Inactif' }}
-                                </span>
+                                @statusBadge($user->is_active ? 'valide' : 'archive')
                             </td>
                             <td class="text-end">
                                 <a href="{{ route('users.edit', $user) }}" class="btn btn-sm btn-outline-primary">Modifier</a>

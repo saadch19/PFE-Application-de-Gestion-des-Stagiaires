@@ -61,9 +61,14 @@
                                 <div>{{ \Illuminate\Support\Str::limit($requestItem->message, 80) }}</div>
                             </td>
                             <td>
-                                <span class="badge text-bg-info">{{ $requestItem->status }}</span>
+                                @statusBadge($requestItem->status)
                                 @if($requestItem->workflow_status)
                                     <div class="small text-muted mt-1">{{ $workflowLabels[$requestItem->workflow_status] ?? $requestItem->workflow_status }}</div>
+                                    @if($requestItem->type === 'attestation')
+                                        <div class="mt-2">
+                                            @include('partials.attestation-timeline', ['requestItem' => $requestItem])
+                                        </div>
+                                    @endif
                                 @endif
                             </td>
                             <td>{{ $requestItem->processedBy?->full_name ?? '-' }}</td>

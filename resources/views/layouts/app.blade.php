@@ -143,6 +143,40 @@
             transform: translateY(-2px);
         }
 
+        .attestation-timeline {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem 0.75rem;
+            align-items: center;
+        }
+
+        .attestation-timeline-step {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            color: #6c757d;
+            font-size: 0.78rem;
+            white-space: nowrap;
+        }
+
+        .attestation-timeline-dot {
+            width: 0.7rem;
+            height: 0.7rem;
+            border-radius: 999px;
+            background: #dee2e6;
+            box-shadow: 0 0 0 3px #f1f3f5;
+        }
+
+        .attestation-timeline-step.is-done {
+            color: #198754;
+            font-weight: 600;
+        }
+
+        .attestation-timeline-step.is-done .attestation-timeline-dot {
+            background: #198754;
+            box-shadow: 0 0 0 3px rgba(25, 135, 84, 0.15);
+        }
+
         .fade-in {
             animation: fadeInUp 0.5s ease both;
         }
