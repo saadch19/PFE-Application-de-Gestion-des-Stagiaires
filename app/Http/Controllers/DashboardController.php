@@ -44,9 +44,9 @@ class DashboardController extends Controller
                 'interns' => Intern::query()->count(),
                 'active_internships' => Internship::query()->where('status', 'en_cours')->count(),
                 'completed_internships' => Internship::query()->where('status', 'termine')->count(),
-                'validated_reports' => InternshipRequest::query()
+                'attestations_to_process' => InternshipRequest::query()
                     ->where('type', 'attestation')
-                    ->whereNotNull('rc_validated_at')
+                    ->where('workflow_status', 'transmise_rh')
                     ->count(),
                 'generated_attestations' => InternshipRequest::query()
                     ->where('type', 'attestation')
@@ -103,7 +103,7 @@ class DashboardController extends Controller
             $statCards = [
                 ['label' => 'Total stagiaires', 'value' => $stats['interns'] ?? 0],
                 ['label' => 'Stages termines', 'value' => $stats['completed_internships'] ?? 0],
-                ['label' => 'Rapports valides', 'value' => $stats['validated_reports'] ?? 0],
+                ['label' => 'Attestations a traiter', 'value' => $stats['attestations_to_process'] ?? 0],
                 ['label' => 'Attestations generees', 'value' => $stats['generated_attestations'] ?? 0],
                 ['label' => 'Demandes en attente', 'value' => $stats['pending_requests'] ?? 0],
             ];
