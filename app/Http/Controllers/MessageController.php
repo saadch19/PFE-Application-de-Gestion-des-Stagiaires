@@ -13,23 +13,73 @@ class MessageController extends Controller
 {
     public function index(Request $request): View
     {
-        $tab = (string) $request->string('tab', 'inbox');
         $user = $request->user();
+        $conversationUserId = (int) $request->query('user');
 
-        $messages = Message::query()
+        $allMessages = Message::query()
             ->with(['sender', 'receiver'])
-            ->when($tab === 'sent', fn ($query) => $query->where('sender_id', $user->id))
-            ->when($tab !== 'sent', fn ($query) => $query->where('receiver_id', $user->id))
+            ->where(function ($query) use ($user) {
+                $query->where('sender_id', $user->id)
+                    ->orWhere('receiver_id', $user->id);
+            })
             ->latest()
-            ->paginate(12)
-            ->withQueryString();
+            ->get();
 
-        $unreadCount = Message::query()
-            ->where('receiver_id', $user->id)
-            ->where('is_read', false)
-            ->count();
+        $conversations = $allMessages
+            ->groupBy(function (Message $message) use ($user): int {
+                return $message->sender_id === $user->id
+                    ? (int) $message->receiver_id
+                    : (int) $message->sender_id;
+            })
+            ->map(function ($messages, $partnerId) use ($user) {
+                $lastMessage = $messages->first();
+                $unreadCount = $messages->where('receiver_id', $user->id)->where('is_read', false)->count();
+                $partner = $lastMessage->sender_id === $user->id
+                    ? $lastMessage->receiver
+                    : $lastMessage->sender;
 
-        return view('messages.index', compact('messages', 'tab', 'unreadCount'));
+                return [
+                    'partner' => $partner,
+                    'last_message' => $lastMessage,
+                    'unread_count' => $unreadCount,
+                ];
+            })
+            ->sortByDesc(fn ($item) => $item['last_message']?->created_at)
+            ->values();
+
+        $conversationUser = null;
+        $conversationMessages = collect();
+
+        if ($conversationUserId > 0) {
+            $conversationMessages = $allMessages
+                ->filter(function (Message $message) use ($user, $conversationUserId) {
+                    return (
+                        $message->sender_id === $user->id
+                        && (int) $message->receiver_id === $conversationUserId
+                    ) || (
+                        $message->receiver_id === $user->id
+                        && (int) $message->sender_id === $conversationUserId
+                    );
+                })
+                ->sortBy('created_at')
+                ->values();
+
+            $conversationUser = $conversationMessages->isNotEmpty()
+                ? ($conversationMessages->first()->sender_id === $user->id
+                    ? $conversationMessages->first()->receiver
+                    : $conversationMessages->first()->sender)
+                : User::query()->find($conversationUserId);
+
+            if ($conversationUser !== null) {
+                Message::query()
+                    ->where('sender_id', $conversationUser->id)
+                    ->where('receiver_id', $user->id)
+                    ->where('is_read', false)
+                    ->update(['is_read' => true]);
+            }
+        }
+
+        return view('messages.index', compact('conversations', 'conversationUser', 'conversationMessages'));
     }
 
     public function create(): View

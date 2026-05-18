@@ -10,83 +10,73 @@
             <a href="{{ route('messages.create') }}" class="btn btn-success btn-sm">Nouveau message</a>
         </div>
 
-        <ul class="nav nav-pills mb-3">
-            <li class="nav-item">
-                <a class="nav-link {{ $tab !== 'sent' ? 'active' : '' }}" href="{{ route('messages.index', ['tab' => 'inbox']) }}">
-                    Boite de reception
-                    @if($unreadCount > 0)
-                        <span class="badge text-bg-light ms-1">{{ $unreadCount }}</span>
-                    @endif
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ $tab === 'sent' ? 'active' : '' }}" href="{{ route('messages.index', ['tab' => 'sent']) }}">Messages envoyes</a>
-            </li>
-        </ul>
-
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th>Objet</th>
-                        <th>{{ $tab === 'sent' ? 'Destinataire' : 'Expediteur' }}</th>
-                        <th>Date</th>
-                        <th>Etat</th>
-                        <th class="text-end">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($messages as $message)
-                        <tr>
-                            <td>{{ $message->subject }}</td>
-                            <td>{{ $tab === 'sent' ? $message->receiver?->full_name : $message->sender?->full_name }}</td>
-                            <td>{{ $message->created_at?->format('d/m/Y H:i') }}</td>
-                            <td>
-                                @if($tab === 'sent')
-                                    -
-                                @else
-                                    <span class="badge {{ $message->is_read ? 'text-bg-secondary' : 'text-bg-success' }}">
-                                        {{ $message->is_read ? 'Lu' : 'Non lu' }}
-                                    </span>
-                                @endif
-                            </td>
-                            <td class="text-end">
-                                <a href="{{ route('messages.show', $message) }}" class="btn btn-sm btn-outline-primary">Ouvrir</a>
-                                @if($tab !== 'sent' && ! $message->is_read)
-                                    <button class="btn btn-sm btn-outline-success mark-read" data-url="{{ route('messages.read', $message) }}">Marquer lu</button>
-                                @endif
-                            </td>
-                        </tr>
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="list-group">
+                    @forelse($conversations as $conversation)
+                        @php
+                            $partner = $conversation['partner'];
+                            $lastMessage = $conversation['last_message'];
+                        @endphp
+                        <a
+                            href="{{ route('messages.index', ['user' => $partner?->id]) }}"
+                            class="list-group-item list-group-item-action {{ (int) request()->query('user') === (int) $partner?->id ? 'active' : '' }}"
+                        >
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="fw-semibold">{{ $partner?->full_name ?? 'Utilisateur' }}</div>
+                                    <div class="small text-muted text-truncate" style="max-width: 220px;">
+                                        {{ $lastMessage?->body }}
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <div class="small text-muted">{{ $lastMessage?->created_at?->format('d/m/Y H:i') }}</div>
+                                    @if($conversation['unread_count'] > 0)
+                                        <span class="badge text-bg-light mt-1">{{ $conversation['unread_count'] }}</span>
+                                    @endif
+                                </div>
+                            </div>
+                        </a>
                     @empty
-                        <tr><td colspan="5" class="text-center text-muted">Aucun message.</td></tr>
+                        <div class="text-muted">Aucune conversation.</div>
                     @endforelse
-                </tbody>
-            </table>
-        </div>
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <div class="border rounded-4 p-3" style="min-height: 420px;">
+                    @if($conversationUser)
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="fw-semibold">Conversation avec {{ $conversationUser->full_name }}</div>
+                        </div>
+                        <div class="vstack gap-2 mb-3" style="max-height: 360px; overflow-y: auto;">
+                            @forelse($conversationMessages as $message)
+                                @php $isMine = $message->sender_id === auth()->id(); @endphp
+                                <div class="d-flex {{ $isMine ? 'justify-content-end' : 'justify-content-start' }}">
+                                    <div class="border rounded-3 p-2 {{ $isMine ? 'bg-light' : 'bg-white' }}" style="max-width: 70%;">
+                                        <div class="small text-muted">{{ $message->created_at?->format('d/m/Y H:i') }}</div>
+                                        <div style="white-space: pre-wrap;">{{ $message->body }}</div>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="text-muted">Aucun message dans cette conversation.</div>
+                            @endforelse
+                        </div>
 
-        {{ $messages->links() }}
+                        <form action="{{ route('messages.store') }}" method="POST" class="vstack gap-2">
+                            @csrf
+                            <input type="hidden" name="receiver_id" value="{{ $conversationUser->id }}">
+                            <input type="hidden" name="subject" value="Conversation">
+                            <textarea class="form-control" name="body" rows="3" placeholder="Ecrire un message..." required></textarea>
+                            <div class="d-flex justify-content-end">
+                                <button class="btn btn-primary btn-sm" type="submit">Envoyer</button>
+                            </div>
+                        </form>
+                    @else
+                        <div class="text-muted">Selectionnez une conversation pour afficher les messages.</div>
+                    @endif
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 @endsection
-
-@push('scripts')
-<script>
-    $(function () {
-        $('.mark-read').on('click', function () {
-            const url = $(this).data('url');
-
-            $.ajax({
-                url,
-                method: 'PATCH',
-                data: {
-                    _token: $('meta[name="csrf-token"]').attr('content')
-                }
-            }).done(function () {
-                window.location.reload();
-            }).fail(function () {
-                alert('Impossible de marquer le message comme lu.');
-            });
-        });
-    });
-</script>
-@endpush
