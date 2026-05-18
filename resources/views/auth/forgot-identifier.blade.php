@@ -23,7 +23,7 @@
 
                 @if(session('identifier_results'))
                     <div class="alert alert-success mt-4 mb-0">
-                        <div class="fw-semibold mb-2">Identifiant trouve :</div>
+                        <div class="fw-semibold mb-2">Identifiant trouvé :</div>
                         <ul class="mb-0">
                             @foreach(session('identifier_results') as $result)
                                 <li>{{ $result }}</li>

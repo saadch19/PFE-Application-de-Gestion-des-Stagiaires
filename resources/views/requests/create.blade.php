@@ -13,7 +13,7 @@
             <div>
                 <label for="type" class="form-label">Type de demande</label>
                 <select class="form-select" id="type" name="type" required>
-                    <option value="">Selectionner</option>
+                    <option value="">Sélectionner</option>
                     <option value="prolongation" @selected(old('type') === 'prolongation')>Prolongation</option>
                     <option value="attestation" @selected(old('type') === 'attestation')>Attestation</option>
                     <option value="retard_attestation" @selected(old('type') === 'retard_attestation')>Retard d'attestation</option>
@@ -32,7 +32,7 @@
                     accept="application/pdf,.pdf"
                     @if(old('type') === 'attestation') required @endif
                 >
-                <small class="text-muted">Le rapport sera transmis a l'encadrant puis au responsable de competence.</small>
+                <small class="text-muted">Le rapport sera transmis à l'encadrant puis au responsable de compétence.</small>
             </div>
 
             <div id="absenceReasonField" class="{{ old('type') === 'absence' ? '' : 'd-none' }}">

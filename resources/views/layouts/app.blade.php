@@ -321,7 +321,7 @@
                         @endif
 
                         @if(! $authUser->hasRole('Responsable de competence', 'Responsable RH'))
-                            <li class="nav-item"><a class="nav-link {{ request()->routeIs('tasks.*') ? 'active' : '' }}" href="{{ route('tasks.index') }}">Taches</a></li>
+                            <li class="nav-item"><a class="nav-link {{ request()->routeIs('tasks.*') ? 'active' : '' }}" href="{{ route('tasks.index') }}">Tâches</a></li>
                         @endif
                         @if($authUser->hasRole('Administrateur', 'Responsable de competence', 'Encadrant', 'Stagiaire'))
                             <li class="nav-item"><a class="nav-link {{ request()->routeIs('requests.*') ? 'active' : '' }}" href="{{ route('requests.index') }}">Demandes</a></li>

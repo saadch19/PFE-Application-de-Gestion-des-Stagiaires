@@ -20,7 +20,7 @@
 
         <form method="GET" class="row g-2 mb-3">
             <div class="col-md-5">
-                <input type="text" name="search" value="{{ $search }}" class="form-control" placeholder="Rechercher (CIN, ecole, specialite)">
+                <input type="text" name="search" value="{{ $search }}" class="form-control" placeholder="Rechercher (CIN, école, spécialité)">
             </div>
             @unless($isSupervisor)
                 <div class="col-md-3 d-flex align-items-center">
@@ -41,9 +41,9 @@
                     <tr>
                         <th>CIN</th>
                         <th>Compte</th>
-                        <th>Ecole / Specialite</th>
-                        <th>Periode</th>
-                        <th>Etat</th>
+                        <th>École / Spécialité</th>
+                        <th>Période</th>
+                        <th>État</th>
                         <th class="text-end">Actions</th>
                     </tr>
                 </thead>
@@ -64,7 +64,7 @@
                         @endphp
                         <tr @class(['table-success' => $showHighlight])>
                             <td>{{ $intern->cin }}</td>
-                            <td>{{ $intern->user?->full_name ?? 'Non lie' }}</td>
+                            <td>{{ $intern->user?->full_name ?? 'Non lié' }}</td>
                             <td>
                                 <div>{{ $intern->school }}</div>
                                 <small class="text-muted">{{ $intern->specialty }}</small>
@@ -96,7 +96,7 @@
                                     @endunless
 
                                     @if($canShowAttestation)
-                                        <a href="{{ route('attestations.show', $intern) }}" class="btn btn-sm btn-outline-info">{{ $isHr ? 'Generer attestation' : 'Attestation' }}</a>
+                                        <a href="{{ route('attestations.show', $intern) }}" class="btn btn-sm btn-outline-info">{{ $isHr ? 'Générer attestation' : 'Attestation' }}</a>
                                     @endif
                                 @endunless
                             </td>

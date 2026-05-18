@@ -57,10 +57,10 @@
             <dt class="col-sm-3">Description</dt>
             <dd class="col-sm-9">{{ $internship->description ?: '-' }}</dd>
 
-            <dt class="col-sm-3">Departement</dt>
+            <dt class="col-sm-3">Département</dt>
             <dd class="col-sm-9">{{ $internship->department }}</dd>
 
-            <dt class="col-sm-3">Date debut</dt>
+            <dt class="col-sm-3">Date début</dt>
             <dd class="col-sm-9">{{ $internship->start_date?->format('d/m/Y') ?? '-' }}</dd>
 
             <dt class="col-sm-3">Date fin</dt>
@@ -86,7 +86,7 @@
                         {{ $intern->user?->full_name ?? $intern->cin }}
                     </a>
                 @empty
-                    <span class="text-muted">Aucun stagiaire lie</span>
+                    <span class="text-muted">Aucun stagiaire lié</span>
                 @endforelse
             </dd>
         </dl>
@@ -97,7 +97,7 @@
     <div class="card-body">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
             <div>
-                <h2 class="h5 mb-1">Taches du stage</h2>
+                <h2 class="h5 mb-1">Tâches du stage</h2>
                 <p class="text-muted mb-0">Suivi par statut.</p>
             </div>
             <div class="d-flex flex-wrap gap-2">
@@ -124,7 +124,7 @@
                                         <div class="card kanban-card">
                                             <div class="card-body">
                                                 <div class="fw-semibold">{{ $task->title }}</div>
-                                                <div class="small text-muted mt-2">Assignee a : {{ $task->assignedTo?->full_name ?? '-' }}</div>
+                                                <div class="small text-muted mt-2">Assignée à : {{ $task->assignedTo?->full_name ?? '-' }}</div>
                                                 <div class="small text-muted">Date limite : {{ $task->due_date?->format('d/m/Y') ?? '-' }}</div>
                                                 <div class="mt-2">
                                                     <select class="form-select form-select-sm task-status" data-url="{{ route('tasks.status', $task) }}">
@@ -136,7 +136,7 @@
                                             </div>
                                         </div>
                                     @empty
-                                        <div class="text-muted small">Aucune tache.</div>
+                                        <div class="text-muted small">Aucune tâche.</div>
                                     @endforelse
                                 </div>
                             </div>
@@ -150,7 +150,7 @@
                     <thead>
                         <tr>
                             <th>Titre</th>
-                            <th>Assignee a</th>
+                            <th>Assignée à</th>
                             <th>Date limite</th>
                             <th>Statut</th>
                         </tr>
@@ -170,7 +170,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="4" class="text-center text-muted">Aucune tache.</td></tr>
+                            <tr><td colspan="4" class="text-center text-muted">Aucune tâche.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -195,8 +195,8 @@
                 }
             }).fail(function (xhr) {
                 const message = xhr.status === 403
-                    ? 'Vous n\'etes pas autorise a modifier cette tache.'
-                    : 'Erreur lors de la mise a jour du statut.';
+                    ? 'Vous n\'êtes pas autorisé à modifier cette tâche.'
+                    : 'Erreur lors de la mise à jour du statut.';
 
                 alert(message);
             });

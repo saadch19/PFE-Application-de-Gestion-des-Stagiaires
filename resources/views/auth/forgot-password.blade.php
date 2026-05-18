@@ -8,7 +8,7 @@
         <div class="card card-soft">
             <div class="card-body p-4 p-md-5">
                 <h1 class="h4 mb-3">Mot de passe oublie</h1>
-                <p class="text-muted mb-4">Reinitialisez votre mot de passe avec votre nom complet. L'identifiant est optionnel si votre nom correspond a un seul compte.</p>
+                <p class="text-muted mb-4">Réinitialisez votre mot de passe avec votre nom complet. L'identifiant est optionnel si votre nom correspond à un seul compte.</p>
 
                 <form action="{{ route('forgot.password.perform') }}" method="POST">
                     @csrf
@@ -33,7 +33,7 @@
                         <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" required>
                     </div>
 
-                    <button type="submit" class="btn btn-success w-100">Reinitialiser</button>
+                    <button type="submit" class="btn btn-success w-100">Réinitialiser</button>
                 </form>
 
                 <div class="text-center mt-3">

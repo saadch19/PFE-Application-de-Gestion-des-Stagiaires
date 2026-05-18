@@ -19,7 +19,7 @@
     <div class="col-md-4">
         <label for="role_id" class="form-label">Role</label>
         <select class="form-select" id="role_id" name="role_id" required>
-            <option value="">Selectionner</option>
+            <option value="">Sélectionner</option>
             @foreach($roles as $role)
                 <option value="{{ $role->id }}" @selected((string) old('role_id', $user->role_id ?? '') === (string) $role->id)>{{ $role->name }}</option>
             @endforeach

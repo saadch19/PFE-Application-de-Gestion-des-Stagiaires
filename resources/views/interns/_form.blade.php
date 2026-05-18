@@ -27,22 +27,22 @@
     </div>
 
     <div class="col-md-4">
-        <label for="phone" class="form-label">Telephone</label>
+        <label for="phone" class="form-label">Téléphone</label>
         <input type="text" class="form-control" id="phone" name="phone" value="{{ old('phone', $intern->phone ?? '') }}">
     </div>
 
     <div class="col-md-4">
-        <label for="school" class="form-label">Ecole</label>
+        <label for="school" class="form-label">École</label>
         <input type="text" class="form-control" id="school" name="school" value="{{ old('school', $intern->school ?? '') }}" required>
     </div>
 
     <div class="col-md-6">
-        <label for="specialty" class="form-label">Specialite</label>
+        <label for="specialty" class="form-label">Spécialité</label>
         <input type="text" class="form-control" id="specialty" name="specialty" value="{{ old('specialty', $intern->specialty ?? '') }}" required>
     </div>
 
     <div class="col-md-6">
-        <label for="start_date" class="form-label">Date debut</label>
+        <label for="start_date" class="form-label">Date début</label>
         <input type="text" class="form-control js-date" id="start_date" name="start_date" value="{{ old('start_date', isset($intern) ? $intern->start_date?->format('d/m/Y') : '') }}" placeholder="jj/mm/aaaa" autocomplete="off" required>
     </div>
 

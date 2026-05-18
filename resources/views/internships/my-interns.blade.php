@@ -8,7 +8,7 @@
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
             <div>
                 <h1 class="h4 mb-1">Mes stages</h1>
-                <p class="text-muted mb-0">Stages affectes a vous avec leurs stagiaires et periodes.</p>
+                <p class="text-muted mb-0">Stages qui vous sont affectés, avec leurs stagiaires et périodes.</p>
             </div>
         </div>
 
@@ -31,8 +31,8 @@
                 <thead>
                     <tr>
                         <th>Titre du stage</th>
-                        <th>Departement</th>
-                        <th>Periode</th>
+                        <th>Département</th>
+                        <th>Période</th>
                         <th>Statut</th>
                         <th>Stagiaires</th>
                         <th class="text-end">Actions</th>
@@ -61,7 +61,7 @@
                                         {{ $intern->user?->full_name ?? $intern->cin }}
                                     </a>
                                 @empty
-                                    <div class="text-muted">Aucun stagiaire lie</div>
+                                    <div class="text-muted">Aucun stagiaire lié</div>
                                 @endforelse
                             </td>
                             <td class="text-end">
@@ -71,7 +71,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="text-center text-muted">Aucun stage ne vous est affecte pour le moment.</td></tr>
+                        <tr><td colspan="6" class="text-center text-muted">Aucun stage ne vous est affecté pour le moment.</td></tr>
                     @endforelse
                 </tbody>
             </table>

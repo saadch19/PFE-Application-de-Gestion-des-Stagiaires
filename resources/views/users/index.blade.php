@@ -26,7 +26,7 @@
                         <th>Nom</th>
                         <th>Email</th>
                         <th>Role</th>
-                        <th>Etat</th>
+                        <th>État</th>
                         <th class="text-end">Actions</th>
                     </tr>
                 </thead>

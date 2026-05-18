@@ -13,7 +13,7 @@
                     <tr>
                         <th>Stagiaire</th>
                         <th>Date generation</th>
-                        <th>Traitee par</th>
+                        <th>Traitée par</th>
                         <th class="text-end">Action</th>
                     </tr>
                 </thead>
@@ -26,7 +26,7 @@
                             <td class="text-end">
                                 <div class="d-inline-flex justify-content-end gap-1 flex-nowrap">
                                     <a href="{{ route('attestations.show', $requestItem->intern) }}" class="btn btn-sm btn-outline-primary text-nowrap">Voir attestation</a>
-                                    <a href="{{ route('rh.archives.download', $requestItem) }}" class="btn btn-sm btn-outline-secondary text-nowrap">Telecharger PDF</a>
+                                    <a href="{{ route('rh.archives.download', $requestItem) }}" class="btn btn-sm btn-outline-secondary text-nowrap">Télécharger PDF</a>
                                 </div>
                             </td>
                         </tr>

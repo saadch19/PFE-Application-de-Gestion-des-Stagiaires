@@ -99,7 +99,7 @@ class InternController extends Controller
             ->exists();
 
         if (! $isAssignedToSupervisor) {
-            abort(403, 'Acces refuse a ce stagiaire.');
+            abort(403, 'Accès refusé à ce stagiaire.');
         }
 
         return $this->show($intern);
@@ -128,7 +128,7 @@ class InternController extends Controller
             $endDate = Carbon::createFromFormat('d/m/Y', $request->input('end_date'));
 
             if ($endDate->lt($startDate)) {
-                $validator->errors()->add('end_date', 'La date de fin doit etre apres ou egale a la date de debut.');
+                $validator->errors()->add('end_date', 'La date de fin doit être après ou égale à la date de début.');
             }
         });
 
@@ -160,7 +160,7 @@ class InternController extends Controller
             ]);
         });
 
-        return redirect()->route('interns.index')->with('success', 'Stagiaire ajoute.');
+        return redirect()->route('interns.index')->with('success', 'Stagiaire ajouté.');
     }
 
     public function edit(Intern $intern): View
@@ -193,7 +193,7 @@ class InternController extends Controller
             $endDate = Carbon::createFromFormat('d/m/Y', $request->input('end_date'));
 
             if ($endDate->lt($startDate)) {
-                $validator->errors()->add('end_date', 'La date de fin doit etre apres ou egale a la date de debut.');
+                $validator->errors()->add('end_date', 'La date de fin doit être après ou égale à la date de début.');
             }
         });
 
@@ -235,27 +235,27 @@ class InternController extends Controller
             ]);
         });
 
-        return redirect()->route('interns.index')->with('success', 'Stagiaire mis a jour.');
+        return redirect()->route('interns.index')->with('success', 'Stagiaire mis à jour.');
     }
 
     public function destroy(Intern $intern): RedirectResponse
     {
         $intern->delete();
 
-        return redirect()->route('interns.index')->with('success', 'Stagiaire supprime.');
+        return redirect()->route('interns.index')->with('success', 'Stagiaire supprimé.');
     }
 
     public function archive(Intern $intern): RedirectResponse
     {
         $intern->update(['is_archived' => true]);
 
-        return back()->with('success', 'Stagiaire archive.');
+        return back()->with('success', 'Stagiaire archivé.');
     }
 
     public function restore(Intern $intern): RedirectResponse
     {
         $intern->update(['is_archived' => false]);
 
-        return back()->with('success', 'Stagiaire restaure.');
+        return back()->with('success', 'Stagiaire restauré.');
     }
 }

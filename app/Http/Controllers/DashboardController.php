@@ -102,8 +102,8 @@ class DashboardController extends Controller
         } elseif ($isHr) {
             $statCards = [
                 ['label' => 'Total stagiaires', 'value' => $stats['interns'] ?? 0],
-                ['label' => 'Stages termines', 'value' => $stats['completed_internships'] ?? 0],
-                ['label' => 'Attestations a traiter', 'value' => $stats['attestations_to_process'] ?? 0],
+                ['label' => 'Stages terminés', 'value' => $stats['completed_internships'] ?? 0],
+                ['label' => 'Attestations à traiter', 'value' => $stats['attestations_to_process'] ?? 0],
                 ['label' => 'Attestations générées', 'value' => $stats['generated_attestations'] ?? 0],
                 ['label' => 'Demandes en attente', 'value' => $stats['pending_requests'] ?? 0],
             ];
@@ -116,7 +116,7 @@ class DashboardController extends Controller
         } elseif ($isIntern) {
             $statCards = [
                 ['label' => 'Mes demandes en attente', 'value' => $stats['pending_requests'] ?? 0],
-                ['label' => 'Mes taches ouvertes', 'value' => $stats['my_open_tasks'] ?? 0],
+                ['label' => 'Mes tâches ouvertes', 'value' => $stats['my_open_tasks'] ?? 0],
                 ['label' => 'Messages non lus', 'value' => $stats['unread_messages'] ?? 0],
             ];
         }

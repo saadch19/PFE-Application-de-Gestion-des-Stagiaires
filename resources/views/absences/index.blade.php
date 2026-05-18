@@ -24,7 +24,7 @@
                 </div>
                 <div class="col-sm-6">
                     <div class="border rounded p-3 bg-light">
-                        <div class="text-muted">Absences non justifiees</div>
+                        <div class="text-muted">Absences non justifiées</div>
                         <div class="display-6 fw-semibold">{{ $absenceStats['unjustified'] ?? 0 }}</div>
                     </div>
                 </div>
@@ -38,7 +38,7 @@
                         <th>Stagiaire</th>
                         <th>Date</th>
                         <th>Motif</th>
-                        <th>Justifiee</th>
+                        <th>Justifiée</th>
                         <th>Saisie par</th>
                         @unless($isHr)
                             <th class="text-end">Actions</th>
@@ -65,7 +65,7 @@
                             @endunless
                         </tr>
                     @empty
-                        <tr><td colspan="{{ $isHr ? 5 : 6 }}" class="text-center text-muted">Aucune absence enregistree.</td></tr>
+                        <tr><td colspan="{{ $isHr ? 5 : 6 }}" class="text-center text-muted">Aucune absence enregistrée.</td></tr>
                     @endforelse
                 </tbody>
             </table>

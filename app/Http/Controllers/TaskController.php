@@ -105,7 +105,7 @@ class TaskController extends Controller
 
         Task::query()->create($validated + ['assigned_by' => $request->user()->id]);
 
-        return redirect()->route('tasks.index')->with('success', 'Tache creee avec succes.');
+        return redirect()->route('tasks.index')->with('success', 'Tâche créée avec succès.');
     }
 
     public function edit(Task $task): View
@@ -151,14 +151,14 @@ class TaskController extends Controller
 
         $task->update($validated);
 
-        return redirect()->route('tasks.index')->with('success', 'Tache mise a jour.');
+        return redirect()->route('tasks.index')->with('success', 'Tâche mise à jour.');
     }
 
     public function destroy(Task $task): RedirectResponse
     {
         $task->delete();
 
-        return redirect()->route('tasks.index')->with('success', 'Tache supprimee.');
+        return redirect()->route('tasks.index')->with('success', 'Tâche supprimée.');
     }
 
     public function updateStatus(Request $request, Task $task): JsonResponse
@@ -170,7 +170,7 @@ class TaskController extends Controller
             || $user->hasRole('Administrateur', 'Encadrant');
 
         if (! $canUpdate) {
-            abort(403, 'Non autorise a modifier cette tache.');
+            abort(403, 'Non autorisé à modifier cette tâche.');
         }
 
         $validated = $request->validate([
@@ -179,7 +179,7 @@ class TaskController extends Controller
 
         $task->update(['status' => $validated['status']]);
 
-        return response()->json(['message' => 'Statut de la tache mis a jour.']);
+        return response()->json(['message' => 'Statut de la tâche mis à jour.']);
     }
 
     private function validateDueDateLimit(array $validated): void
@@ -200,7 +200,7 @@ class TaskController extends Controller
 
             if (! empty($allowedAssigneeIds) && ! in_array((int) $validated['assigned_to'], $allowedAssigneeIds, true)) {
                 throw ValidationException::withMessages([
-                    'assigned_to' => 'Cette tache doit etre assignee au stagiaire lie au stage selectionne.',
+                    'assigned_to' => 'Cette tâche doit être assignée au stagiaire lié au stage sélectionné.',
                 ]);
             }
 
@@ -211,7 +211,7 @@ class TaskController extends Controller
 
                 if ($internship?->start_date !== null && $internship->start_date->gt($dueDateValue)) {
                     throw ValidationException::withMessages([
-                        'due_date' => 'La date limite doit etre apres la date de debut du stage.',
+                        'due_date' => 'La date limite doit être après la date de début du stage.',
                     ]);
                 }
 
@@ -223,7 +223,7 @@ class TaskController extends Controller
 
                 if ($internship?->end_date === null || $internship?->start_date === null) {
                     throw ValidationException::withMessages([
-                        'due_date' => 'La date limite ne peut pas etre definie sans dates de stage.',
+                        'due_date' => 'La date limite ne peut pas être définie sans dates de stage.',
                     ]);
                 }
             }

@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Rapports valides')
+@section('title', 'Rapports validés')
 
 @section('content')
 <div class="card card-soft fade-in">
     <div class="card-body">
-        <h1 class="h4 mb-3">Rapports valides</h1>
+        <h1 class="h4 mb-3">Rapports validés</h1>
 
         <div class="table-responsive">
             <table class="table table-hover align-middle">
@@ -39,13 +39,13 @@
                                     @if($requestItem->report_path)
                                         <a href="{{ route('requests.report', $requestItem) }}" class="btn btn-sm btn-outline-secondary text-nowrap">Voir PDF</a>
                                     @endif
-                                    <a href="{{ route('attestations.show', $requestItem->intern) }}" class="btn btn-sm btn-outline-primary text-nowrap">Generer attestation</a>
+                                    <a href="{{ route('attestations.show', $requestItem->intern) }}" class="btn btn-sm btn-outline-primary text-nowrap">Générer attestation</a>
                                     <a href="{{ route('messages.create') }}" class="btn btn-sm btn-outline-info text-nowrap">Envoyer message</a>
                                 </div>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="text-center text-muted">Aucun rapport valide.</td></tr>
+                        <tr><td colspan="5" class="text-center text-muted">Aucun rapport validé.</td></tr>
                     @endforelse
                 </tbody>
             </table>

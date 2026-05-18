@@ -2,7 +2,7 @@
     <div class="col-md-6">
         <label for="intern_id" class="form-label">Stagiaire</label>
         <select class="form-select" id="intern_id" name="intern_id" required>
-            <option value="">Selectionner</option>
+            <option value="">Sélectionner</option>
             @foreach($interns as $intern)
                 <option value="{{ $intern->id }}" @selected((string) old('intern_id', $absence->intern_id ?? '') === (string) $intern->id)>
                     {{ $intern->cin }} - {{ $intern->user?->full_name ?? 'Sans compte' }}
@@ -19,7 +19,7 @@
     <div class="col-md-3 d-flex align-items-end">
         <div class="form-check mb-2">
             <input class="form-check-input" type="checkbox" value="1" id="justified" name="justified" @checked((bool) old('justified', $absence->justified ?? false))>
-            <label class="form-check-label" for="justified">Justifiee</label>
+            <label class="form-check-label" for="justified">Justifiée</label>
         </div>
     </div>
 

@@ -132,7 +132,7 @@ class Intern extends Model
         foreach ($this->overdueTasks() as $task) {
             $alerts[] = [
                 'type' => 'task',
-                'message' => 'Tache en retard : difficulte possible du stagiaire',
+                'message' => 'Tâche en retard : difficulté possible du stagiaire',
                 'task' => $task,
             ];
         }

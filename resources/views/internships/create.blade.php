@@ -25,7 +25,7 @@
     $(function () {
         if ($.fn.select2) {
             $('.js-interns').select2({
-                placeholder: 'Selectionner des stagiaires',
+                placeholder: 'Sélectionner des stagiaires',
                 width: '100%'
             });
         }

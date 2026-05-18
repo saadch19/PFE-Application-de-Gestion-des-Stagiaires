@@ -7,6 +7,17 @@
     <div class="card-body">
         <h1 class="h4 mb-3">Attestations</h1>
 
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            <a href="{{ route('rh.attestations.index') }}" class="btn btn-sm {{ $status === '' ? 'btn-primary' : 'btn-outline-primary' }}">
+                Toutes
+            </a>
+            @foreach($statusFilters as $key => $filter)
+                <a href="{{ route('rh.attestations.index', ['status' => $key]) }}" class="btn btn-sm {{ $status === $key ? 'btn-primary' : 'btn-outline-primary' }}">
+                    {{ $filter['label'] }}
+                </a>
+            @endforeach
+        </div>
+
         <div class="table-responsive">
             <table class="table table-hover align-middle">
                 <thead>
@@ -14,7 +25,7 @@
                         <th>Stagiaire</th>
                         <th>Stage</th>
                         <th>Workflow</th>
-                        <th>Etat</th>
+                        <th>État</th>
                         <th class="text-end">Actions</th>
                     </tr>
                 </thead>
@@ -36,7 +47,7 @@
                             <td class="text-end">
                                 <div class="d-inline-flex justify-content-end align-items-center gap-2 flex-nowrap">
                                     @if($requestItem->workflow_status === 'transmise_rh')
-                                        <a href="{{ route('attestations.show', $requestItem->intern) }}" class="btn btn-sm btn-primary text-nowrap">Generer attestation</a>
+                                        <a href="{{ route('attestations.show', $requestItem->intern) }}" class="btn btn-sm btn-primary text-nowrap">Générer attestation</a>
                                         <form action="{{ route('requests.rh-complete', $requestItem) }}" method="POST" class="m-0">
                                             @csrf
                                             @method('PATCH')
@@ -90,7 +101,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="text-center text-muted">Aucune attestation a traiter.</td></tr>
+                        <tr><td colspan="5" class="text-center text-muted">Aucune attestation à traiter.</td></tr>
                     @endforelse
                 </tbody>
             </table>

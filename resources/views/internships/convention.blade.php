@@ -25,7 +25,7 @@
 
         <p>
             La presente convention confirme l'affectation du ou des stagiaires ci-dessous au service
-            <strong>{{ $internship->department }}</strong>, pour la periode du
+            <strong>{{ $internship->department }}</strong>, pour la période du
             <strong>{{ $internship->start_date?->format('d/m/Y') }}</strong> au
             <strong>{{ $internship->end_date?->format('d/m/Y') }}</strong>.
         </p>
@@ -39,14 +39,14 @@
                     - {{ $intern->school }} / {{ $intern->specialty }}
                 </li>
             @empty
-                <li>Aucun stagiaire affecte.</li>
+                <li>Aucun stagiaire affecté.</li>
             @endforelse
         </ul>
 
         <h2 class="h5 mt-4">Encadrement</h2>
         <p>
-            Encadrant : <strong>{{ $internship->supervisor?->full_name ?? 'Non assigne' }}</strong><br>
-            Responsable de competence : <strong>{{ $internship->responsible?->full_name ?? 'Non assigne' }}</strong>
+            Encadrant : <strong>{{ $internship->supervisor?->full_name ?? 'Non assigné' }}</strong><br>
+            Responsable de compétence : <strong>{{ $internship->responsible?->full_name ?? 'Non assigné' }}</strong>
         </p>
 
         @if($internship->description)

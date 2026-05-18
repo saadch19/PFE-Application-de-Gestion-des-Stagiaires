@@ -38,7 +38,7 @@ class InternshipRequestController extends Controller
         $user = $request->user();
 
         if (! $user->hasRole('Stagiaire') || $user->intern === null) {
-            abort(403, 'Seuls les stagiaires lies a une fiche peuvent creer une demande.');
+            abort(403, 'Seuls les stagiaires liés à une fiche peuvent créer une demande.');
         }
 
         return view('requests.create');
@@ -49,7 +49,7 @@ class InternshipRequestController extends Controller
         $user = $request->user();
 
         if (! $user->hasRole('Stagiaire') || $user->intern === null) {
-            abort(403, 'Action non autorisee.');
+            abort(403, 'Action non autorisée.');
         }
 
         $validated = $request->validate([
@@ -79,7 +79,7 @@ class InternshipRequestController extends Controller
             'workflow_status' => $validated['type'] === 'attestation' ? 'attente_validation_encadrant' : null,
         ]);
 
-        return redirect()->route('requests.index')->with('success', 'Demande envoyee.');
+        return redirect()->route('requests.index')->with('success', 'Demande envoyée.');
     }
 
     public function process(Request $request, InternshipRequest $requestItem): RedirectResponse
@@ -87,7 +87,7 @@ class InternshipRequestController extends Controller
         $user = $request->user();
 
         if (! $user->hasRole('Administrateur', 'Responsable de competence')) {
-            abort(403, 'Action reservee aux responsables et administrateurs.');
+            abort(403, 'Action réservée aux responsables et administrateurs.');
         }
 
         if ($requestItem->type === 'attestation') {
@@ -121,7 +121,7 @@ class InternshipRequestController extends Controller
             }
         });
 
-        return back()->with('success', 'Demande traitee.');
+        return back()->with('success', 'Demande traitée.');
     }
 
     public function supervisorValidate(Request $request, InternshipRequest $requestItem): RedirectResponse
@@ -138,7 +138,7 @@ class InternshipRequestController extends Controller
             ->exists();
 
         if (! $user->hasRole('Encadrant') || ! $isSupervisor) {
-            abort(403, 'Validation reservee a l encadrant du stagiaire.');
+            abort(403, 'Validation réservée à l encadrant du stagiaire.');
         }
 
         $validated = $request->validate([
@@ -152,7 +152,7 @@ class InternshipRequestController extends Controller
             'supervisor_grade' => $validated['supervisor_grade'],
         ]);
 
-        return back()->with('success', 'Rapport valide. La demande est transmise au responsable de competence.');
+        return back()->with('success', 'Rapport validé. La demande est transmise au responsable de compétence.');
     }
 
     public function rcValidate(Request $request, InternshipRequest $requestItem): RedirectResponse
@@ -169,7 +169,7 @@ class InternshipRequestController extends Controller
             ->exists();
 
         if (! $user->hasRole('Responsable de competence') || ! $isResponsible) {
-            abort(403, 'Validation reservee au responsable de competence du stagiaire.');
+            abort(403, 'Validation réservée au responsable de compétence du stagiaire.');
         }
 
         if ($requestItem->supervisor_validated_at === null) {
@@ -183,7 +183,7 @@ class InternshipRequestController extends Controller
             'sent_to_rh_at' => now(),
         ]);
 
-        return back()->with('success', 'Rapport valide et transmis au RH.');
+        return back()->with('success', 'Rapport validé et transmis au RH.');
     }
 
     public function rhComplete(Request $request, InternshipRequest $requestItem): RedirectResponse
@@ -191,7 +191,7 @@ class InternshipRequestController extends Controller
         $user = $request->user();
 
         if (! $user->hasRole('Responsable RH')) {
-            abort(403, 'Action reservee au RH.');
+            abort(403, 'Action réservée au RH.');
         }
 
         if ($requestItem->type !== 'attestation' || $requestItem->sent_to_rh_at === null) {
@@ -219,7 +219,7 @@ class InternshipRequestController extends Controller
                 Message::query()->create([
                     'sender_id' => $user->id,
                     'receiver_id' => $requestItem->intern->user_id,
-                    'subject' => 'Veuillez recuperer votre attestation',
+                    'subject' => 'Veuillez récupérer votre attestation',
                     'body' => 'Veuillez vous présenter à l entreprise pour récupérer votre attestation de stage signée.',
                     'is_read' => false,
                 ]);
@@ -234,7 +234,7 @@ class InternshipRequestController extends Controller
         $user = $request->user();
 
         if (! $user->hasRole('Responsable RH')) {
-            abort(403, 'Action reservee au RH.');
+            abort(403, 'Action réservée au RH.');
         }
 
         if (! in_array($requestItem->workflow_status, ['attestation_generee', 'attestation_prete', 'attestation_imprimee', 'attestation_recuperee'], true)) {
@@ -259,7 +259,7 @@ class InternshipRequestController extends Controller
         $user = $request->user();
 
         if (! $user->hasRole('Responsable RH')) {
-            abort(403, 'Action reservee au RH.');
+            abort(403, 'Action réservée au RH.');
         }
 
         if (! in_array($requestItem->workflow_status, ['attestation_generee', 'attestation_prete', 'attestation_imprimee'], true)) {
@@ -279,7 +279,7 @@ class InternshipRequestController extends Controller
         $user = $request->user();
 
         if (! $user->hasRole('Responsable RH')) {
-            abort(403, 'Action reservee au RH.');
+            abort(403, 'Action réservée au RH.');
         }
 
         if ($requestItem->type !== 'attestation' || ! in_array($requestItem->workflow_status, ['attestation_generee', 'attestation_prete', 'attestation_imprimee', 'attestation_recuperee'], true)) {
@@ -315,7 +315,7 @@ class InternshipRequestController extends Controller
             || ($user->hasRole('Stagiaire') && $user->intern !== null && $requestItem->intern_id === $user->intern->id);
 
         if (! $canDownload || $requestItem->report_path === null) {
-            abort(403, 'Acces refuse au rapport.');
+            abort(403, 'Accès refusé au rapport.');
         }
 
         if (! Storage::disk('local')->exists($requestItem->report_path)) {
@@ -336,11 +336,11 @@ class InternshipRequestController extends Controller
                 && $requestItem->status === 'en_attente');
 
         if (! $canDelete) {
-            abort(403, 'Suppression non autorisee.');
+            abort(403, 'Suppression non autorisée.');
         }
 
         $requestItem->delete();
 
-        return back()->with('success', 'Demande supprimee.');
+        return back()->with('success', 'Demande supprimée.');
     }
 }

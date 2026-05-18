@@ -57,7 +57,7 @@ class UserController extends Controller
             'is_active' => $request->boolean('is_active', true),
         ]);
 
-        return redirect()->route('users.index')->with('success', 'Utilisateur cree avec succes.');
+        return redirect()->route('users.index')->with('success', 'Utilisateur créé avec succès.');
     }
 
     public function edit(User $user): View
@@ -90,7 +90,7 @@ class UserController extends Controller
 
         $user->update($payload);
 
-        return redirect()->route('users.index')->with('success', 'Utilisateur mis a jour.');
+        return redirect()->route('users.index')->with('success', 'Utilisateur mis à jour.');
     }
 
     public function destroy(User $user): RedirectResponse
@@ -101,6 +101,6 @@ class UserController extends Controller
 
         $user->delete();
 
-        return redirect()->route('users.index')->with('success', 'Utilisateur supprime.');
+        return redirect()->route('users.index')->with('success', 'Utilisateur supprimé.');
     }
 }

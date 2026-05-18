@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Nouvelle tache')
+@section('title', 'Nouvelle tâche')
 
 @section('content')
 <div class="card card-soft fade-in">
     <div class="card-body">
-        <h1 class="h4 mb-3">Creer une tache</h1>
+        <h1 class="h4 mb-3">Créer une tâche</h1>
 
         <form action="{{ route('tasks.store') }}" method="POST" class="vstack gap-3">
             @csrf

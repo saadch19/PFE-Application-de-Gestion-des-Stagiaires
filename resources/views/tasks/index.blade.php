@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Taches')
+@section('title', 'Tâches')
 
 @section('content')
 @php
@@ -22,8 +22,8 @@
     <div class="card-body">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
             <div>
-                <h1 class="h4 mb-0">Gestion des taches</h1>
-                <p class="text-muted mb-0">Vue {{ $isKanban ? 'kanban' : 'liste' }} des taches.</p>
+                <h1 class="h4 mb-0">Gestion des tâches</h1>
+                <p class="text-muted mb-0">Vue {{ $isKanban ? 'kanban' : 'liste' }} des tâches.</p>
             </div>
             <div class="d-flex flex-wrap gap-2">
                 <div class="btn-group" role="group" aria-label="Changer la vue">
@@ -31,7 +31,7 @@
                     <a class="btn btn-outline-secondary btn-sm {{ ! $isKanban ? 'active' : '' }}" href="{{ request()->fullUrlWithQuery(['view' => 'table']) }}">Table</a>
                 </div>
                 @if($canManage)
-                    <a href="{{ route('tasks.create') }}" class="btn btn-success btn-sm">Nouvelle tache</a>
+                    <a href="{{ route('tasks.create') }}" class="btn btn-success btn-sm">Nouvelle tâche</a>
                 @endif
             </div>
         </div>
@@ -72,7 +72,7 @@
                             @checked($myTasksOnly)
                             onchange="this.form.submit()"
                         >
-                        <label class="form-check-label" for="my_tasks">Afficher uniquement mes taches</label>
+                        <label class="form-check-label" for="my_tasks">Afficher uniquement mes tâches</label>
                     </div>
                 </div>
             @endif
@@ -108,7 +108,7 @@
                                                     <div class="fw-semibold">{{ $task->title }}</div>
                                                     <span class="badge text-bg-light">{{ $task->internship?->title ?? '-' }}</span>
                                                 </div>
-                                                <div class="small text-muted mt-2">Assignee a : {{ $task->assignedTo?->full_name ?? '-' }}</div>
+                                                <div class="small text-muted mt-2">Assignée à : {{ $task->assignedTo?->full_name ?? '-' }}</div>
                                                 <div class="small text-muted">Date limite : {{ $task->due_date?->format('d/m/Y') ?? '-' }}</div>
                                                 @if(! $isIntern)
                                                     <div class="mt-2">
@@ -122,7 +122,7 @@
                                                 @if($canManage)
                                                     <div class="d-flex flex-wrap gap-2 mt-3">
                                                         <a href="{{ route('tasks.edit', $task) }}" class="btn btn-sm btn-outline-primary">Modifier</a>
-                                                        <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="m-0" onsubmit="return confirm('Supprimer cette tache ?')">
+                                                        <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="m-0" onsubmit="return confirm('Supprimer cette tâche ?')">
                                                             @csrf
                                                             @method('DELETE')
                                                             <button class="btn btn-sm btn-outline-danger" type="submit">Supprimer</button>
@@ -132,7 +132,7 @@
                                             </div>
                                         </div>
                                     @empty
-                                        <div class="text-muted small">Aucune tache.</div>
+                                        <div class="text-muted small">Aucune tâche.</div>
                                     @endforelse
                                 </div>
                             </div>
@@ -147,8 +147,8 @@
                         <tr>
                             <th>Titre</th>
                             <th>Stage</th>
-                            <th>Assignee par</th>
-                            <th>Assignee a</th>
+                            <th>Assignée par</th>
+                            <th>Assignée à</th>
                             <th>Date limite</th>
                             <th>Statut</th>
                             <th class="text-end">Actions</th>
@@ -173,7 +173,7 @@
                                     @if($canManage)
                                         <div class="d-inline-flex align-items-center justify-content-end gap-1 flex-nowrap">
                                             <a href="{{ route('tasks.edit', $task) }}" class="btn btn-sm btn-outline-primary">Modifier</a>
-                                            <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="m-0" onsubmit="return confirm('Supprimer cette tache ?')">
+                                            <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="m-0" onsubmit="return confirm('Supprimer cette tâche ?')">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button class="btn btn-sm btn-outline-danger text-nowrap" type="submit">Supprimer</button>
@@ -183,7 +183,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="7" class="text-center text-muted">Aucune tache.</td></tr>
+                            <tr><td colspan="7" class="text-center text-muted">Aucune tâche.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -210,8 +210,8 @@
                 }
             }).fail(function (xhr) {
                 const message = xhr.status === 403
-                    ? 'Vous n\'etes pas autorise a modifier cette tache.'
-                    : 'Erreur lors de la mise a jour du statut.';
+                    ? 'Vous n\'êtes pas autorisé à modifier cette tâche.'
+                    : 'Erreur lors de la mise à jour du statut.';
 
                 alert(message);
             });
@@ -249,7 +249,7 @@
                 }
 
                 if (String($card.data('owner-id')) !== String(userId)) {
-                    alert('Vous ne pouvez pas modifier cette tache.');
+                    alert('Vous ne pouvez pas modifier cette tâche.');
                     return;
                 }
 
@@ -265,8 +265,8 @@
                     $card.appendTo($column.find('.kanban-body'));
                 }).fail(function (xhr) {
                     const message = xhr.status === 403
-                        ? 'Vous n\'etes pas autorise a modifier cette tache.'
-                        : 'Erreur lors de la mise a jour du statut.';
+                        ? 'Vous n\'êtes pas autorisé à modifier cette tâche.'
+                        : 'Erreur lors de la mise à jour du statut.';
 
                     alert(message);
                 });

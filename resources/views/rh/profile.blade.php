@@ -22,7 +22,7 @@
             </div>
             <div class="col-md-4">
                 <div class="border rounded p-3 bg-light h-100">
-                    <div class="text-muted">Departement</div>
+                    <div class="text-muted">Département</div>
                     <div class="fw-semibold">Ressources Humaines</div>
                 </div>
             </div>
@@ -40,7 +40,7 @@
                 @if($user->rh_signature_path)
                     <img src="{{ route('rh.profile.asset', [$user, 'signature']) }}" alt="Signature RH" class="mt-2 border rounded p-1" style="max-height: 90px;">
                 @else
-                    <div class="text-muted mt-2">Aucune signature importee.</div>
+                    <div class="text-muted mt-2">Aucune signature importée.</div>
                 @endif
             </div>
 
@@ -51,7 +51,7 @@
                 @if($user->company_stamp_path)
                     <img src="{{ route('rh.profile.asset', [$user, 'cachet']) }}" alt="Cachet entreprise" class="mt-2 border rounded p-1" style="max-height: 90px;">
                 @else
-                    <div class="text-muted mt-2">Aucun cachet importe.</div>
+                    <div class="text-muted mt-2">Aucun cachet importé.</div>
                 @endif
             </div>
 

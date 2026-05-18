@@ -33,7 +33,7 @@
                         <th>Titre</th>
                         <th>Stagiaire</th>
                         <th>Encadrant</th>
-                        <th>Periode</th>
+                        <th>Période</th>
                         <th>Statut</th>
                         <th class="text-end">Actions</th>
                     </tr>
@@ -52,7 +52,7 @@
                                     {{ $internship->interns->map(fn ($intern) => $intern->user?->full_name ?? $intern->cin)->join(', ') }}
                                 @endif
                             </td>
-                            <td>{{ $internship->supervisor?->full_name ?? 'Non assigne' }}</td>
+                            <td>{{ $internship->supervisor?->full_name ?? 'Non assigné' }}</td>
                             <td>{{ $internship->start_date?->format('d/m/Y') }} - {{ $internship->end_date?->format('d/m/Y') }}</td>
                             <td>
                                 <select class="form-select form-select-sm internship-status" data-url="{{ route('internships.status', $internship) }}">
@@ -101,7 +101,7 @@
                     status: $select.val()
                 }
             }).fail(function () {
-                alert('Erreur lors de la mise a jour du statut.');
+                alert('Erreur lors de la mise à jour du statut.');
             });
         });
     });

@@ -13,7 +13,7 @@
             @include('absences._form')
 
             <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary">Mettre a jour</button>
+                <button type="submit" class="btn btn-primary">Mettre à jour</button>
                 <a href="{{ route('absences.index') }}" class="btn btn-outline-secondary">Annuler</a>
             </div>
         </form>

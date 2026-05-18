@@ -26,17 +26,28 @@ class RhDocumentController extends Controller
         return view('rh.reports.index', compact('reports'));
     }
 
-    public function attestations(): View
+    public function attestations(Request $request): View
     {
+        $status = (string) $request->query('status', '');
+        $statusFilters = [
+            'en_attente' => ['label' => 'En attente', 'statuses' => ['transmise_rh']],
+            'generee' => ['label' => 'Générée', 'statuses' => ['attestation_generee', 'attestation_prete']],
+            'imprimee' => ['label' => 'Imprimée', 'statuses' => ['attestation_imprimee']],
+            'recuperee' => ['label' => 'Récupérée', 'statuses' => ['attestation_recuperee']],
+            'archivee' => ['label' => 'Archivée', 'statuses' => ['attestation_archivee']],
+        ];
+        $allWorkflowStatuses = collect($statusFilters)->flatMap(fn (array $filter) => $filter['statuses'])->all();
+
         $attestations = InternshipRequest::query()
             ->with(['intern.user', 'intern.internships.supervisor', 'intern.internships.responsible', 'processedBy', 'supervisorValidator', 'rcValidator', 'rhProcessor'])
             ->where('type', 'attestation')
-            ->whereIn('workflow_status', ['transmise_rh', 'attestation_generee', 'attestation_prete', 'attestation_imprimee', 'attestation_recuperee'])
+            ->whereIn('workflow_status', $statusFilters[$status]['statuses'] ?? $allWorkflowStatuses)
             ->orderByRaw("CASE WHEN workflow_status = 'transmise_rh' THEN 0 ELSE 1 END")
             ->latest()
-            ->paginate(12);
+            ->paginate(12)
+            ->withQueryString();
 
-        return view('rh.attestations.index', compact('attestations'));
+        return view('rh.attestations.index', compact('attestations', 'status', 'statusFilters'));
     }
 
     public function archives(): View
@@ -131,7 +142,7 @@ class RhDocumentController extends Controller
             'company_stamp_path' => $validated['company_stamp_path'] ?? null,
         ]));
 
-        return back()->with('success', 'Signature/cachet mis a jour.');
+        return back()->with('success', 'Signature/cachet mis à jour.');
     }
 
     public function asset(Request $request, User $user, string $type): StreamedResponse

@@ -17,7 +17,7 @@ class AttestationController extends Controller
             || ($user->hasRole('Stagiaire') && $user->intern !== null && $user->intern->id === $intern->id);
 
         if (! $canAccess) {
-            abort(403, 'Acces refuse a cette attestation.');
+            abort(403, 'Accès refusé à cette attestation.');
         }
 
         $intern->load('user');

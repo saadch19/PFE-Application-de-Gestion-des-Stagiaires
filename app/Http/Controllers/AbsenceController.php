@@ -54,7 +54,7 @@ class AbsenceController extends Controller
             'recorded_by' => $request->user()->id,
         ]);
 
-        return redirect()->route('absences.index')->with('success', 'Absence enregistree.');
+        return redirect()->route('absences.index')->with('success', 'Absence enregistrée.');
     }
 
     public function edit(Absence $absence): View
@@ -80,13 +80,13 @@ class AbsenceController extends Controller
 
         $absence->update($validated + ['justified' => $request->boolean('justified')]);
 
-        return redirect()->route('absences.index')->with('success', 'Absence mise a jour.');
+        return redirect()->route('absences.index')->with('success', 'Absence mise à jour.');
     }
 
     public function destroy(Absence $absence): RedirectResponse
     {
         $absence->delete();
 
-        return redirect()->route('absences.index')->with('success', 'Absence supprimee.');
+        return redirect()->route('absences.index')->with('success', 'Absence supprimée.');
     }
 }

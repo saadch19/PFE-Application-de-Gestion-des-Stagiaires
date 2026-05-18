@@ -13,7 +13,7 @@
             <div>
                 <label for="receiver_id" class="form-label">Destinataire</label>
                 <select class="form-select" id="receiver_id" name="receiver_id" required>
-                    <option value="">Selectionner</option>
+                    <option value="">Sélectionner</option>
                     @foreach($users as $receiver)
                         <option value="{{ $receiver->id }}" @selected((string) old('receiver_id') === (string) $receiver->id)>
                             {{ $receiver->full_name }} ({{ $receiver->role?->name }})

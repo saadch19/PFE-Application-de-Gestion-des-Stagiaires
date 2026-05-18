@@ -13,7 +13,7 @@
             @include('internships._form')
 
             <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary">Mettre a jour</button>
+                <button type="submit" class="btn btn-primary">Mettre à jour</button>
                 <a href="{{ route('internships.index') }}" class="btn btn-outline-secondary">Annuler</a>
             </div>
         </form>
@@ -26,7 +26,7 @@
     $(function () {
         if ($.fn.select2) {
             $('.js-interns').select2({
-                placeholder: 'Selectionner des stagiaires',
+                placeholder: 'Sélectionner des stagiaires',
                 width: '100%'
             });
         }

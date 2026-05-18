@@ -20,6 +20,6 @@ class RoleMiddleware
             return $next($request);
         }
 
-        abort(403, 'Acces refuse pour ce role.');
+        abort(403, 'Accès refusé pour ce rôle.');
     }
 }

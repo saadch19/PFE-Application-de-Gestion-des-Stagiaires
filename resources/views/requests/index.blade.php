@@ -35,7 +35,7 @@
                         <th>Type</th>
                         <th>Message</th>
                         <th>Statut</th>
-                        <th>Traitee par</th>
+                        <th>Traitée par</th>
                         <th class="text-end" style="min-width: 250px;">Actions</th>
                     </tr>
                 </thead>
@@ -46,7 +46,7 @@
                             <td>
                                 {{ $requestItem->type === 'retard_attestation' ? 'Retard attestation' : ucfirst($requestItem->type) }}
                                 @if($requestItem->type === 'absence' && $requestItem->absence_generated_at !== null)
-                                    <span class="badge text-bg-success ms-1">Absence creee</span>
+                                    <span class="badge text-bg-success ms-1">Absence créée</span>
                                 @endif
                                 @if($requestItem->type === 'attestation' && $requestItem->report_path)
                                     <div>
@@ -97,7 +97,7 @@
                                             <button type="submit" class="btn btn-sm btn-outline-success text-nowrap">Valider rapport</button>
                                         </form>
                                     @elseif($requestItem->type === 'attestation' && $canRhComplete && $requestItem->workflow_status === 'transmise_rh')
-                                        <a href="{{ route('attestations.show', $requestItem->intern) }}" class="btn btn-sm btn-outline-primary text-nowrap">Generer</a>
+                                        <a href="{{ route('attestations.show', $requestItem->intern) }}" class="btn btn-sm btn-outline-primary text-nowrap">Générer</a>
                                         <form action="{{ route('requests.rh-complete', $requestItem) }}" method="POST">
                                             @csrf
                                             @method('PATCH')

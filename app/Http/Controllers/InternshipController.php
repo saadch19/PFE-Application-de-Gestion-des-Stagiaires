@@ -47,7 +47,7 @@ class InternshipController extends Controller
     public function supervisorShow(Request $request, Internship $internship): View
     {
         if ($internship->supervisor_id !== $request->user()->id) {
-            abort(403, 'Acces refuse a ce stage.');
+            abort(403, 'Accès refusé à ce stage.');
         }
 
         $internship->load(['interns.user', 'responsible', 'supervisor', 'tasks.assignedTo']);
@@ -70,7 +70,7 @@ class InternshipController extends Controller
     public function supervisorValidate(Request $request, Internship $internship): RedirectResponse
     {
         if ($internship->supervisor_id !== $request->user()->id) {
-            abort(403, 'Action non autorisee.');
+            abort(403, 'Action non autorisée.');
         }
 
         $validated = $request->validate([
@@ -86,22 +86,22 @@ class InternshipController extends Controller
             $internship->update(['grade' => $validated['grade']]);
         }
 
-        return back()->with('success', 'Fin de stage validee.');
+        return back()->with('success', 'Fin de stage validée.');
     }
 
     public function supervisorUndoValidate(Request $request, Internship $internship): RedirectResponse
     {
         if ($internship->supervisor_id !== $request->user()->id) {
-            abort(403, 'Action non autorisee.');
+            abort(403, 'Action non autorisée.');
         }
 
         if ($internship->status !== 'termine') {
-            abort(403, 'Le stage n est pas termine.');
+            abort(403, 'Le stage n est pas terminé.');
         }
 
         $internship->update(['status' => 'en_cours']);
 
-        return back()->with('success', 'Validation de fin de stage annulee.');
+        return back()->with('success', 'Validation de fin de stage annulée.');
     }
 
     public function create(): View
@@ -152,7 +152,7 @@ class InternshipController extends Controller
                 $endDate = Carbon::createFromFormat('d/m/Y', $end);
 
                 if ($endDate->lt($startDate)) {
-                    $validator->errors()->add('end_date', 'La date de fin doit etre apres ou egale a la date de debut.');
+                    $validator->errors()->add('end_date', 'La date de fin doit être après ou égale à la date de début.');
                     return;
                 }
 
@@ -165,7 +165,7 @@ class InternshipController extends Controller
 
                         if ($internStart && $internEnd) {
                             if ($startDate->lt($internStart) || $endDate->gt($internEnd)) {
-                                $validator->errors()->add('start_date', 'La periode du stage doit etre comprise dans la periode du stagiaire.');
+                                $validator->errors()->add('start_date', 'La période du stage doit être comprise dans la période du stagiaire.');
                                 break;
                             }
                         }
@@ -185,7 +185,7 @@ class InternshipController extends Controller
         $internship = Internship::query()->create($validated);
         $internship->interns()->sync($internIds);
 
-        return redirect()->route('internships.index')->with('success', 'Stage cree avec succes.');
+        return redirect()->route('internships.index')->with('success', 'Stage créé avec succès.');
     }
 
     public function edit(Internship $internship): View
@@ -224,7 +224,7 @@ class InternshipController extends Controller
             ->first();
 
         if ($internship === null) {
-            abort(404, 'Aucun stage trouve pour ce stagiaire.');
+            abort(404, 'Aucun stage trouvé pour ce stagiaire.');
         }
 
         return view('internships.convention', compact('internship'));
@@ -259,7 +259,7 @@ class InternshipController extends Controller
                 $endDate = Carbon::createFromFormat('d/m/Y', $end);
 
                 if ($endDate->lt($startDate)) {
-                    $validator->errors()->add('end_date', 'La date de fin doit etre apres ou egale a la date de debut.');
+                    $validator->errors()->add('end_date', 'La date de fin doit être après ou égale à la date de début.');
                     return;
                 }
 
@@ -272,7 +272,7 @@ class InternshipController extends Controller
 
                         if ($internStart && $internEnd) {
                             if ($startDate->lt($internStart) || $endDate->gt($internEnd)) {
-                                $validator->errors()->add('start_date', 'La periode du stage doit etre comprise dans la periode du stagiaire.');
+                                $validator->errors()->add('start_date', 'La période du stage doit être comprise dans la période du stagiaire.');
                                 break;
                             }
                         }
@@ -292,7 +292,7 @@ class InternshipController extends Controller
         $internship->update($validated);
         $internship->interns()->sync($internIds);
 
-        return redirect()->route('internships.index')->with('success', 'Stage mis a jour.');
+        return redirect()->route('internships.index')->with('success', 'Stage mis à jour.');
     }
 
     public function destroy(Internship $internship): RedirectResponse
@@ -303,7 +303,7 @@ class InternshipController extends Controller
 
         $internship->delete();
 
-        return redirect()->route('internships.index')->with('success', 'Stage supprime.');
+        return redirect()->route('internships.index')->with('success', 'Stage supprimé.');
     }
 
     public function updateStatus(Request $request, Internship $internship): JsonResponse
@@ -314,6 +314,6 @@ class InternshipController extends Controller
 
         $internship->update(['status' => $validated['status']]);
 
-        return response()->json(['message' => 'Statut du stage mis a jour.']);
+        return response()->json(['message' => 'Statut du stage mis à jour.']);
     }
 }

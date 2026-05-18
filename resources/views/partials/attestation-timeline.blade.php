@@ -1,6 +1,6 @@
 @php
     $steps = [
-        ['key' => 'report_path', 'label' => 'Rapport envoye', 'done' => $requestItem->report_path !== null],
+        ['key' => 'report_path', 'label' => 'Rapport envoyé', 'done' => $requestItem->report_path !== null],
         ['key' => 'supervisor_validated_at', 'label' => 'Validé encadrant', 'done' => $requestItem->supervisor_validated_at !== null],
         ['key' => 'rc_validated_at', 'label' => 'Validé RC', 'done' => $requestItem->rc_validated_at !== null],
         ['key' => 'sent_to_rh_at', 'label' => 'Transmis RH', 'done' => $requestItem->sent_to_rh_at !== null],

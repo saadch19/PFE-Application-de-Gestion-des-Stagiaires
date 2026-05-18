@@ -109,7 +109,7 @@ class MessageController extends Controller
             'is_read' => false,
         ]);
 
-        return redirect()->route('messages.index')->with('success', 'Message envoye.');
+        return redirect()->route('messages.index')->with('success', 'Message envoyé.');
     }
 
     public function show(Message $message): View
@@ -117,7 +117,7 @@ class MessageController extends Controller
         $userId = auth()->id();
 
         if ($message->sender_id !== $userId && $message->receiver_id !== $userId) {
-            abort(403, 'Acces au message interdit.');
+            abort(403, 'Accès au message interdit.');
         }
 
         if ($message->receiver_id === $userId && ! $message->is_read) {
@@ -132,7 +132,7 @@ class MessageController extends Controller
     public function markAsRead(Message $message): JsonResponse
     {
         if ($message->receiver_id !== auth()->id()) {
-            abort(403, 'Acces interdit.');
+            abort(403, 'Accès interdit.');
         }
 
         $message->update(['is_read' => true]);

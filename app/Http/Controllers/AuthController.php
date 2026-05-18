@@ -33,7 +33,7 @@ class AuthController extends Controller
             $request->session()->regenerate();
 
             return redirect()->intended(route('dashboard'))
-                ->with('success', 'Connexion reussie.');
+                ->with('success', 'Connexion réussie.');
         }
 
         return back()
@@ -66,7 +66,7 @@ class AuthController extends Controller
 
         if ($users->isEmpty()) {
             return back()
-                ->withErrors(['full_name' => 'Aucun compte actif ne correspond a ce nom.'])
+                ->withErrors(['full_name' => 'Aucun compte actif ne correspond à ce nom.'])
                 ->onlyInput('full_name');
         }
 
@@ -99,8 +99,8 @@ class AuthController extends Controller
         $users = $query->limit(2)->get();
 
         if ($users->isEmpty()) {
-            return back()
-                ->withErrors(['full_name' => 'Aucun compte actif ne correspond aux informations saisies.'])
+        return back()
+            ->withErrors(['full_name' => 'Aucun compte actif ne correspond aux informations saisies.'])
                 ->onlyInput('full_name', 'email');
         }
 
@@ -116,7 +116,7 @@ class AuthController extends Controller
 
         return redirect()
             ->route('login')
-            ->with('success', 'Mot de passe reinitialise. Vous pouvez vous connecter.');
+            ->with('success', 'Mot de passe réinitialisé. Vous pouvez vous connecter.');
     }
 
     public function logout(Request $request): RedirectResponse
@@ -126,6 +126,6 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('login')->with('success', 'Deconnexion effectuee.');
+        return redirect()->route('login')->with('success', 'Déconnexion effectuée.');
     }
 }

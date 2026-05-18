@@ -34,9 +34,9 @@
     </div>
 
     <div class="col-md-6">
-        <label for="assigned_to" class="form-label">Assigner a</label>
+        <label for="assigned_to" class="form-label">Assigner à</label>
         <select class="form-select" id="assigned_to" name="assigned_to" required>
-            <option value="">Selectionner</option>
+            <option value="">Sélectionner</option>
             @foreach($users as $assignee)
                 <option
                     value="{{ $assignee->id }}"

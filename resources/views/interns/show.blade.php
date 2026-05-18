@@ -25,7 +25,7 @@
         ? 'archive'
         : ($latestInternship?->status ?? ($latestInternship ? 'en_cours' : 'en_attente'));
     $historyItems = collect([
-        ['label' => 'Rapport envoye', 'date' => $attestationRequest?->created_at, 'show' => $attestationRequest?->report_path !== null],
+        ['label' => 'Rapport envoyé', 'date' => $attestationRequest?->created_at, 'show' => $attestationRequest?->report_path !== null],
         ['label' => 'Validé par encadrant', 'date' => $attestationRequest?->supervisor_validated_at, 'show' => $attestationRequest?->supervisor_validated_at !== null],
         ['label' => 'Validé par RC', 'date' => $attestationRequest?->rc_validated_at, 'show' => $attestationRequest?->rc_validated_at !== null],
         ['label' => 'Transmis au RH', 'date' => $attestationRequest?->sent_to_rh_at, 'show' => $attestationRequest?->sent_to_rh_at !== null],
@@ -56,7 +56,7 @@
                 <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
                     <div>
                         <h2 class="h5 mb-1">Score automatique</h2>
-                        <p class="text-muted mb-0">Evaluation calculee depuis les absences et les taches.</p>
+                        <p class="text-muted mb-0">Évaluation calculée depuis les absences et les tâches.</p>
                     </div>
                     <span class="badge text-bg-{{ $score['badge'] }}">{{ $score['label'] }}</span>
                 </div>
@@ -76,13 +76,13 @@
                     <div class="col-4">
                         <div class="border rounded p-2 text-center bg-light">
                             <div class="fw-semibold">{{ $score['tasks'] }}/40</div>
-                            <small class="text-muted">Taches</small>
+                            <small class="text-muted">Tâches</small>
                         </div>
                     </div>
                     <div class="col-4">
                         <div class="border rounded p-2 text-center bg-light">
                             <div class="fw-semibold">{{ $score['deadlines'] }}/20</div>
-                            <small class="text-muted">Delais</small>
+                            <small class="text-muted">Délais</small>
                         </div>
                     </div>
                 </div>
@@ -98,12 +98,12 @@
                     <div class="alert alert-warning alert-dismissible fade show py-2 pe-5 mb-2" role="alert">
                         <div>{{ $alert['message'] }}</div>
                         @isset($alert['task'])
-                            <small class="text-muted">Tache : {{ $alert['task']->title }}</small>
+                            <small class="text-muted">Tâche : {{ $alert['task']->title }}</small>
                         @endisset
                         <button type="button" class="btn-close py-3" data-bs-dismiss="alert" aria-label="Fermer"></button>
                     </div>
                 @empty
-                    <p class="text-muted mb-0">Aucune alerte detectee pour ce stagiaire.</p>
+                    <p class="text-muted mb-0">Aucune alerte détectée pour ce stagiaire.</p>
                 @endforelse
             </div>
         </div>
@@ -143,15 +143,15 @@
                     <dd class="col-sm-9">{{ $intern->user?->full_name ?? '-' }}</dd>
                     <dt class="col-sm-3">Email</dt>
                     <dd class="col-sm-9">{{ $intern->user?->email ?? '-' }}</dd>
-                    <dt class="col-sm-3">Telephone</dt>
+                    <dt class="col-sm-3">Téléphone</dt>
                     <dd class="col-sm-9">{{ $intern->phone ?? '-' }}</dd>
                     <dt class="col-sm-3">CIN</dt>
                     <dd class="col-sm-9">{{ $intern->cin }}</dd>
-                    <dt class="col-sm-3">Ecole</dt>
+                    <dt class="col-sm-3">École</dt>
                     <dd class="col-sm-9">{{ $intern->school }}</dd>
-                    <dt class="col-sm-3">Specialite</dt>
+                    <dt class="col-sm-3">Spécialité</dt>
                     <dd class="col-sm-9">{{ $intern->specialty }}</dd>
-                    <dt class="col-sm-3">Etat</dt>
+                    <dt class="col-sm-3">État</dt>
                     <dd class="col-sm-9">@statusBadge($intern->is_archived ? 'archive' : 'en_cours')</dd>
                 </dl>
             </div>
@@ -160,11 +160,11 @@
                 <dl class="row mb-0">
                     <dt class="col-sm-3">Sujet</dt>
                     <dd class="col-sm-9">{{ $latestInternship?->title ?? '-' }}</dd>
-                    <dt class="col-sm-3">Departement</dt>
+                    <dt class="col-sm-3">Département</dt>
                     <dd class="col-sm-9">{{ $latestInternship?->department ?? '-' }}</dd>
-                    <dt class="col-sm-3">Date debut / fin</dt>
+                    <dt class="col-sm-3">Date début / fin</dt>
                     <dd class="col-sm-9">{{ $intern->start_date?->format('d/m/Y') ?? '-' }} - {{ $intern->end_date?->format('d/m/Y') ?? '-' }}</dd>
-                    <dt class="col-sm-3">Duree</dt>
+                    <dt class="col-sm-3">Durée</dt>
                     <dd class="col-sm-9">{{ $duration }}</dd>
                     <dt class="col-sm-3">Statut</dt>
                     <dd class="col-sm-9">@statusBadge($stageStatus)</dd>
@@ -175,7 +175,7 @@
                 <dl class="row mb-0">
                     <dt class="col-sm-3">Encadrant</dt>
                     <dd class="col-sm-9">{{ $supervisors->isNotEmpty() ? $supervisors->join(', ') : '-' }}</dd>
-                    <dt class="col-sm-3">Responsable competence</dt>
+                    <dt class="col-sm-3">Responsable compétence</dt>
                     <dd class="col-sm-9">{{ $latestInternship?->responsible?->full_name ?? '-' }}</dd>
                     <dt class="col-sm-3">Validation encadrant</dt>
                     <dd class="col-sm-9">{{ $attestationRequest?->supervisor_validated_at?->format('d/m/Y H:i') ?? '-' }}</dd>
@@ -187,7 +187,7 @@
             <div class="tab-pane fade" id="absences-pane" role="tabpanel" aria-labelledby="absences-tab" tabindex="0">
                 <div class="d-flex flex-wrap gap-2 mb-3">
                     <span class="badge text-bg-secondary">Total : {{ $intern->absences->count() }}</span>
-                    <span class="badge text-bg-danger">Non justifiees : {{ $intern->absences->where('justified', false)->count() }}</span>
+                    <span class="badge text-bg-danger">Non justifiées : {{ $intern->absences->where('justified', false)->count() }}</span>
                 </div>
                 <div class="table-responsive">
                     <table class="table align-middle mb-0">
@@ -196,7 +196,7 @@
                                 <th>Date</th>
                                 <th>Motif</th>
                                 <th>Statut</th>
-                                <th>Ajoute par</th>
+                                <th>Ajouté par</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -208,7 +208,7 @@
                                     <td>{{ $absence->recordedBy?->full_name ?? '-' }}</td>
                                 </tr>
                             @empty
-                                <tr><td colspan="4" class="text-muted">Aucune absence enregistree.</td></tr>
+                                <tr><td colspan="4" class="text-muted">Aucune absence enregistrée.</td></tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -222,7 +222,7 @@
                         @if($attestationRequest?->report_path)
                             <span>{{ $attestationRequest->report_original_name ?? 'rapport-stage.pdf' }}</span>
                             @unless($isRh)
-                                <a href="{{ route('requests.report', $attestationRequest) }}" class="btn btn-sm btn-outline-primary ms-2">Telecharger</a>
+                                <a href="{{ route('requests.report', $attestationRequest) }}" class="btn btn-sm btn-outline-primary ms-2">Télécharger</a>
                             @endunless
                         @else
                             -
@@ -242,7 +242,7 @@
                     @include('partials.attestation-timeline', ['requestItem' => $attestationRequest])
                 @endif
                 <dl class="row mb-0 mt-3">
-                    <dt class="col-sm-3">Etat actuel</dt>
+                    <dt class="col-sm-3">État actuel</dt>
                     <dd class="col-sm-9">@statusBadge($attestationRequest?->workflow_status ?? 'en_attente')</dd>
                     <dt class="col-sm-3">Note encadrant</dt>
                     <dd class="col-sm-9">{{ $attestationRequest?->supervisor_grade !== null ? $attestationRequest->supervisor_grade . '/20' : '-' }}</dd>
@@ -276,7 +276,7 @@
 @if($canViewInternTasks)
     <div class="card card-soft mt-4 fade-in">
         <div class="card-body">
-            <h2 class="h5 mb-3">Taches du stagiaire</h2>
+            <h2 class="h5 mb-3">Tâches du stagiaire</h2>
             <div class="table-responsive">
                 <table class="table align-middle mb-0">
                     <thead>
@@ -294,7 +294,7 @@
                                 <td>@statusBadge($task->status)</td>
                             </tr>
                         @empty
-                            <tr><td colspan="3" class="text-muted">Aucune tache liee au stagiaire.</td></tr>
+                            <tr><td colspan="3" class="text-muted">Aucune tâche liée au stagiaire.</td></tr>
                         @endforelse
                     </tbody>
                 </table>

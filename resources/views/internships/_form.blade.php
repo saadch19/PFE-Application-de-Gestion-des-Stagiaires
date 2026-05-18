@@ -5,7 +5,7 @@
     </div>
 
     <div class="col-md-6">
-        <label for="department" class="form-label">Departement</label>
+        <label for="department" class="form-label">Département</label>
         <input type="text" class="form-control" id="department" name="department" value="{{ old('department', $internship->department ?? '') }}" required>
     </div>
 
@@ -26,7 +26,7 @@
                 </option>
             @endforeach
         </select>
-        <small class="text-muted">Vous pouvez selectionner plusieurs stagiaires.</small>
+        <small class="text-muted">Vous pouvez sélectionner plusieurs stagiaires.</small>
     </div>
 
     <div class="col-md-4">
@@ -54,7 +54,7 @@
     </div>
 
     <div class="col-md-4">
-        <label for="start_date" class="form-label">Date debut</label>
+        <label for="start_date" class="form-label">Date début</label>
         <input type="text" class="form-control js-date" id="start_date" name="start_date" value="{{ old('start_date', isset($internship) ? $internship->start_date?->format('d/m/Y') : '') }}" placeholder="jj/mm/aaaa" autocomplete="off" required>
     </div>
 
