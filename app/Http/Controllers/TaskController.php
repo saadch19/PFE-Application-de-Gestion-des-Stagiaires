@@ -18,21 +18,48 @@ class TaskController extends Controller
     {
         $user = $request->user();
         $status = (string) $request->string('status');
+        $internshipId = (string) $request->string('internship_id');
+        $myTasksOnly = (string) $request->query('my_tasks', '1') === '1';
 
-        $tasks = Task::query()
+        $tasksQuery = Task::query()
             ->with(['internship.interns.user', 'assignedBy', 'assignedTo'])
-            ->when($user->hasRole('Stagiaire'), fn ($query) => $query->where('assigned_to', $user->id))
-            ->when($user->hasRole('Encadrant'), function ($query) use ($user) {
-                $query->whereHas('assignedTo.intern.internships', function ($internshipQuery) use ($user) {
-                    $internshipQuery->where('supervisor_id', $user->id);
-                });
+            ->when($user->hasRole('Stagiaire'), function ($query) use ($user, $myTasksOnly) {
+                if ($user->intern !== null) {
+                    $query->whereHas('internship.interns', fn ($subQuery) => $subQuery->where('interns.id', $user->intern->id));
+                    if ($myTasksOnly) {
+                        $query->where('assigned_to', $user->id);
+                    }
+                } else {
+                    $query->whereRaw('1 = 0');
+                }
             })
-            ->when($status !== '', fn ($query) => $query->where('status', $status))
+            ->when($user->hasRole('Encadrant'), function ($query) use ($user) {
+                $query->whereHas('internship', fn ($subQuery) => $subQuery->where('supervisor_id', $user->id));
+            });
+
+        if ($user->hasRole('Encadrant') && $internshipId !== '') {
+            $tasksQuery->where('internship_id', $internshipId);
+        }
+
+        if (! $user->hasRole('Encadrant') && $status !== '') {
+            $tasksQuery->where('status', $status);
+        }
+
+        $tasks = $tasksQuery
             ->latest()
             ->paginate(12)
             ->withQueryString();
 
-        return view('tasks.index', compact('tasks', 'status'));
+        $internships = null;
+
+        if ($user->hasRole('Encadrant')) {
+            $internships = Internship::query()
+                ->where('supervisor_id', $user->id)
+                ->orderBy('title')
+                ->get();
+        }
+
+        return view('tasks.index', compact('tasks', 'status', 'internshipId', 'internships', 'myTasksOnly'));
     }
 
     public function create(): View

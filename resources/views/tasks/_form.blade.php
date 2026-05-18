@@ -40,6 +40,7 @@
             @foreach($users as $assignee)
                 <option
                     value="{{ $assignee->id }}"
+                    data-user-id="{{ $assignee->id }}"
                     data-end-date="{{ $assignee->intern?->end_date?->format('Y-m-d') }}"
                     @selected((string) old('assigned_to', $task->assigned_to ?? '') === (string) $assignee->id)
                 >
@@ -96,6 +97,39 @@
             return null;
         }
 
+        function applyAssigneeFilter(internshipUserIds) {
+            const allowed = new Set(internshipUserIds);
+            const hasFilter = internshipUserIds.length > 0;
+            const currentValue = String($assignee.val() || '');
+            let firstAllowed = '';
+
+            $assignee.find('option').each(function (index) {
+                const $option = $(this);
+                const optionValue = String($option.val() || '');
+
+                if (index === 0) {
+                    return;
+                }
+
+                const isAllowed = ! hasFilter || allowed.has(optionValue);
+
+                $option.prop('disabled', ! isAllowed);
+                $option.toggle(isAllowed);
+
+                if (isAllowed && firstAllowed === '') {
+                    firstAllowed = optionValue;
+                }
+            });
+
+            if (hasFilter) {
+                if (! allowed.has(currentValue)) {
+                    $assignee.val(firstAllowed || '');
+                }
+            } else if (currentValue === '') {
+                $assignee.val('');
+            }
+        }
+
         function applyDueDateLimit() {
             const selectedInternship = $internship.find(':selected');
             const internshipStartDate = selectedInternship.data('start-date');
@@ -106,6 +140,8 @@
                 .split(',')
                 .map(value => value.trim())
                 .filter(Boolean);
+
+            applyAssigneeFilter(internshipUserIds);
 
             if (internshipUserIds.length === 1) {
                 $assignee.val(String(internshipUserIds[0]));
