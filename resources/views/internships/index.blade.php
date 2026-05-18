@@ -3,6 +3,8 @@
 @section('title', 'Stages')
 
 @section('content')
+@php $isHr = auth()->user()->hasRole('Responsable RH'); @endphp
+
 <div class="card card-soft fade-in">
     <div class="card-body">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
@@ -60,12 +62,17 @@
                                 </select>
                             </td>
                             <td class="text-end">
-                                <a href="{{ route('internships.edit', $internship) }}" class="btn btn-sm btn-outline-primary">Modifier</a>
-                                <form action="{{ route('internships.destroy', $internship) }}" method="POST" class="d-inline" onsubmit="return confirm('Supprimer ce stage ?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="btn btn-sm btn-outline-danger" type="submit">Supprimer</button>
-                                </form>
+                                <div class="d-inline-flex align-items-center justify-content-end gap-1 flex-nowrap">
+                                    <a href="{{ route('internships.edit', $internship) }}" class="btn btn-sm btn-outline-primary">Modifier</a>
+                                    <a href="{{ route('internships.convention', $internship) }}" class="btn btn-sm btn-outline-info text-nowrap">Convention</a>
+                                    @unless($isHr)
+                                        <form action="{{ route('internships.destroy', $internship) }}" method="POST" class="m-0" onsubmit="return confirm('Supprimer ce stage ?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="btn btn-sm btn-outline-danger text-nowrap" type="submit">Supprimer</button>
+                                        </form>
+                                    @endunless
+                                </div>
                             </td>
                         </tr>
                     @empty

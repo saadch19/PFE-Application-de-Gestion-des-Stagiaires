@@ -23,6 +23,11 @@ class DefaultUsersSeeder extends Seeder
                 'role' => 'Responsable de competence',
             ],
             [
+                'full_name' => 'Responsable Ressources Humaines',
+                'email' => 'rh@internships.local',
+                'role' => 'Responsable RH',
+            ],
+            [
                 'full_name' => 'Encadrant Principal',
                 'email' => 'encadrant@internships.local',
                 'role' => 'Encadrant',

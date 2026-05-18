@@ -4,7 +4,7 @@
 
 @section('content')
 @php
-    $canViewInternTasks = ! auth()->user()->hasRole('Responsable de competence');
+    $canViewInternTasks = ! auth()->user()->hasRole('Responsable de competence', 'Responsable RH');
     $isSupervisor = auth()->user()->hasRole('Encadrant');
     $supervisors = $intern->internships
         ->pluck('supervisor')
@@ -12,6 +12,11 @@
         ->unique('id')
         ->pluck('full_name')
         ->values();
+    $latestInternship = $intern->internships->sortByDesc('end_date')->first();
+    $attestationRequest = $intern->requests
+        ->where('type', 'attestation')
+        ->sortByDesc('created_at')
+        ->first();
 @endphp
 
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 fade-in">
@@ -98,12 +103,26 @@
                     <dd class="col-sm-8">{{ $intern->cin }}</dd>
                     <dt class="col-sm-4">Telephone</dt>
                     <dd class="col-sm-8">{{ $intern->phone ?? '-' }}</dd>
+                    <dt class="col-sm-4">Email</dt>
+                    <dd class="col-sm-8">{{ $intern->user?->email ?? '-' }}</dd>
                     <dt class="col-sm-4">Periode</dt>
                     <dd class="col-sm-8">{{ $intern->start_date?->format('d/m/Y') }} - {{ $intern->end_date?->format('d/m/Y') }}</dd>
+                    <dt class="col-sm-4">Departement</dt>
+                    <dd class="col-sm-8">{{ $latestInternship?->department ?? '-' }}</dd>
+                    <dt class="col-sm-4">Sujet du stage</dt>
+                    <dd class="col-sm-8">{{ $latestInternship?->title ?? '-' }}</dd>
+                    <dt class="col-sm-4">Duree</dt>
+                    <dd class="col-sm-8">{{ $intern->start_date && $intern->end_date ? $intern->start_date->diffInDays($intern->end_date) + 1 . ' jours' : '-' }}</dd>
                     <dt class="col-sm-4">Encadrant</dt>
                     <dd class="col-sm-8">{{ $supervisors->isNotEmpty() ? $supervisors->join(', ') : '-' }}</dd>
+                    <dt class="col-sm-4">RC</dt>
+                    <dd class="col-sm-8">{{ $latestInternship?->responsible?->full_name ?? '-' }}</dd>
                     <dt class="col-sm-4">Absences</dt>
                     <dd class="col-sm-8">{{ $intern->absenceCount() }}</dd>
+                    <dt class="col-sm-4">Rapport</dt>
+                    <dd class="col-sm-8">{{ $attestationRequest?->rc_validated_at ? 'Valide' : '-' }}</dd>
+                    <dt class="col-sm-4">Attestation</dt>
+                    <dd class="col-sm-8">{{ $attestationRequest?->rh_processed_at ? 'Generee' : '-' }}</dd>
                     <dt class="col-sm-4">Etat</dt>
                     <dd class="col-sm-8">
                         <span class="badge {{ $intern->is_archived ? 'text-bg-secondary' : 'text-bg-success' }}">

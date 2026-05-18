@@ -4,11 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Absence;
 use App\Models\InternshipRequest;
+use App\Models\Message;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class InternshipRequestController extends Controller
 {
@@ -17,7 +20,7 @@ class InternshipRequestController extends Controller
         $user = $request->user();
 
         $requests = InternshipRequest::query()
-            ->with(['intern.user', 'processedBy'])
+            ->with(['intern.user', 'intern.internships', 'processedBy', 'supervisorValidator', 'rcValidator', 'rhProcessor'])
             ->when($user->hasRole('Stagiaire') && $user->intern !== null, fn ($query) => $query->where('intern_id', $user->intern->id))
             ->when($user->hasRole('Stagiaire') && $user->intern === null, fn ($query) => $query->whereRaw('1 = 0'))
             ->when($user->hasRole('Encadrant'), function ($query) use ($user) {
@@ -50,17 +53,30 @@ class InternshipRequestController extends Controller
         }
 
         $validated = $request->validate([
-            'type' => ['required', Rule::in(['prolongation', 'attestation', 'absence', 'autre'])],
+            'type' => ['required', Rule::in(['prolongation', 'attestation', 'retard_attestation', 'absence', 'autre'])],
             'motif_absence' => ['required_if:type,absence', 'nullable', 'string', 'max:255'],
             'message' => ['required', 'string'],
+            'rapport_stage' => ['required_if:type,attestation', 'nullable', 'file', 'max:10240', 'mimes:pdf'],
         ]);
+
+        $reportPath = null;
+        $reportOriginalName = null;
+
+        if ($request->hasFile('rapport_stage')) {
+            $file = $request->file('rapport_stage');
+            $reportPath = $file->store('internship-reports', 'local');
+            $reportOriginalName = $file->getClientOriginalName();
+        }
 
         InternshipRequest::query()->create([
             'intern_id' => $user->intern->id,
             'type' => $validated['type'],
             'motif_absence' => $validated['type'] === 'absence' ? $validated['motif_absence'] : null,
             'message' => $validated['message'],
+            'report_path' => $reportPath,
+            'report_original_name' => $reportOriginalName,
             'status' => 'en_attente',
+            'workflow_status' => $validated['type'] === 'attestation' ? 'attente_validation_encadrant' : null,
         ]);
 
         return redirect()->route('requests.index')->with('success', 'Demande envoyee.');
@@ -72,6 +88,10 @@ class InternshipRequestController extends Controller
 
         if (! $user->hasRole('Administrateur', 'Responsable de competence')) {
             abort(403, 'Action reservee aux responsables et administrateurs.');
+        }
+
+        if ($requestItem->type === 'attestation') {
+            return back()->with('error', 'La demande d attestation suit le circuit encadrant, RC puis RH.');
         }
 
         $validated = $request->validate([
@@ -102,6 +122,117 @@ class InternshipRequestController extends Controller
         });
 
         return back()->with('success', 'Demande traitee.');
+    }
+
+    public function supervisorValidate(Request $request, InternshipRequest $requestItem): RedirectResponse
+    {
+        $user = $request->user();
+
+        if ($requestItem->type !== 'attestation') {
+            abort(403, 'Cette action concerne seulement les attestations.');
+        }
+
+        $isSupervisor = $requestItem->intern
+            ?->internships()
+            ->where('supervisor_id', $user->id)
+            ->exists();
+
+        if (! $user->hasRole('Encadrant') || ! $isSupervisor) {
+            abort(403, 'Validation reservee a l encadrant du stagiaire.');
+        }
+
+        $requestItem->update([
+            'workflow_status' => 'attente_validation_rc',
+            'supervisor_validated_by' => $user->id,
+            'supervisor_validated_at' => now(),
+        ]);
+
+        return back()->with('success', 'Stage valide. La demande est transmise au responsable de competence.');
+    }
+
+    public function rcValidate(Request $request, InternshipRequest $requestItem): RedirectResponse
+    {
+        $user = $request->user();
+
+        if ($requestItem->type !== 'attestation') {
+            abort(403, 'Cette action concerne seulement les attestations.');
+        }
+
+        $isResponsible = $requestItem->intern
+            ?->internships()
+            ->where('responsible_id', $user->id)
+            ->exists();
+
+        if (! $user->hasRole('Responsable de competence') || ! $isResponsible) {
+            abort(403, 'Validation reservee au responsable de competence du stagiaire.');
+        }
+
+        if ($requestItem->supervisor_validated_at === null) {
+            return back()->with('error', 'L encadrant doit valider le stage avant la validation du rapport.');
+        }
+
+        $requestItem->update([
+            'workflow_status' => 'transmise_rh',
+            'rc_validated_by' => $user->id,
+            'rc_validated_at' => now(),
+            'sent_to_rh_at' => now(),
+        ]);
+
+        return back()->with('success', 'Rapport valide et transmis au RH.');
+    }
+
+    public function rhComplete(Request $request, InternshipRequest $requestItem): RedirectResponse
+    {
+        $user = $request->user();
+
+        if (! $user->hasRole('Responsable RH')) {
+            abort(403, 'Action reservee au RH.');
+        }
+
+        if ($requestItem->type !== 'attestation' || $requestItem->sent_to_rh_at === null) {
+            abort(403, 'Cette attestation n est pas encore transmise au RH.');
+        }
+
+        DB::transaction(function () use ($requestItem, $user): void {
+            $requestItem->update([
+                'status' => 'acceptee',
+                'workflow_status' => 'attestation_prete',
+                'processed_by' => $user->id,
+                'rh_processed_by' => $user->id,
+                'rh_processed_at' => now(),
+            ]);
+
+            if ($requestItem->intern?->user_id !== null) {
+                Message::query()->create([
+                    'sender_id' => $user->id,
+                    'receiver_id' => $requestItem->intern->user_id,
+                    'subject' => 'Attestation de stage prete',
+                    'body' => 'Votre attestation de stage est prete. Merci de venir la recuperer a l entreprise aupres du service RH.',
+                    'is_read' => false,
+                ]);
+            }
+        });
+
+        return back()->with('success', 'Attestation marquee comme prete et message envoye au stagiaire.');
+    }
+
+    public function downloadReport(Request $request, InternshipRequest $requestItem): StreamedResponse
+    {
+        $user = $request->user();
+
+        $canDownload = $user->hasRole('Administrateur', 'Responsable RH', 'Responsable de competence')
+            || ($user->hasRole('Encadrant') && $requestItem->intern?->internships()->where('supervisor_id', $user->id)->exists())
+            || ($user->hasRole('Stagiaire') && $user->intern !== null && $requestItem->intern_id === $user->intern->id);
+
+        if (! $canDownload || $requestItem->report_path === null) {
+            abort(403, 'Acces refuse au rapport.');
+        }
+
+        if (! Storage::disk('local')->exists($requestItem->report_path)) {
+            abort(404, 'Rapport introuvable.');
+        }
+
+        return Storage::disk('local')->download($requestItem->report_path, $requestItem->report_original_name ?? 'rapport-stage.pdf');
     }
 
     public function destroy(Request $request, InternshipRequest $requestItem): RedirectResponse

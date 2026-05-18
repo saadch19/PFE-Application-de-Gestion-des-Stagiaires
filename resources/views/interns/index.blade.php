@@ -5,6 +5,7 @@
 @section('content')
 @php
     $isSupervisor = auth()->user()->hasRole('Encadrant');
+    $isHr = auth()->user()->hasRole('Responsable RH');
     $highlightInternId = $highlightInternId ?? null;
 @endphp
 
@@ -85,6 +86,10 @@
                                             @method('PATCH')
                                             <button class="btn btn-sm btn-outline-warning" type="submit">Archiver</button>
                                         </form>
+                                    @endif
+
+                                    @if($isHr && $intern->internships->isNotEmpty())
+                                        <a href="{{ route('interns.convention', $intern) }}" class="btn btn-sm btn-outline-success">Convention</a>
                                     @endif
 
                                     <a href="{{ route('attestations.show', $intern) }}" class="btn btn-sm btn-outline-info">Attestation</a>

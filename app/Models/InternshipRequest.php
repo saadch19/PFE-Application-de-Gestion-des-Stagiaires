@@ -17,8 +17,18 @@ class InternshipRequest extends Model
         'type',
         'motif_absence',
         'message',
+        'report_path',
+        'report_original_name',
         'status',
+        'workflow_status',
         'processed_by',
+        'supervisor_validated_by',
+        'supervisor_validated_at',
+        'rc_validated_by',
+        'rc_validated_at',
+        'sent_to_rh_at',
+        'rh_processed_by',
+        'rh_processed_at',
         'absence_generated_at',
     ];
 
@@ -26,6 +36,10 @@ class InternshipRequest extends Model
     {
         return [
             'absence_generated_at' => 'datetime',
+            'supervisor_validated_at' => 'datetime',
+            'rc_validated_at' => 'datetime',
+            'sent_to_rh_at' => 'datetime',
+            'rh_processed_at' => 'datetime',
         ];
     }
 
@@ -37,5 +51,20 @@ class InternshipRequest extends Model
     public function processedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'processed_by');
+    }
+
+    public function supervisorValidator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'supervisor_validated_by');
+    }
+
+    public function rcValidator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'rc_validated_by');
+    }
+
+    public function rhProcessor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'rh_processed_by');
     }
 }

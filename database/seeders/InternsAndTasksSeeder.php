@@ -8,6 +8,7 @@ use App\Models\InternshipRequest;
 use App\Models\Task;
 use App\Models\User;
 use App\Models\Role;
+use App\Models\Absence;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
@@ -182,6 +183,200 @@ class InternsAndTasksSeeder extends Seeder
                     'processed_by' => null,
                 ]);
             }
+        }
+
+        $extraEncadrant = User::query()->updateOrCreate(
+            ['email' => 'encadrant.qualite@internships.local'],
+            [
+                'full_name' => 'Encadrant Qualite',
+                'password_hash' => Hash::make('password123'),
+                'role_id' => $encadrantRoleId,
+                'is_active' => true,
+            ]
+        );
+
+        $extraResponsable = User::query()->updateOrCreate(
+            ['email' => 'responsable.digital@internships.local'],
+            [
+                'full_name' => 'Responsable Digital',
+                'password_hash' => Hash::make('password123'),
+                'role_id' => $responsableRoleId,
+                'is_active' => true,
+            ]
+        );
+
+        $testCases = [
+            [
+                'full_name' => 'Nadia Active',
+                'email' => 'nadia.active@internships.local',
+                'cin' => 'IJ567890',
+                'school' => 'ENSA Casablanca',
+                'specialty' => 'Genie Logiciel',
+                'phone' => '0611111111',
+                'start_date' => Carbon::now()->subDays(12),
+                'end_date' => Carbon::now()->addDays(45),
+                'internship' => [
+                    'title' => 'Stage actif - application RH',
+                    'status' => 'en_cours',
+                    'supervisor' => $extraEncadrant,
+                    'responsible' => $extraResponsable,
+                ],
+                'tasks' => [
+                    ['title' => 'Maquette du module RH', 'due_date' => Carbon::now()->addDays(5), 'status' => 'termine'],
+                    ['title' => 'Integration du formulaire', 'due_date' => Carbon::now()->addDays(12), 'status' => 'en_cours'],
+                ],
+                'absences' => [
+                    ['date_absence' => Carbon::now()->subDays(3), 'reason' => 'Rendez-vous administratif', 'justified' => true],
+                ],
+            ],
+            [
+                'full_name' => 'Omar En Attente',
+                'email' => 'omar.attente@internships.local',
+                'cin' => 'KL123789',
+                'school' => 'Faculte des Sciences Rabat',
+                'specialty' => 'Reseaux',
+                'phone' => '0622222222',
+                'start_date' => Carbon::now()->addDays(7),
+                'end_date' => Carbon::now()->addDays(67),
+                'internship' => null,
+                'tasks' => [],
+                'absences' => [],
+            ],
+            [
+                'full_name' => 'Sara Termine',
+                'email' => 'sara.termine@internships.local',
+                'cin' => 'MN456123',
+                'school' => 'EST Fes',
+                'specialty' => 'Systemes Informatiques',
+                'phone' => '0633333333',
+                'start_date' => Carbon::now()->subDays(70),
+                'end_date' => Carbon::now()->subDays(5),
+                'internship' => [
+                    'title' => 'Stage termine - support IT',
+                    'status' => 'termine',
+                    'supervisor' => $encadrant,
+                    'responsible' => $responsable,
+                ],
+                'tasks' => [
+                    ['title' => 'Inventaire du parc informatique', 'due_date' => Carbon::now()->subDays(20), 'status' => 'termine'],
+                    ['title' => 'Rapport final support IT', 'due_date' => Carbon::now()->subDays(8), 'status' => 'termine'],
+                ],
+                'absences' => [
+                    ['date_absence' => Carbon::now()->subDays(30), 'reason' => 'Maladie justifiee', 'justified' => true],
+                    ['date_absence' => Carbon::now()->subDays(18), 'reason' => 'Transport', 'justified' => false],
+                ],
+            ],
+            [
+                'full_name' => 'Yassine Alertes',
+                'email' => 'yassine.alertes@internships.local',
+                'cin' => 'OP789456',
+                'school' => 'Universite Hassan II',
+                'specialty' => 'Business Intelligence',
+                'phone' => '0644444444',
+                'start_date' => Carbon::now()->subDays(25),
+                'end_date' => Carbon::now()->addDays(35),
+                'internship' => [
+                    'title' => 'Stage alertes - tableaux de bord',
+                    'status' => 'en_cours',
+                    'supervisor' => $extraEncadrant,
+                    'responsible' => $responsable,
+                ],
+                'tasks' => [
+                    ['title' => 'Nettoyage des donnees BI', 'due_date' => Carbon::now()->subDays(7), 'status' => 'a_faire'],
+                    ['title' => 'Dashboard Power BI', 'due_date' => Carbon::now()->subDays(2), 'status' => 'en_cours'],
+                    ['title' => 'Synthese hebdomadaire', 'due_date' => Carbon::now()->addDays(6), 'status' => 'a_faire'],
+                ],
+                'absences' => [
+                    ['date_absence' => Carbon::now()->subDays(20), 'reason' => 'Absence non justifiee', 'justified' => false],
+                    ['date_absence' => Carbon::now()->subDays(15), 'reason' => 'Retard transport', 'justified' => false],
+                    ['date_absence' => Carbon::now()->subDays(10), 'reason' => 'Maladie', 'justified' => true],
+                    ['date_absence' => Carbon::now()->subDays(4), 'reason' => 'Absence non justifiee', 'justified' => false],
+                ],
+            ],
+        ];
+
+        foreach ($testCases as $case) {
+            $user = User::query()->updateOrCreate(
+                ['email' => $case['email']],
+                [
+                    'full_name' => $case['full_name'],
+                    'password_hash' => Hash::make('password123'),
+                    'role_id' => $stagiaireRoleId,
+                    'is_active' => true,
+                ]
+            );
+
+            $intern = Intern::query()->updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'cin' => $case['cin'],
+                    'school' => $case['school'],
+                    'specialty' => $case['specialty'],
+                    'phone' => $case['phone'],
+                    'start_date' => $case['start_date'],
+                    'end_date' => $case['end_date'],
+                    'is_archived' => false,
+                ]
+            );
+
+            if ($case['internship'] !== null) {
+                $internship = Internship::query()->updateOrCreate(
+                    ['title' => $case['internship']['title']],
+                    [
+                        'description' => 'Donnees de test pour verifier les differents cas de la plateforme.',
+                        'department' => 'Informatique',
+                        'start_date' => $case['start_date'],
+                        'end_date' => $case['end_date'],
+                        'status' => $case['internship']['status'],
+                        'supervisor_id' => $case['internship']['supervisor']->id,
+                        'responsible_id' => $case['internship']['responsible']->id,
+                    ]
+                );
+
+                $internship->interns()->syncWithoutDetaching([$intern->id]);
+
+                foreach ($case['tasks'] as $taskData) {
+                    Task::query()->updateOrCreate(
+                        [
+                            'internship_id' => $internship->id,
+                            'title' => $taskData['title'],
+                        ],
+                        [
+                            'assigned_by' => $case['internship']['supervisor']->id,
+                            'assigned_to' => $user->id,
+                            'details' => 'Tache de test pour verifier les scores, delais et alertes.',
+                            'due_date' => $taskData['due_date'],
+                            'status' => $taskData['status'],
+                        ]
+                    );
+                }
+            }
+
+            foreach ($case['absences'] as $absenceData) {
+                Absence::query()->updateOrCreate(
+                    [
+                        'intern_id' => $intern->id,
+                        'date_absence' => $absenceData['date_absence']->toDateString(),
+                    ],
+                    [
+                        'reason' => $absenceData['reason'],
+                        'justified' => $absenceData['justified'],
+                        'recorded_by' => $extraResponsable->id,
+                    ]
+                );
+            }
+
+            InternshipRequest::query()->updateOrCreate(
+                [
+                    'intern_id' => $intern->id,
+                    'type' => 'attestation',
+                    'message' => 'Demande de test pour verifier le dashboard.',
+                ],
+                [
+                    'status' => 'en_attente',
+                    'processed_by' => null,
+                ]
+            );
         }
     }
 }

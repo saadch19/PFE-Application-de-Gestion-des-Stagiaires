@@ -82,6 +82,7 @@ class InternController extends Controller
             'internships.tasks.assignedTo',
             'internships.supervisor',
             'internships.responsible',
+            'requests',
         ]);
 
         $score = $intern->performanceScore();

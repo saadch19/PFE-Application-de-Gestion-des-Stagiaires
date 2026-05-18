@@ -185,6 +185,27 @@ class InternshipController extends Controller
         return view('internships.edit', compact('internship', 'interns', 'supervisors', 'responsibles'));
     }
 
+    public function convention(Internship $internship): View
+    {
+        $internship->load(['interns.user', 'supervisor', 'responsible']);
+
+        return view('internships.convention', compact('internship'));
+    }
+
+    public function internConvention(Intern $intern): View
+    {
+        $internship = $intern->internships()
+            ->with(['interns.user', 'supervisor', 'responsible'])
+            ->latest('end_date')
+            ->first();
+
+        if ($internship === null) {
+            abort(404, 'Aucun stage trouve pour ce stagiaire.');
+        }
+
+        return view('internships.convention', compact('internship'));
+    }
+
     public function update(Request $request, Internship $internship): RedirectResponse
     {
         $validator = Validator::make($request->all(), [
@@ -252,6 +273,10 @@ class InternshipController extends Controller
 
     public function destroy(Internship $internship): RedirectResponse
     {
+        if (auth()->user()?->hasRole('Responsable RH')) {
+            abort(403, 'Le RH ne peut pas supprimer un stage.');
+        }
+
         $internship->delete();
 
         return redirect()->route('internships.index')->with('success', 'Stage supprime.');

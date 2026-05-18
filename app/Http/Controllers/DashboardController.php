@@ -20,8 +20,9 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
         $isAdmin = $user->hasRole('Administrateur');
+        $isHr = $user->hasRole('Responsable RH');
         $isManager = $user->hasRole('Responsable de competence', 'Encadrant');
-        $canViewTasks = ! $user->hasRole('Responsable de competence');
+        $canViewTasks = ! $user->hasRole('Responsable de competence', 'Responsable RH');
         $isIntern = $user->hasRole('Stagiaire');
 
         $managedInternIds = collect();
@@ -38,13 +39,28 @@ class DashboardController extends Controller
 
         $stats = [];
 
-        if ($isAdmin) {
+        if ($isAdmin || $isHr) {
             $stats = [
-                'users' => User::query()->count(),
                 'interns' => Intern::query()->count(),
                 'active_internships' => Internship::query()->where('status', 'en_cours')->count(),
-                'pending_requests' => InternshipRequest::query()->where('status', 'en_attente')->count(),
+                'completed_internships' => Internship::query()->where('status', 'termine')->count(),
+                'validated_reports' => InternshipRequest::query()
+                    ->where('type', 'attestation')
+                    ->whereNotNull('rc_validated_at')
+                    ->count(),
+                'generated_attestations' => InternshipRequest::query()
+                    ->where('type', 'attestation')
+                    ->whereNotNull('rh_processed_at')
+                    ->count(),
+                'pending_requests' => InternshipRequest::query()
+                    ->where('status', 'en_attente')
+                    ->when($isHr, fn ($query) => $query->where('type', 'attestation')->whereNotNull('sent_to_rh_at'))
+                    ->count(),
             ];
+
+            if ($isAdmin) {
+                $stats['users'] = User::query()->count();
+            }
         } elseif ($isManager) {
             $stats = [
                 'interns' => $managedInternIds->count(),
@@ -81,6 +97,14 @@ class DashboardController extends Controller
                 ['label' => 'Utilisateurs', 'value' => $stats['users'] ?? 0],
                 ['label' => 'Stagiaires', 'value' => $stats['interns'] ?? 0],
                 ['label' => 'Stages en cours', 'value' => $stats['active_internships'] ?? 0],
+                ['label' => 'Demandes en attente', 'value' => $stats['pending_requests'] ?? 0],
+            ];
+        } elseif ($isHr) {
+            $statCards = [
+                ['label' => 'Total stagiaires', 'value' => $stats['interns'] ?? 0],
+                ['label' => 'Stages termines', 'value' => $stats['completed_internships'] ?? 0],
+                ['label' => 'Rapports valides', 'value' => $stats['validated_reports'] ?? 0],
+                ['label' => 'Attestations generees', 'value' => $stats['generated_attestations'] ?? 0],
                 ['label' => 'Demandes en attente', 'value' => $stats['pending_requests'] ?? 0],
             ];
         } elseif ($isManager) {
@@ -123,6 +147,7 @@ class DashboardController extends Controller
             ->with(['intern.user', 'processedBy'])
             ->when($isIntern && $user->intern !== null, fn ($query) => $query->where('intern_id', $user->intern->id))
             ->when($isIntern && $user->intern === null, fn ($query) => $query->whereRaw('1 = 0'))
+            ->when($isHr, fn ($query) => $query->where('type', 'attestation')->whereNotNull('sent_to_rh_at'))
             ->when($isManager, function ($query) use ($managedInternIds) {
                 if ($managedInternIds->isEmpty()) {
                     $query->whereRaw('1 = 0');
@@ -137,7 +162,7 @@ class DashboardController extends Controller
         $allEvaluatedInterns = collect();
         $alertEvaluatedInterns = collect();
 
-        if ($isAdmin) {
+        if ($isAdmin || $isHr) {
             $allEvaluatedInterns = Intern::query()
                 ->with(['user', 'absences', 'internships.tasks'])
                 ->where('is_archived', false)

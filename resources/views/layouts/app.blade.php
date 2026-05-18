@@ -263,10 +263,23 @@
                             <li class="nav-item"><a class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}" href="{{ route('users.index') }}">Utilisateurs</a></li>
                         @endif
 
-                        @if($authUser->hasRole('Administrateur', 'Responsable de competence'))
+                        @if($authUser->hasRole('Administrateur', 'Responsable RH', 'Responsable de competence'))
                             <li class="nav-item"><a class="nav-link {{ request()->routeIs('interns.*') ? 'active' : '' }}" href="{{ route('interns.index') }}">Stagiaires</a></li>
+                        @endif
+
+                        @if($authUser->hasRole('Administrateur', 'Responsable de competence'))
                             <li class="nav-item"><a class="nav-link {{ request()->routeIs('internships.*') ? 'active' : '' }}" href="{{ route('internships.index') }}">Stages</a></li>
+                        @endif
+
+                        @if($authUser->hasRole('Administrateur', 'Responsable RH', 'Responsable de competence'))
                             <li class="nav-item"><a class="nav-link {{ request()->routeIs('absences.*') ? 'active' : '' }}" href="{{ route('absences.index') }}">Absences</a></li>
+                        @endif
+
+                        @if($authUser->hasRole('Responsable RH'))
+                            <li class="nav-item"><a class="nav-link {{ request()->routeIs('rh.reports.*') ? 'active' : '' }}" href="{{ route('rh.reports.index') }}">Rapports valides</a></li>
+                            <li class="nav-item"><a class="nav-link {{ request()->routeIs('rh.attestations.*') ? 'active' : '' }}" href="{{ route('rh.attestations.index') }}">Attestations</a></li>
+                            <li class="nav-item"><a class="nav-link {{ request()->routeIs('rh.archives.*') ? 'active' : '' }}" href="{{ route('rh.archives.index') }}">Archives</a></li>
+                            <li class="nav-item"><a class="nav-link {{ request()->routeIs('rh.profile') ? 'active' : '' }}" href="{{ route('rh.profile') }}">Profil RH</a></li>
                         @endif
 
                         @if($authUser->hasRole('Encadrant'))
@@ -274,10 +287,10 @@
                             <li class="nav-item"><a class="nav-link {{ request()->routeIs('supervisor.internships', 'supervisor.internships.show') ? 'active' : '' }}" href="{{ route('supervisor.internships') }}">Stages</a></li>
                         @endif
 
-                        @if(! $authUser->hasRole('Responsable de competence'))
+                        @if(! $authUser->hasRole('Responsable de competence', 'Responsable RH'))
                             <li class="nav-item"><a class="nav-link {{ request()->routeIs('tasks.*') ? 'active' : '' }}" href="{{ route('tasks.index') }}">Taches</a></li>
                         @endif
-                        @if($authUser->hasRole('Administrateur', 'Responsable de competence', 'Stagiaire'))
+                        @if($authUser->hasRole('Administrateur', 'Responsable de competence', 'Encadrant', 'Stagiaire'))
                             <li class="nav-item"><a class="nav-link {{ request()->routeIs('requests.*') ? 'active' : '' }}" href="{{ route('requests.index') }}">Demandes</a></li>
                         @endif
                         <li class="nav-item"><a class="nav-link {{ request()->routeIs('messages.*') ? 'active' : '' }}" href="{{ route('messages.index') }}">Messages</a></li>

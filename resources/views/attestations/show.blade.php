@@ -48,7 +48,14 @@
             </div>
             <div class="text-end">
                 <div class="text-muted">Signature RH</div>
-                <div style="height: 60px;"></div>
+                <div class="d-flex justify-content-end align-items-end gap-2" style="height: 70px;">
+                    @if($rhUser?->company_stamp_path)
+                        <img src="{{ route('rh.profile.asset', [$rhUser, 'cachet']) }}" alt="Cachet entreprise" style="max-height: 62px; max-width: 110px; object-fit: contain;">
+                    @endif
+                    @if($rhUser?->rh_signature_path)
+                        <img src="{{ route('rh.profile.asset', [$rhUser, 'signature']) }}" alt="Signature RH" style="max-height: 62px; max-width: 140px; object-fit: contain;">
+                    @endif
+                </div>
                 <strong>__________________</strong>
             </div>
         </div>

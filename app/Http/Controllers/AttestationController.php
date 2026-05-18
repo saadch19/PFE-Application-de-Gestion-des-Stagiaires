@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Intern;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -12,7 +13,7 @@ class AttestationController extends Controller
     {
         $user = $request->user();
 
-        $canAccess = $user->hasRole('Administrateur', 'Responsable de competence', 'Encadrant')
+        $canAccess = $user->hasRole('Administrateur', 'Responsable RH', 'Responsable de competence', 'Encadrant')
             || ($user->hasRole('Stagiaire') && $user->intern !== null && $user->intern->id === $intern->id);
 
         if (! $canAccess) {
@@ -27,7 +28,15 @@ class AttestationController extends Controller
             ->get();
 
         $generatedAt = now();
+        $rhUser = User::query()
+            ->whereHas('role', fn ($query) => $query->where('name', 'Responsable RH'))
+            ->where(function ($query) {
+                $query->whereNotNull('rh_signature_path')
+                    ->orWhereNotNull('company_stamp_path');
+            })
+            ->latest()
+            ->first();
 
-        return view('attestations.show', compact('intern', 'internships', 'generatedAt'));
+        return view('attestations.show', compact('intern', 'internships', 'generatedAt', 'rhUser'));
     }
 }

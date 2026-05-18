@@ -54,7 +54,7 @@
                                         </td>
                                         <td><span class="badge text-bg-{{ $score['badge'] }}">{{ $score['label'] }}</span></td>
                                         <td class="text-end">
-                                            @if(auth()->user()->hasRole('Administrateur', 'Responsable de competence'))
+                                            @if(auth()->user()->hasRole('Administrateur', 'Responsable RH', 'Responsable de competence'))
                                                 <a href="{{ route('interns.show', $intern) }}" class="btn btn-sm btn-outline-primary">Voir</a>
                                             @elseif(auth()->user()->hasRole('Encadrant'))
                                                 <a href="{{ route('supervisor.interns.show', $intern) }}" class="btn btn-sm btn-outline-primary">Voir</a>
