@@ -59,9 +59,7 @@
                                 ->first();
                             $hasSupervisorValidation = $attestationRequest?->supervisor_validated_at !== null;
                             $hasRcValidation = $attestationRequest?->rc_validated_at !== null;
-                            $isValidatedForRh = $hasSupervisorValidation || $hasRcValidation;
-                            $canRhEdit = ! $intern->is_archived && ! $isValidatedForRh;
-                            $canShowAttestation = ! $isHr || ($hasSupervisorValidation && $hasRcValidation);
+                            $canShowAttestation = ! $isHr || ($isCompleted && $hasSupervisorValidation && $hasRcValidation);
                             $showHighlight = (int) $highlightInternId === (int) $intern->id;
                         @endphp
                         <tr @class(['table-success' => $showHighlight])>
@@ -81,26 +79,26 @@
                                 <a href="{{ $isSupervisor ? route('supervisor.interns.show', $intern) : route('interns.show', $intern) }}" class="btn btn-sm btn-outline-secondary">Voir</a>
 
                                 @unless($isSupervisor)
-                                    @if(! $isHr || $canRhEdit)
+                                    @unless($isHr)
                                         <a href="{{ route('interns.edit', $intern) }}" class="btn btn-sm btn-outline-primary">Modifier</a>
-                                    @endif
 
-                                    @if($intern->is_archived)
-                                        <form action="{{ route('interns.restore', $intern) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            @method('PATCH')
-                                            <button class="btn btn-sm btn-outline-success" type="submit">Restaurer</button>
-                                        </form>
-                                    @elseif($isCompleted)
-                                        <form action="{{ route('interns.archive', $intern) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            @method('PATCH')
-                                            <button class="btn btn-sm btn-outline-warning" type="submit">Archiver</button>
-                                        </form>
-                                    @endif
+                                        @if($intern->is_archived)
+                                            <form action="{{ route('interns.restore', $intern) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button class="btn btn-sm btn-outline-success" type="submit">Restaurer</button>
+                                            </form>
+                                        @elseif($isCompleted)
+                                            <form action="{{ route('interns.archive', $intern) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button class="btn btn-sm btn-outline-warning" type="submit">Archiver</button>
+                                            </form>
+                                        @endif
+                                    @endunless
 
                                     @if($canShowAttestation)
-                                        <a href="{{ route('attestations.show', $intern) }}" class="btn btn-sm btn-outline-info">Attestation</a>
+                                        <a href="{{ route('attestations.show', $intern) }}" class="btn btn-sm btn-outline-info">{{ $isHr ? 'Generer attestation' : 'Attestation' }}</a>
                                     @endif
                                 @endunless
                             </td>
