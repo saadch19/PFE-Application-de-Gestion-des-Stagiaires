@@ -12,12 +12,20 @@ class AbsenceController extends Controller
 {
     public function index(): View
     {
-        $absences = Absence::query()
+        $absencesQuery = Absence::query()
             ->with(['intern.user', 'recordedBy'])
-            ->latest('date_absence')
+            ->latest('date_absence');
+
+        $absenceStats = [
+            'total' => (clone $absencesQuery)->count(),
+            'unjustified' => (clone $absencesQuery)->where('justified', false)->count(),
+        ];
+
+        $absences = $absencesQuery
+            ->with(['intern.user', 'recordedBy'])
             ->paginate(12);
 
-        return view('absences.index', compact('absences'));
+        return view('absences.index', compact('absences', 'absenceStats'));
     }
 
     public function create(): View

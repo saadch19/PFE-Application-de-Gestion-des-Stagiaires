@@ -14,6 +14,23 @@
             @endunless
         </div>
 
+        @if($isHr)
+            <div class="row g-3 mb-3">
+                <div class="col-sm-6">
+                    <div class="border rounded p-3 bg-light">
+                        <div class="text-muted">Nombre absences</div>
+                        <div class="display-6 fw-semibold">{{ $absenceStats['total'] ?? 0 }}</div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="border rounded p-3 bg-light">
+                        <div class="text-muted">Absences non justifiees</div>
+                        <div class="display-6 fw-semibold">{{ $absenceStats['unjustified'] ?? 0 }}</div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <div class="table-responsive">
             <table class="table table-hover align-middle">
                 <thead>
