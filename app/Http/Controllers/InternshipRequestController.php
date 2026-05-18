@@ -215,6 +215,14 @@ class InternshipRequestController extends Controller
                     'body' => 'Votre attestation de stage est prete. Merci de venir la recuperer a l entreprise aupres du service RH.',
                     'is_read' => false,
                 ]);
+
+                Message::query()->create([
+                    'sender_id' => $user->id,
+                    'receiver_id' => $requestItem->intern->user_id,
+                    'subject' => 'Veuillez recuperer votre attestation',
+                    'body' => 'Veuillez vous presenter a l entreprise pour recuperer votre attestation de stage signee.',
+                    'is_read' => false,
+                ]);
             }
         });
 
@@ -233,7 +241,19 @@ class InternshipRequestController extends Controller
             return back()->with('error', 'L attestation doit etre generee avant archivage.');
         }
 
-        $requestItem->update(['workflow_status' => 'attestation_archivee']);
+        DB::transaction(function () use ($requestItem, $user): void {
+            $requestItem->update(['workflow_status' => 'attestation_archivee']);
+
+            if ($requestItem->intern?->user_id !== null) {
+                Message::query()->create([
+                    'sender_id' => $user->id,
+                    'receiver_id' => $requestItem->intern->user_id,
+                    'subject' => 'Dossier archive',
+                    'body' => 'Votre dossier de stage a ete archive par le service RH.',
+                    'is_read' => false,
+                ]);
+            }
+        });
 
         return back()->with('success', 'Attestation archivee.');
     }

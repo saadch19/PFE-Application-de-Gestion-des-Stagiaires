@@ -24,7 +24,10 @@
                             <td>{{ $requestItem->rh_processed_at?->format('d/m/Y H:i') ?? '-' }}</td>
                             <td>{{ $requestItem->rhProcessor?->full_name ?? '-' }}</td>
                             <td class="text-end">
-                                <a href="{{ route('attestations.show', $requestItem->intern) }}" class="btn btn-sm btn-outline-primary">Consulter</a>
+                                <div class="d-inline-flex justify-content-end gap-1 flex-nowrap">
+                                    <a href="{{ route('attestations.show', $requestItem->intern) }}" class="btn btn-sm btn-outline-primary text-nowrap">Voir attestation</a>
+                                    <a href="{{ route('rh.archives.download', $requestItem) }}" class="btn btn-sm btn-outline-secondary text-nowrap">Telecharger PDF</a>
+                                </div>
                             </td>
                         </tr>
                     @empty

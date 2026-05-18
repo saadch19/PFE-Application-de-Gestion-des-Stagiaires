@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class RhDocumentController extends Controller
@@ -48,6 +49,51 @@ class RhDocumentController extends Controller
             ->paginate(12);
 
         return view('rh.archives.index', compact('attestations'));
+    }
+
+    public function downloadAttestation(InternshipRequest $requestItem): Response
+    {
+        if ($requestItem->type !== 'attestation' || $requestItem->workflow_status !== 'attestation_archivee') {
+            abort(404);
+        }
+
+        $requestItem->load('intern.user');
+
+        $lines = [
+            'Attestation de stage archivee',
+            'Stagiaire : ' . ($requestItem->intern->user?->full_name ?? $requestItem->intern->cin),
+            'CIN : ' . $requestItem->intern->cin,
+            'Date generation : ' . ($requestItem->rh_processed_at?->format('d/m/Y H:i') ?? '-'),
+            'Statut : archivee',
+        ];
+
+        $contentLines = collect($lines)
+            ->map(fn (string $line, int $index): string => 'BT /F1 14 Tf 72 ' . (760 - ($index * 28)) . ' Td (' . $this->escapePdfText($line) . ') Tj ET')
+            ->join("\n");
+
+        $stream = $contentLines . "\n";
+        $pdf = "%PDF-1.4\n"
+            . "1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj\n"
+            . "2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj\n"
+            . "3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >> endobj\n"
+            . "4 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj\n"
+            . "5 0 obj << /Length " . strlen($stream) . " >> stream\n"
+            . $stream
+            . "endstream endobj\n"
+            . "xref\n0 6\n0000000000 65535 f \n"
+            . "trailer << /Root 1 0 R /Size 6 >>\nstartxref\n0\n%%EOF";
+
+        $filename = 'attestation-' . ($requestItem->intern?->cin ?? $requestItem->id) . '.pdf';
+
+        return response($pdf, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    private function escapePdfText(string $text): string
+    {
+        return str_replace(['\\', '(', ')'], ['\\\\', '\\(', '\\)'], $text);
     }
 
     public function profile(): View
