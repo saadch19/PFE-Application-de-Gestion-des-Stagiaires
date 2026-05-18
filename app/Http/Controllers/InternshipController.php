@@ -73,11 +73,35 @@ class InternshipController extends Controller
             abort(403, 'Action non autorisee.');
         }
 
+        $validated = $request->validate([
+            'grade' => ['required', 'numeric', 'min:0', 'max:20'],
+        ]);
+
         if ($internship->status !== 'termine') {
-            $internship->update(['status' => 'termine']);
+            $internship->update([
+                'status' => 'termine',
+                'grade' => $validated['grade'],
+            ]);
+        } else {
+            $internship->update(['grade' => $validated['grade']]);
         }
 
         return back()->with('success', 'Fin de stage validee.');
+    }
+
+    public function supervisorUndoValidate(Request $request, Internship $internship): RedirectResponse
+    {
+        if ($internship->supervisor_id !== $request->user()->id) {
+            abort(403, 'Action non autorisee.');
+        }
+
+        if ($internship->status !== 'termine') {
+            abort(403, 'Le stage n est pas termine.');
+        }
+
+        $internship->update(['status' => 'en_cours']);
+
+        return back()->with('success', 'Validation de fin de stage annulee.');
     }
 
     public function create(): View

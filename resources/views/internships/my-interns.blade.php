@@ -57,7 +57,7 @@
                             <td>
                                 @forelse($internship->interns as $intern)
                                     <a
-                                        href="{{ route('supervisor.interns', ['highlight' => $intern->id]) }}"
+                                        href="{{ route('supervisor.interns.show', $intern) }}"
                                         class="btn btn-sm btn-outline-success me-1 mb-1"
                                     >
                                         {{ $intern->user?->full_name ?? $intern->cin }}
@@ -69,13 +69,6 @@
                             <td class="text-end">
                                 <div class="d-inline-flex align-items-center justify-content-end gap-1 flex-nowrap">
                                 <a href="{{ route('supervisor.internships.show', $internship) }}" class="btn btn-sm btn-outline-primary">Consulter</a>
-                                @if($internship->status !== 'termine')
-                                    <form action="{{ route('supervisor.internships.validate', $internship) }}" method="POST" class="m-0" onsubmit="return confirm('Valider la fin de ce stage ?')">
-                                        @csrf
-                                        @method('PATCH')
-                                        <button class="btn btn-sm btn-success text-nowrap" type="submit">Valider fin</button>
-                                    </form>
-                                @endif
                                 </div>
                             </td>
                         </tr>

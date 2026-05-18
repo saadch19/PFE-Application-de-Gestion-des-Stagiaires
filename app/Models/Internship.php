@@ -21,6 +21,7 @@ class Internship extends Model
         'status',
         'supervisor_id',
         'responsible_id',
+        'grade',
     ];
 
     protected function casts(): array
@@ -28,6 +29,7 @@ class Internship extends Model
         return [
             'start_date' => 'date',
             'end_date' => 'date',
+            'grade' => 'float',
         ];
     }
 

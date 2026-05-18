@@ -19,11 +19,24 @@
         <p class="text-muted mb-0">Informations generales du stage.</p>
     </div>
     <div class="d-flex flex-wrap gap-2">
-        @if($internship->status !== 'termine')
-            <form action="{{ route('supervisor.internships.validate', $internship) }}" method="POST" onsubmit="return confirm('Valider la fin de ce stage ?')">
+        <form action="{{ route('supervisor.internships.validate', $internship) }}" method="POST" class="d-flex flex-wrap gap-2" onsubmit="return confirm('Enregistrer la note ?')">
+            @csrf
+            @method('PATCH')
+            <div>
+                <label class="form-label mb-0 small" for="grade">Note (/20)</label>
+                <input type="number" class="form-control form-control-sm" id="grade" name="grade" min="0" max="20" step="0.5" value="{{ old('grade', $internship->grade ?? '') }}" required>
+            </div>
+            @if($internship->status !== 'termine')
+                <button class="btn btn-success btn-sm" type="submit">Valider fin de stage</button>
+            @else
+                <button class="btn btn-outline-primary btn-sm" type="submit">Enregistrer la note</button>
+            @endif
+        </form>
+        @if($internship->status === 'termine')
+            <form action="{{ route('supervisor.internships.undo', $internship) }}" method="POST" onsubmit="return confirm('Annuler la validation de fin de stage ?')">
                 @csrf
                 @method('PATCH')
-                <button class="btn btn-success btn-sm" type="submit">Valider fin de stage</button>
+                <button class="btn btn-outline-danger btn-sm" type="submit">Annuler validation</button>
             </form>
         @endif
         <div class="btn-group" role="group" aria-label="Changer la vue">
@@ -60,11 +73,16 @@
                 </span>
             </dd>
 
+            <dt class="col-sm-3">Note</dt>
+            <dd class="col-sm-9">
+                {{ $internship->grade !== null ? number_format($internship->grade, 1) . ' / 20' : '-' }}
+            </dd>
+
             <dt class="col-sm-3">Stagiaires</dt>
             <dd class="col-sm-9 mb-0">
                 @forelse($internship->interns as $intern)
                     <a
-                        href="{{ route('supervisor.interns', ['highlight' => $intern->id]) }}"
+                        href="{{ route('supervisor.interns.show', $intern) }}"
                         class="btn btn-sm btn-outline-success me-1 mb-1"
                     >
                         {{ $intern->user?->full_name ?? $intern->cin }}
