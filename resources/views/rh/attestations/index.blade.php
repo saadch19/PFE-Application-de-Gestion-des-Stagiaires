@@ -28,14 +28,16 @@
                             </td>
                             <td>
                                 <span class="badge {{ $requestItem->workflow_status === 'attestation_prete' ? 'text-bg-success' : 'text-bg-warning' }}">
-                                    {{ $requestItem->workflow_status === 'attestation_prete' ? 'Attestation generee' : 'A generer' }}
+                                    {{ $requestItem->workflow_status === 'attestation_prete' ? 'Attestation generee' : 'En attente de generation' }}
                                 </span>
                             </td>
                             <td class="text-end">
                                 <div class="d-inline-flex justify-content-end gap-1 flex-nowrap">
                                     <a href="{{ route('interns.show', $requestItem->intern) }}" class="btn btn-sm btn-outline-secondary text-nowrap">Voir</a>
                                     <a href="{{ route('attestations.show', $requestItem->intern) }}" class="btn btn-sm btn-outline-primary text-nowrap">Generer attestation</a>
-                                    <a href="{{ route('attestations.show', $requestItem->intern) }}" class="btn btn-sm btn-outline-dark text-nowrap">Imprimer</a>
+                                    @if($requestItem->workflow_status === 'attestation_prete')
+                                        <a href="{{ route('attestations.show', $requestItem->intern) }}" class="btn btn-sm btn-outline-dark text-nowrap">Imprimer</a>
+                                    @endif
                                     @if($requestItem->workflow_status !== 'attestation_prete')
                                         <form action="{{ route('requests.rh-complete', $requestItem) }}" method="POST" class="m-0">
                                             @csrf
