@@ -141,10 +141,15 @@ class InternshipRequestController extends Controller
             abort(403, 'Validation reservee a l encadrant du stagiaire.');
         }
 
+        $validated = $request->validate([
+            'supervisor_grade' => ['required', 'integer', 'min:0', 'max:20'],
+        ]);
+
         $requestItem->update([
             'workflow_status' => 'attente_validation_rc',
             'supervisor_validated_by' => $user->id,
             'supervisor_validated_at' => now(),
+            'supervisor_grade' => $validated['supervisor_grade'],
         ]);
 
         return back()->with('success', 'Rapport valide. La demande est transmise au responsable de competence.');

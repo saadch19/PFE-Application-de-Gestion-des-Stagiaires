@@ -70,9 +70,19 @@
                             <td>
                                 <div class="d-flex justify-content-end gap-2 flex-nowrap">
                                     @if($requestItem->type === 'attestation' && $canSupervisorValidate && $requestItem->workflow_status === 'attente_validation_encadrant')
-                                        <form action="{{ route('requests.supervisor-validate', $requestItem) }}" method="POST">
+                                        <form action="{{ route('requests.supervisor-validate', $requestItem) }}" method="POST" class="d-inline-flex gap-1 align-items-center">
                                             @csrf
                                             @method('PATCH')
+                                            <input
+                                                type="number"
+                                                name="supervisor_grade"
+                                                class="form-control form-control-sm"
+                                                min="0"
+                                                max="20"
+                                                placeholder="Note /20"
+                                                required
+                                                style="width: 95px;"
+                                            >
                                             <button type="submit" class="btn btn-sm btn-outline-success text-nowrap">Valider rapport</button>
                                         </form>
                                     @elseif($requestItem->type === 'attestation' && $canRcValidate && $requestItem->workflow_status === 'attente_validation_rc')

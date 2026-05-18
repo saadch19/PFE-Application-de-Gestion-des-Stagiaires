@@ -27,6 +27,12 @@ class AttestationController extends Controller
             ->orderByDesc('end_date')
             ->get();
 
+        $attestationRequest = $intern->requests()
+            ->where('type', 'attestation')
+            ->whereNotNull('supervisor_grade')
+            ->latest('supervisor_validated_at')
+            ->first();
+
         $generatedAt = now();
         $rhUser = User::query()
             ->whereHas('role', fn ($query) => $query->where('name', 'Responsable RH'))
@@ -37,6 +43,6 @@ class AttestationController extends Controller
             ->latest()
             ->first();
 
-        return view('attestations.show', compact('intern', 'internships', 'generatedAt', 'rhUser'));
+        return view('attestations.show', compact('intern', 'internships', 'generatedAt', 'rhUser', 'attestationRequest'));
     }
 }

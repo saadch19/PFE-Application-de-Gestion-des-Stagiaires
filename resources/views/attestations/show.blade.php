@@ -37,6 +37,13 @@
             <p><em>Aucun stage associe n'a ete trouve pour ce stagiaire.</em></p>
         @endif
 
+        @if($attestationRequest?->supervisor_grade !== null)
+            <p>
+                Evaluation de l'encadrant lors de la remise du rapport :
+                <strong>{{ $attestationRequest->supervisor_grade }}/20</strong>.
+            </p>
+        @endif
+
         <p>
             Cette attestation est delivree pour servir et valoir ce que de droit.
         </p>

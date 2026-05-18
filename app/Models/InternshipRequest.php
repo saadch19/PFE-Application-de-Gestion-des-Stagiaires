@@ -24,6 +24,7 @@ class InternshipRequest extends Model
         'processed_by',
         'supervisor_validated_by',
         'supervisor_validated_at',
+        'supervisor_grade',
         'rc_validated_by',
         'rc_validated_at',
         'sent_to_rh_at',

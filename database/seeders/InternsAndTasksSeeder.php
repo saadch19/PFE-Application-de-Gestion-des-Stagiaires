@@ -11,6 +11,7 @@ use App\Models\Role;
 use App\Models\Absence;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 
 class InternsAndTasksSeeder extends Seeder
@@ -378,5 +379,86 @@ class InternsAndTasksSeeder extends Seeder
                 ]
             );
         }
+
+        $readyUser = User::query()->updateOrCreate(
+            ['email' => 'test.rh.attestation@internships.local'],
+            [
+                'full_name' => 'Imane Attestation',
+                'password_hash' => Hash::make('password123'),
+                'role_id' => $stagiaireRoleId,
+                'is_active' => true,
+            ]
+        );
+
+        $readyIntern = Intern::query()->updateOrCreate(
+            ['user_id' => $readyUser->id],
+            [
+                'cin' => 'QR202605',
+                'school' => 'EMSI Casablanca',
+                'specialty' => 'Ingenierie Informatique',
+                'phone' => '0655555555',
+                'start_date' => Carbon::now()->subDays(95),
+                'end_date' => Carbon::now()->subDays(2),
+                'is_archived' => false,
+            ]
+        );
+
+        $readyInternship = Internship::query()->updateOrCreate(
+            ['title' => 'Stage termine - gestion documentaire RH'],
+            [
+                'description' => 'Mise en place d un module de gestion documentaire pour les dossiers de stage.',
+                'department' => 'Ressources Humaines',
+                'start_date' => Carbon::now()->subDays(95),
+                'end_date' => Carbon::now()->subDays(2),
+                'status' => 'termine',
+                'supervisor_id' => $encadrant->id,
+                'responsible_id' => $responsable->id,
+            ]
+        );
+
+        $readyInternship->interns()->syncWithoutDetaching([$readyIntern->id]);
+
+        Task::query()->updateOrCreate(
+            [
+                'internship_id' => $readyInternship->id,
+                'title' => 'Rapport final valide',
+            ],
+            [
+                'assigned_by' => $encadrant->id,
+                'assigned_to' => $readyUser->id,
+                'details' => 'Rapport final deja valide par l encadrant et le responsable de competence.',
+                'due_date' => Carbon::now()->subDays(4),
+                'status' => 'termine',
+            ]
+        );
+
+        $reportPath = 'internship-reports/rapport-imane-attestation.pdf';
+
+        Storage::disk('local')->put($reportPath, "%PDF-1.4\n1 0 obj\n<< /Type /Catalog >>\nendobj\ntrailer\n<< /Root 1 0 R >>\n%%EOF");
+
+        InternshipRequest::query()->updateOrCreate(
+            [
+                'intern_id' => $readyIntern->id,
+                'type' => 'attestation',
+                'message' => 'Rapport final envoye et valide pour generation de l attestation.',
+            ],
+            [
+                'motif_absence' => null,
+                'report_path' => $reportPath,
+                'report_original_name' => 'rapport-stage-imane-attestation.pdf',
+                'status' => 'en_attente',
+                'workflow_status' => 'transmise_rh',
+                'processed_by' => null,
+                'supervisor_validated_by' => $encadrant->id,
+                'supervisor_validated_at' => Carbon::now()->subDays(1)->setTime(10, 0),
+                'supervisor_grade' => 17,
+                'rc_validated_by' => $responsable->id,
+                'rc_validated_at' => Carbon::now()->subDays(1)->setTime(14, 0),
+                'sent_to_rh_at' => Carbon::now()->subDays(1)->setTime(14, 5),
+                'rh_processed_by' => null,
+                'rh_processed_at' => null,
+                'absence_generated_at' => null,
+            ]
+        );
     }
 }
