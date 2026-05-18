@@ -15,7 +15,7 @@
 
         <div class="text-center mb-4">
             <h1 class="h3 mb-1">Attestation de stage</h1>
-            <p class="text-muted mb-0">Generee automatiquement par la plateforme</p>
+            <p class="text-muted mb-0">Générée automatiquement par la plateforme</p>
         </div>
 
         <p>

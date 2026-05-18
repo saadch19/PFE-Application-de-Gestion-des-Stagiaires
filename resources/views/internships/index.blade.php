@@ -16,9 +16,9 @@
             <div class="col-md-4">
                 <select class="form-select" name="status">
                     <option value="">Tous les statuts</option>
-                    <option value="planifie" @selected($status === 'planifie')>Planifie</option>
+                    <option value="planifie" @selected($status === 'planifie')>Planifié</option>
                     <option value="en_cours" @selected($status === 'en_cours')>En cours</option>
-                    <option value="termine" @selected($status === 'termine')>Termine</option>
+                    <option value="termine" @selected($status === 'termine')>Terminé</option>
                 </select>
             </div>
             <div class="col-md-2">
@@ -56,7 +56,7 @@
                             <td>{{ $internship->start_date?->format('d/m/Y') }} - {{ $internship->end_date?->format('d/m/Y') }}</td>
                             <td>
                                 <select class="form-select form-select-sm internship-status" data-url="{{ route('internships.status', $internship) }}">
-                                    @foreach(['planifie' => 'Planifie', 'en_cours' => 'En cours', 'termine' => 'Termine'] as $key => $label)
+                                    @foreach(['planifie' => 'Planifié', 'en_cours' => 'En cours', 'termine' => 'Terminé'] as $key => $label)
                                         <option value="{{ $key }}" @selected($internship->status === $key)>{{ $label }}</option>
                                     @endforeach
                                 </select>

@@ -24,7 +24,7 @@ class StatusDesign
                 'class' => 'text-bg-danger',
             ],
             'archive', 'archived', 'attestation_archivee' => [
-                'label' => 'Archive',
+                'label' => $status === 'attestation_archivee' ? 'Archivée' : 'Archivé',
                 'class' => 'text-bg-dark',
             ],
             default => [
@@ -37,15 +37,15 @@ class StatusDesign
     private static function label(string $status): string
     {
         return match ($status) {
-            'a_faire' => 'A faire',
+            'a_faire' => 'À faire',
             'en_cours' => 'En cours',
-            'planifie' => 'Planifie',
-            'termine', 'terminee' => 'Termine',
-            'acceptee' => 'Valide',
-            'refusee' => 'Refuse',
-            'attestation_generee', 'attestation_prete' => 'Generee',
-            'attestation_imprimee' => 'Imprimee',
-            'attestation_recuperee' => 'Recuperee',
+            'planifie' => 'Planifié',
+            'termine', 'terminee' => 'Terminé',
+            'acceptee', 'valide' => 'Validé',
+            'refusee', 'refuse' => 'Refusé',
+            'attestation_generee', 'attestation_prete' => 'Générée',
+            'attestation_imprimee' => 'Imprimée',
+            'attestation_recuperee' => 'Récupérée',
             default => ucfirst(str_replace('_', ' ', $status)),
         };
     }

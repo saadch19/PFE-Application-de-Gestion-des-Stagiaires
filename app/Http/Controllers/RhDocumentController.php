@@ -60,11 +60,11 @@ class RhDocumentController extends Controller
         $requestItem->load('intern.user');
 
         $lines = [
-            'Attestation de stage archivee',
+            'Attestation de stage archivée',
             'Stagiaire : ' . ($requestItem->intern->user?->full_name ?? $requestItem->intern->cin),
             'CIN : ' . $requestItem->intern->cin,
             'Date generation : ' . ($requestItem->rh_processed_at?->format('d/m/Y H:i') ?? '-'),
-            'Statut : archivee',
+            'Statut : archivée',
         ];
 
         $contentLines = collect($lines)

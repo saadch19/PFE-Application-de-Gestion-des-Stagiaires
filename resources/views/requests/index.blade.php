@@ -14,7 +14,7 @@
         'attente_validation_encadrant' => 'Attente encadrant',
         'attente_validation_rc' => 'Attente RC',
         'transmise_rh' => 'Transmise RH',
-        'attestation_prete' => 'Attestation prete',
+        'attestation_prete' => 'Attestation prête',
     ];
 @endphp
 

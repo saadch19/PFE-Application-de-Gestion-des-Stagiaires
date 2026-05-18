@@ -211,8 +211,8 @@ class InternshipRequestController extends Controller
                 Message::query()->create([
                     'sender_id' => $user->id,
                     'receiver_id' => $requestItem->intern->user_id,
-                    'subject' => 'Attestation de stage prete',
-                    'body' => 'Votre attestation de stage est prete. Merci de venir la recuperer a l entreprise aupres du service RH.',
+                    'subject' => 'Attestation de stage prête',
+                    'body' => 'Votre attestation de stage est prête. Merci de venir la récupérer à l entreprise auprès du service RH.',
                     'is_read' => false,
                 ]);
 
@@ -220,13 +220,13 @@ class InternshipRequestController extends Controller
                     'sender_id' => $user->id,
                     'receiver_id' => $requestItem->intern->user_id,
                     'subject' => 'Veuillez recuperer votre attestation',
-                    'body' => 'Veuillez vous presenter a l entreprise pour recuperer votre attestation de stage signee.',
+                    'body' => 'Veuillez vous présenter à l entreprise pour récupérer votre attestation de stage signée.',
                     'is_read' => false,
                 ]);
             }
         });
 
-        return back()->with('success', 'Attestation marquee comme prete et message envoye au stagiaire.');
+        return back()->with('success', 'Attestation marquée comme prête et message envoyé au stagiaire.');
     }
 
     public function rhMarkPrinted(Request $request, InternshipRequest $requestItem): RedirectResponse
@@ -238,7 +238,7 @@ class InternshipRequestController extends Controller
         }
 
         if (! in_array($requestItem->workflow_status, ['attestation_generee', 'attestation_prete', 'attestation_imprimee', 'attestation_recuperee'], true)) {
-            return back()->with('error', 'L attestation doit etre generee avant impression.');
+            return back()->with('error', 'L attestation doit être générée avant impression.');
         }
 
         $payload = [
@@ -251,7 +251,7 @@ class InternshipRequestController extends Controller
 
         $requestItem->update($payload);
 
-        return back()->with('success', 'Attestation marquee comme imprimee.');
+        return back()->with('success', 'Attestation marquée comme imprimée.');
     }
 
     public function rhMarkRecovered(Request $request, InternshipRequest $requestItem): RedirectResponse
@@ -263,7 +263,7 @@ class InternshipRequestController extends Controller
         }
 
         if (! in_array($requestItem->workflow_status, ['attestation_generee', 'attestation_prete', 'attestation_imprimee'], true)) {
-            return back()->with('error', 'L attestation doit etre generee avant recuperation.');
+            return back()->with('error', 'L attestation doit être générée avant récupération.');
         }
 
         $requestItem->update([
@@ -271,7 +271,7 @@ class InternshipRequestController extends Controller
             'attestation_recovered_at' => $requestItem->attestation_recovered_at ?? now(),
         ]);
 
-        return back()->with('success', 'Attestation marquee comme recuperee.');
+        return back()->with('success', 'Attestation marquée comme récupérée.');
     }
 
     public function rhArchive(Request $request, InternshipRequest $requestItem): RedirectResponse
@@ -283,7 +283,7 @@ class InternshipRequestController extends Controller
         }
 
         if ($requestItem->type !== 'attestation' || ! in_array($requestItem->workflow_status, ['attestation_generee', 'attestation_prete', 'attestation_imprimee', 'attestation_recuperee'], true)) {
-            return back()->with('error', 'L attestation doit etre generee avant archivage.');
+            return back()->with('error', 'L attestation doit être générée avant archivage.');
         }
 
         DB::transaction(function () use ($requestItem, $user): void {
@@ -296,14 +296,14 @@ class InternshipRequestController extends Controller
                 Message::query()->create([
                     'sender_id' => $user->id,
                     'receiver_id' => $requestItem->intern->user_id,
-                    'subject' => 'Dossier archive',
-                    'body' => 'Votre dossier de stage a ete archive par le service RH.',
+                    'subject' => 'Dossier archivé',
+                    'body' => 'Votre dossier de stage a été archivé par le service RH.',
                     'is_read' => false,
                 ]);
             }
         });
 
-        return back()->with('success', 'Attestation archivee.');
+        return back()->with('success', 'Attestation archivée.');
     }
 
     public function downloadReport(Request $request, InternshipRequest $requestItem): StreamedResponse

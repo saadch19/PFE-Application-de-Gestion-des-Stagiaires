@@ -60,7 +60,7 @@
                                                         <form action="{{ route('requests.rh-printed', $requestItem) }}" method="POST" class="m-0">
                                                             @csrf
                                                             @method('PATCH')
-                                                            <button class="dropdown-item" type="submit">Marquer imprimee</button>
+                                                            <button class="dropdown-item" type="submit">Marquer imprimée</button>
                                                         </form>
                                                     </li>
                                                 @endif
@@ -69,7 +69,7 @@
                                                         <form action="{{ route('requests.rh-recovered', $requestItem) }}" method="POST" class="m-0">
                                                             @csrf
                                                             @method('PATCH')
-                                                            <button class="dropdown-item" type="submit">Recuperee</button>
+                                                            <button class="dropdown-item" type="submit">Récupérée</button>
                                                         </form>
                                                     </li>
                                                 @endif

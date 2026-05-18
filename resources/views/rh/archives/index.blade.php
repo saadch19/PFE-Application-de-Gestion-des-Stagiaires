@@ -31,7 +31,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="4" class="text-center text-muted">Aucune attestation archivee.</td></tr>
+                        <tr><td colspan="4" class="text-center text-muted">Aucune attestation archivée.</td></tr>
                     @endforelse
                 </tbody>
             </table>

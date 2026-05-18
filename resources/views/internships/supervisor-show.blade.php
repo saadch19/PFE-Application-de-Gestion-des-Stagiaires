@@ -7,9 +7,9 @@
     $view = (string) request()->query('view', 'kanban');
     $isKanban = $view === 'kanban';
     $taskColumns = [
-        'a_faire' => 'A faire',
+        'a_faire' => 'À faire',
         'en_cours' => 'En cours',
-        'termine' => 'Termine',
+        'termine' => 'Terminé',
     ];
     $tasksByStatus = $tasks->groupBy('status');
 @endphp
@@ -102,7 +102,7 @@
             </div>
             <div class="d-flex flex-wrap gap-2">
                 <span class="badge text-bg-secondary">Total: {{ $taskStats['totalTasks'] }}</span>
-                <span class="badge text-bg-success">Terminees: {{ $taskStats['doneTasks'] }}</span>
+                <span class="badge text-bg-success">Terminées: {{ $taskStats['doneTasks'] }}</span>
                 <span class="badge text-bg-warning">Ouvertes: {{ $taskStats['openTasks'] }}</span>
                 <span class="badge text-bg-danger">En retard: {{ $taskStats['overdueTasks'] }}</span>
             </div>

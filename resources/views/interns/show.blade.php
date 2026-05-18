@@ -26,13 +26,13 @@
         : ($latestInternship?->status ?? ($latestInternship ? 'en_cours' : 'en_attente'));
     $historyItems = collect([
         ['label' => 'Rapport envoye', 'date' => $attestationRequest?->created_at, 'show' => $attestationRequest?->report_path !== null],
-        ['label' => 'Valide par encadrant', 'date' => $attestationRequest?->supervisor_validated_at, 'show' => $attestationRequest?->supervisor_validated_at !== null],
-        ['label' => 'Valide par RC', 'date' => $attestationRequest?->rc_validated_at, 'show' => $attestationRequest?->rc_validated_at !== null],
+        ['label' => 'Validé par encadrant', 'date' => $attestationRequest?->supervisor_validated_at, 'show' => $attestationRequest?->supervisor_validated_at !== null],
+        ['label' => 'Validé par RC', 'date' => $attestationRequest?->rc_validated_at, 'show' => $attestationRequest?->rc_validated_at !== null],
         ['label' => 'Transmis au RH', 'date' => $attestationRequest?->sent_to_rh_at, 'show' => $attestationRequest?->sent_to_rh_at !== null],
-        ['label' => 'Attestation generee', 'date' => $attestationRequest?->rh_processed_at, 'show' => $attestationRequest?->rh_processed_at !== null],
-        ['label' => 'Attestation imprimee', 'date' => $attestationRequest?->attestation_printed_at, 'show' => $attestationRequest?->attestation_printed_at !== null],
-        ['label' => 'Attestation recuperee', 'date' => $attestationRequest?->attestation_recovered_at, 'show' => $attestationRequest?->attestation_recovered_at !== null],
-        ['label' => 'Dossier archive', 'date' => $attestationRequest?->attestation_archived_at, 'show' => $attestationRequest?->attestation_archived_at !== null],
+        ['label' => 'Attestation générée', 'date' => $attestationRequest?->rh_processed_at, 'show' => $attestationRequest?->rh_processed_at !== null],
+        ['label' => 'Attestation imprimée', 'date' => $attestationRequest?->attestation_printed_at, 'show' => $attestationRequest?->attestation_printed_at !== null],
+        ['label' => 'Attestation récupérée', 'date' => $attestationRequest?->attestation_recovered_at, 'show' => $attestationRequest?->attestation_recovered_at !== null],
+        ['label' => 'Dossier archivé', 'date' => $attestationRequest?->attestation_archived_at, 'show' => $attestationRequest?->attestation_archived_at !== null],
     ])->where('show', true);
 @endphp
 
@@ -229,9 +229,9 @@
                         @endif
                     </dd>
                     <dt class="col-sm-3">Validation encadrant</dt>
-                    <dd class="col-sm-9">{{ $attestationRequest?->supervisor_validated_at ? 'Valide le ' . $attestationRequest->supervisor_validated_at->format('d/m/Y H:i') : 'En attente' }}</dd>
+                    <dd class="col-sm-9">{{ $attestationRequest?->supervisor_validated_at ? 'Validé le ' . $attestationRequest->supervisor_validated_at->format('d/m/Y H:i') : 'En attente' }}</dd>
                     <dt class="col-sm-3">Validation RC</dt>
-                    <dd class="col-sm-9">{{ $attestationRequest?->rc_validated_at ? 'Valide le ' . $attestationRequest->rc_validated_at->format('d/m/Y H:i') : 'En attente' }}</dd>
+                    <dd class="col-sm-9">{{ $attestationRequest?->rc_validated_at ? 'Validé le ' . $attestationRequest->rc_validated_at->format('d/m/Y H:i') : 'En attente' }}</dd>
                     <dt class="col-sm-3">Note encadrant</dt>
                     <dd class="col-sm-9">{{ $attestationRequest?->supervisor_grade !== null ? $attestationRequest->supervisor_grade . '/20' : '-' }}</dd>
                 </dl>
@@ -246,9 +246,9 @@
                     <dd class="col-sm-9">@statusBadge($attestationRequest?->workflow_status ?? 'en_attente')</dd>
                     <dt class="col-sm-3">Note encadrant</dt>
                     <dd class="col-sm-9">{{ $attestationRequest?->supervisor_grade !== null ? $attestationRequest->supervisor_grade . '/20' : '-' }}</dd>
-                    <dt class="col-sm-3">Date generation</dt>
+                    <dt class="col-sm-3">Date génération</dt>
                     <dd class="col-sm-9">{{ $attestationRequest?->rh_processed_at?->format('d/m/Y H:i') ?? '-' }}</dd>
-                    <dt class="col-sm-3">Date recuperation</dt>
+                    <dt class="col-sm-3">Date récupération</dt>
                     <dd class="col-sm-9">{{ $attestationRequest?->attestation_recovered_at?->format('d/m/Y H:i') ?? '-' }}</dd>
                 </dl>
             </div>

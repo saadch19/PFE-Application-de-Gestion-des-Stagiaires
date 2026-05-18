@@ -8,9 +8,9 @@
     $view = (string) request()->query('view', 'table');
     $isKanban = $view === 'kanban';
     $taskColumns = [
-        'a_faire' => 'A faire',
+        'a_faire' => 'À faire',
         'en_cours' => 'En cours',
-        'termine' => 'Termine',
+        'termine' => 'Terminé',
     ];
     $tasksByStatus = $tasks->getCollection()->groupBy('status');
     $isEncadrant = auth()->user()->hasRole('Encadrant');
@@ -53,9 +53,9 @@
                 <div class="col-md-4">
                     <select class="form-select" name="status">
                         <option value="">Tous les statuts</option>
-                        <option value="a_faire" @selected($status === 'a_faire')>A faire</option>
+                        <option value="a_faire" @selected($status === 'a_faire')>À faire</option>
                         <option value="en_cours" @selected($status === 'en_cours')>En cours</option>
-                        <option value="termine" @selected($status === 'termine')>Termine</option>
+                        <option value="termine" @selected($status === 'termine')>Terminé</option>
                     </select>
                 </div>
             @endif
@@ -164,7 +164,7 @@
                                 <td>{{ $task->due_date?->format('d/m/Y') ?? '-' }}</td>
                                 <td>
                                     <select class="form-select form-select-sm task-status" data-url="{{ route('tasks.status', $task) }}">
-                                        @foreach(['a_faire' => 'A faire', 'en_cours' => 'En cours', 'termine' => 'Termine'] as $key => $label)
+                                        @foreach(['a_faire' => 'À faire', 'en_cours' => 'En cours', 'termine' => 'Terminé'] as $key => $label)
                                             <option value="{{ $key }}" @selected($task->status === $key)>{{ $label }}</option>
                                         @endforeach
                                     </select>

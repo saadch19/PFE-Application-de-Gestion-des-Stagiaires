@@ -16,9 +16,9 @@
             <div class="col-md-4">
                 <select class="form-select" name="status">
                     <option value="">Tous les statuts</option>
-                    <option value="planifie" @selected($status === 'planifie')>Planifie</option>
+                    <option value="planifie" @selected($status === 'planifie')>Planifié</option>
                     <option value="en_cours" @selected($status === 'en_cours')>En cours</option>
-                    <option value="termine" @selected($status === 'termine')>Termine</option>
+                    <option value="termine" @selected($status === 'termine')>Terminé</option>
                 </select>
             </div>
             <div class="col-md-2">

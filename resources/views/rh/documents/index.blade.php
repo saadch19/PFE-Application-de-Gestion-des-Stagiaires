@@ -45,7 +45,7 @@
                             </td>
                             <td>
                                 <span class="badge {{ $requestItem->workflow_status === 'attestation_prete' ? 'text-bg-success' : 'text-bg-warning' }}">
-                                    {{ $requestItem->workflow_status === 'attestation_prete' ? 'Attestation prete' : 'A imprimer' }}
+                                    {{ $requestItem->workflow_status === 'attestation_prete' ? 'Attestation prête' : 'À imprimer' }}
                                 </span>
                             </td>
                             <td class="text-end">
