@@ -15,14 +15,23 @@
                 <select class="form-select" id="type" name="type" required>
                     <option value="">Sélectionner</option>
                     <option value="prolongation" @selected(old('type') === 'prolongation')>Prolongation</option>
-                    <option value="attestation" @selected(old('type') === 'attestation')>Attestation</option>
-                    <option value="retard_attestation" @selected(old('type') === 'retard_attestation')>Retard d'attestation</option>
+                    @unless($hasAttestationRequest)
+                        <option value="attestation" @selected(old('type') === 'attestation')>Attestation</option>
+                    @endunless
+                    @if($canRequestDelayedAttestation)
+                        <option value="retard_attestation" @selected(old('type') === 'retard_attestation')>Retard d'attestation</option>
+                    @endif
                     <option value="absence" @selected(old('type') === 'absence')>Absence</option>
                     <option value="autre" @selected(old('type') === 'autre')>Autre</option>
                 </select>
+                @if($hasAttestationRequest && ! $canRequestDelayedAttestation)
+                    <small class="text-muted">Votre demande d'attestation existe deja.</small>
+                @elseif($canRequestDelayedAttestation)
+                    <small class="text-muted">Votre demande d'attestation est deja envoyee. Vous pouvez seulement signaler un retard.</small>
+                @endif
             </div>
 
-            <div id="reportField" class="{{ old('type') === 'attestation' ? '' : 'd-none' }}">
+            <div id="reportField" class="{{ old('type') === 'attestation' && ! $hasAttestationRequest ? '' : 'd-none' }}">
                 <label for="rapport_stage" class="form-label">Rapport de stage PDF</label>
                 <input
                     type="file"
@@ -30,7 +39,7 @@
                     id="rapport_stage"
                     name="rapport_stage"
                     accept="application/pdf,.pdf"
-                    @if(old('type') === 'attestation') required @endif
+                    @if(old('type') === 'attestation' && ! $hasAttestationRequest) required @endif
                 >
                 <small class="text-muted">Le rapport sera transmis à l'encadrant puis au responsable de compétence.</small>
             </div>

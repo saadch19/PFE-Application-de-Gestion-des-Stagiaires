@@ -41,7 +41,23 @@ class InternshipRequestController extends Controller
             abort(403, 'Seuls les stagiaires liés à une fiche peuvent créer une demande.');
         }
 
-        return view('requests.create');
+        $attestationRequest = InternshipRequest::query()
+            ->where('intern_id', $user->intern->id)
+            ->where('type', 'attestation')
+            ->latest()
+            ->first();
+
+        $hasAttestationRequest = $attestationRequest !== null;
+        $canRequestDelayedAttestation = $attestationRequest !== null
+            && ! in_array($attestationRequest->workflow_status, [
+                'attestation_generee',
+                'attestation_prete',
+                'attestation_imprimee',
+                'attestation_recuperee',
+                'attestation_archivee',
+            ], true);
+
+        return view('requests.create', compact('hasAttestationRequest', 'canRequestDelayedAttestation'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -58,6 +74,34 @@ class InternshipRequestController extends Controller
             'message' => ['required', 'string'],
             'rapport_stage' => ['required_if:type,attestation', 'nullable', 'file', 'max:10240', 'mimes:pdf'],
         ]);
+
+        $attestationRequest = InternshipRequest::query()
+            ->where('intern_id', $user->intern->id)
+            ->where('type', 'attestation')
+            ->latest()
+            ->first();
+
+        $hasAttestationRequest = $attestationRequest !== null;
+        $canRequestDelayedAttestation = $attestationRequest !== null
+            && ! in_array($attestationRequest->workflow_status, [
+                'attestation_generee',
+                'attestation_prete',
+                'attestation_imprimee',
+                'attestation_recuperee',
+                'attestation_archivee',
+            ], true);
+
+        if ($validated['type'] === 'attestation' && $hasAttestationRequest) {
+            return back()
+                ->withInput()
+                ->with('error', 'Vous avez déjà envoyé une demande d attestation.');
+        }
+
+        if ($validated['type'] === 'retard_attestation' && ! $canRequestDelayedAttestation) {
+            return back()
+                ->withInput()
+                ->with('error', 'La demande de retard d attestation est disponible seulement si votre attestation a déjà été demandée et n est pas encore générée.');
+        }
 
         $reportPath = null;
         $reportOriginalName = null;
