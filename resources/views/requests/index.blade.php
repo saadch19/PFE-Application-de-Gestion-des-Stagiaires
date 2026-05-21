@@ -6,16 +6,22 @@
 @php
     $user = auth()->user();
     $canProcess = $user->hasRole('Administrateur', 'Responsable de competence');
-    $canSupervisorValidate = $user->hasRole('Encadrant');
-    $canRcValidate = $user->hasRole('Responsable de competence');
-    $canRhComplete = $user->hasRole('Responsable RH');
+    $canSupervisorValidate = $user->hasRole('Administrateur', 'Encadrant');
+    $canRcValidate = $user->hasRole('Administrateur', 'Responsable de competence');
+    $canRhComplete = $user->hasRole('Administrateur', 'Responsable RH');
     $canCreate = $user->hasRole('Stagiaire') && $user->intern !== null;
     $workflowLabels = [
         'attente_validation_encadrant' => 'Attente encadrant',
         'attente_validation_rc' => 'Attente RC',
         'transmise_rh' => 'Transmise RH',
-        'attestation_prete' => 'Attestation prête',
+        'attestation_prete' => 'Attestation prete',
+        'attestation_generee' => 'Attestation generee',
+        'attestation_imprimee' => 'Attestation imprimee',
+        'attestation_recuperee' => 'Attestation recuperee',
+        'attestation_archivee' => 'Attestation archivee',
     ];
+    $printableAttestationStatuses = ['attestation_generee', 'attestation_prete', 'attestation_imprimee', 'attestation_recuperee'];
+    $adminGeneratableAttestationStatuses = ['attente_validation_encadrant', 'attente_validation_rc', 'transmise_rh'];
 @endphp
 
 <div class="card card-soft fade-in">
@@ -35,7 +41,7 @@
                         <th>Type</th>
                         <th>Message</th>
                         <th>Statut</th>
-                        <th>Traitée par</th>
+                        <th>Traitee par</th>
                         <th class="text-end" style="min-width: 250px;">Actions</th>
                     </tr>
                 </thead>
@@ -46,7 +52,7 @@
                             <td>
                                 {{ $requestItem->type === 'retard_attestation' ? 'Retard attestation' : ucfirst($requestItem->type) }}
                                 @if($requestItem->type === 'absence' && $requestItem->absence_generated_at !== null)
-                                    <span class="badge text-bg-success ms-1">Absence créée</span>
+                                    <span class="badge text-bg-success ms-1">Absence creee</span>
                                 @endif
                                 @if($requestItem->type === 'attestation' && $requestItem->report_path)
                                     <div>
@@ -74,36 +80,49 @@
                             <td>{{ $requestItem->processedBy?->full_name ?? '-' }}</td>
                             <td>
                                 <div class="d-flex justify-content-end gap-2 flex-nowrap">
-                                    @if($requestItem->type === 'attestation' && $canSupervisorValidate && $requestItem->workflow_status === 'attente_validation_encadrant')
-                                        <form action="{{ route('requests.supervisor-validate', $requestItem) }}" method="POST" class="d-inline-flex gap-1 align-items-center">
-                                            @csrf
-                                            @method('PATCH')
-                                            <input
-                                                type="number"
-                                                name="supervisor_grade"
-                                                class="form-control form-control-sm"
-                                                min="0"
-                                                max="20"
-                                                placeholder="Note /20"
-                                                required
-                                                style="width: 95px;"
-                                            >
-                                            <button type="submit" class="btn btn-sm btn-outline-success text-nowrap">Valider rapport</button>
-                                        </form>
-                                    @elseif($requestItem->type === 'attestation' && $canRcValidate && $requestItem->workflow_status === 'attente_validation_rc')
-                                        <form action="{{ route('requests.rc-validate', $requestItem) }}" method="POST">
-                                            @csrf
-                                            @method('PATCH')
-                                            <button type="submit" class="btn btn-sm btn-outline-success text-nowrap">Valider rapport</button>
-                                        </form>
-                                    @elseif($requestItem->type === 'attestation' && $canRhComplete && $requestItem->workflow_status === 'transmise_rh')
-                                        <a href="{{ route('attestations.show', $requestItem->intern) }}" class="btn btn-sm btn-outline-primary text-nowrap">Générer</a>
-                                        <form action="{{ route('requests.rh-complete', $requestItem) }}" method="POST">
-                                            @csrf
-                                            @method('PATCH')
-                                            <button type="submit" class="btn btn-sm btn-outline-success text-nowrap">Informer stagiaire</button>
-                                        </form>
-                                    @elseif($canProcess && $requestItem->status === 'en_attente' && $requestItem->type !== 'attestation')
+                                    @if($requestItem->type === 'attestation')
+                                        @if($canSupervisorValidate && $requestItem->workflow_status === 'attente_validation_encadrant')
+                                            <form action="{{ route('requests.supervisor-validate', $requestItem) }}" method="POST" class="d-inline-flex gap-1 align-items-center">
+                                                @csrf
+                                                @method('PATCH')
+                                                <input
+                                                    type="number"
+                                                    name="supervisor_grade"
+                                                    class="form-control form-control-sm"
+                                                    min="0"
+                                                    max="20"
+                                                    placeholder="Note /20"
+                                                    required
+                                                    style="width: 95px;"
+                                                >
+                                                <button type="submit" class="btn btn-sm btn-outline-success text-nowrap">Donner note</button>
+                                            </form>
+                                        @elseif($canRcValidate && $requestItem->workflow_status === 'attente_validation_rc')
+                                            <form action="{{ route('requests.rc-validate', $requestItem) }}" method="POST">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" class="btn btn-sm btn-outline-success text-nowrap">Valider rapport</button>
+                                            </form>
+                                        @endif
+
+                                        @if($canRhComplete && in_array($requestItem->workflow_status, $adminGeneratableAttestationStatuses, true))
+                                            <a href="{{ route('attestations.show', $requestItem->intern) }}" class="btn btn-sm btn-outline-primary text-nowrap">Voir</a>
+                                            <form action="{{ route('requests.rh-complete', $requestItem) }}" method="POST">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" class="btn btn-sm btn-outline-success text-nowrap">Generer</button>
+                                            </form>
+                                        @elseif($canRhComplete && in_array($requestItem->workflow_status, $printableAttestationStatuses, true))
+                                            <a href="{{ route('attestations.show', $requestItem->intern) }}" class="btn btn-sm btn-outline-primary text-nowrap">Voir / Imprimer</a>
+                                            @if(in_array($requestItem->workflow_status, ['attestation_generee', 'attestation_prete'], true))
+                                                <form action="{{ route('requests.rh-printed', $requestItem) }}" method="POST">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button type="submit" class="btn btn-sm btn-outline-secondary text-nowrap">Marquer imprimee</button>
+                                                </form>
+                                            @endif
+                                        @endif
+                                    @elseif($canProcess && $requestItem->status === 'en_attente')
                                         <form action="{{ route('requests.process', $requestItem) }}" method="POST">
                                             @csrf
                                             @method('PATCH')

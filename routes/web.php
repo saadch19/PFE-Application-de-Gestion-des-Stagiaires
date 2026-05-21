@@ -88,7 +88,7 @@ Route::middleware('auth')->group(function (): void {
         Route::delete('/requests/{requestItem}', [InternshipRequestController::class, 'destroy'])->name('requests.destroy');
     });
 
-    Route::middleware('role:Responsable RH')->group(function (): void {
+    Route::middleware('role:Administrateur,Responsable RH')->group(function (): void {
         Route::redirect('/rh/documents', '/rh/attestations');
         Route::redirect('/rh/rapports', '/rh/attestations')->name('rh.reports.index');
         Route::get('/rh/attestations', [RhDocumentController::class, 'attestations'])->name('rh.attestations.index');

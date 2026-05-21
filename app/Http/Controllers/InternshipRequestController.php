@@ -137,7 +137,7 @@ class InternshipRequestController extends Controller
             ->where('supervisor_id', $user->id)
             ->exists();
 
-        if (! $user->hasRole('Encadrant') || ! $isSupervisor) {
+        if (! $user->hasRole('Administrateur') && (! $user->hasRole('Encadrant') || ! $isSupervisor)) {
             abort(403, 'Validation réservée à l encadrant du stagiaire.');
         }
 
@@ -168,7 +168,7 @@ class InternshipRequestController extends Controller
             ->where('responsible_id', $user->id)
             ->exists();
 
-        if (! $user->hasRole('Responsable de competence') || ! $isResponsible) {
+        if (! $user->hasRole('Administrateur') && (! $user->hasRole('Responsable de competence') || ! $isResponsible)) {
             abort(403, 'Validation réservée au responsable de compétence du stagiaire.');
         }
 
@@ -190,11 +190,15 @@ class InternshipRequestController extends Controller
     {
         $user = $request->user();
 
-        if (! $user->hasRole('Responsable RH')) {
+        if (! $user->hasRole('Administrateur', 'Responsable RH')) {
             abort(403, 'Action réservée au RH.');
         }
 
-        if ($requestItem->type !== 'attestation' || $requestItem->sent_to_rh_at === null) {
+        if ($requestItem->type !== 'attestation') {
+            abort(403, 'Cette action concerne seulement les attestations.');
+        }
+
+        if (! $user->hasRole('Administrateur') && $requestItem->sent_to_rh_at === null) {
             abort(403, 'Cette attestation n est pas encore transmise au RH.');
         }
 
@@ -205,6 +209,7 @@ class InternshipRequestController extends Controller
                 'processed_by' => $user->id,
                 'rh_processed_by' => $user->id,
                 'rh_processed_at' => now(),
+                'sent_to_rh_at' => $requestItem->sent_to_rh_at ?? now(),
             ]);
 
             if ($requestItem->intern?->user_id !== null) {
@@ -233,7 +238,7 @@ class InternshipRequestController extends Controller
     {
         $user = $request->user();
 
-        if (! $user->hasRole('Responsable RH')) {
+        if (! $user->hasRole('Administrateur', 'Responsable RH')) {
             abort(403, 'Action réservée au RH.');
         }
 
@@ -258,7 +263,7 @@ class InternshipRequestController extends Controller
     {
         $user = $request->user();
 
-        if (! $user->hasRole('Responsable RH')) {
+        if (! $user->hasRole('Administrateur', 'Responsable RH')) {
             abort(403, 'Action réservée au RH.');
         }
 
@@ -278,7 +283,7 @@ class InternshipRequestController extends Controller
     {
         $user = $request->user();
 
-        if (! $user->hasRole('Responsable RH')) {
+        if (! $user->hasRole('Administrateur', 'Responsable RH')) {
             abort(403, 'Action réservée au RH.');
         }
 
