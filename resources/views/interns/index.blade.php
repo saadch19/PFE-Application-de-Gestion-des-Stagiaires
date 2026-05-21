@@ -6,6 +6,7 @@
 @php
     $isSupervisor = auth()->user()->hasRole('Encadrant');
     $isHr = auth()->user()->hasRole('Responsable RH');
+    $canManageInterns = auth()->user()->hasRole('Administrateur', 'Responsable de competence');
     $highlightInternId = $highlightInternId ?? null;
 @endphp
 
@@ -13,9 +14,9 @@
     <div class="card-body">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
             <h1 class="h4 mb-0">Gestion des stagiaires</h1>
-            @unless($isSupervisor)
+            @if($canManageInterns)
                 <a href="{{ route('interns.create') }}" class="btn btn-success btn-sm">Nouveau stagiaire</a>
-            @endunless
+            @endif
         </div>
 
         <form method="GET" class="row g-2 mb-3">

@@ -5,9 +5,10 @@
 @section('content')
 @php
     $user = auth()->user();
+    $isAdmin = $user->hasRole('Administrateur');
     $canProcess = $user->hasRole('Administrateur', 'Responsable de competence');
-    $canSupervisorValidate = $user->hasRole('Administrateur', 'Encadrant');
-    $canRcValidate = $user->hasRole('Administrateur', 'Responsable de competence');
+    $canSupervisorValidate = ! $isAdmin && $user->hasRole('Encadrant');
+    $canRcValidate = ! $isAdmin && $user->hasRole('Responsable de competence');
     $canRhComplete = $user->hasRole('Administrateur', 'Responsable RH');
     $canCreate = $user->hasRole('Stagiaire') && $user->intern !== null;
     $workflowLabels = [
@@ -107,9 +108,21 @@
 
                                         @if($canRhComplete && in_array($requestItem->workflow_status, $adminGeneratableAttestationStatuses, true))
                                             <a href="{{ route('attestations.show', $requestItem->intern) }}" class="btn btn-sm btn-outline-primary text-nowrap">Voir</a>
-                                            <form action="{{ route('requests.rh-complete', $requestItem) }}" method="POST">
+                                            <form action="{{ route('requests.rh-complete', $requestItem) }}" method="POST" class="d-inline-flex gap-1 align-items-center">
                                                 @csrf
                                                 @method('PATCH')
+                                                @if($requestItem->supervisor_grade === null)
+                                                    <input
+                                                        type="number"
+                                                        name="supervisor_grade"
+                                                        class="form-control form-control-sm"
+                                                        min="0"
+                                                        max="20"
+                                                        placeholder="Note /20"
+                                                        required
+                                                        style="width: 95px;"
+                                                    >
+                                                @endif
                                                 <button type="submit" class="btn btn-sm btn-outline-success text-nowrap">Generer</button>
                                             </form>
                                         @elseif($canRhComplete && in_array($requestItem->workflow_status, $printableAttestationStatuses, true))

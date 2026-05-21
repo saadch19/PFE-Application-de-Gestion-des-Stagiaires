@@ -202,15 +202,29 @@ class InternshipRequestController extends Controller
             abort(403, 'Cette attestation n est pas encore transmise au RH.');
         }
 
-        DB::transaction(function () use ($requestItem, $user): void {
-            $requestItem->update([
+        $validated = $requestItem->supervisor_grade === null
+            ? $request->validate([
+                'supervisor_grade' => ['required', 'integer', 'min:0', 'max:20'],
+            ])
+            : [];
+
+        DB::transaction(function () use ($requestItem, $user, $validated): void {
+            $payload = [
                 'status' => 'acceptee',
                 'workflow_status' => 'attestation_generee',
                 'processed_by' => $user->id,
                 'rh_processed_by' => $user->id,
                 'rh_processed_at' => now(),
                 'sent_to_rh_at' => $requestItem->sent_to_rh_at ?? now(),
-            ]);
+            ];
+
+            if ($requestItem->supervisor_grade === null) {
+                $payload['supervisor_grade'] = $validated['supervisor_grade'];
+                $payload['supervisor_validated_by'] = $requestItem->supervisor_validated_by ?? $user->id;
+                $payload['supervisor_validated_at'] = $requestItem->supervisor_validated_at ?? now();
+            }
+
+            $requestItem->update($payload);
 
             if ($requestItem->intern?->user_id !== null) {
                 Message::query()->create([
@@ -231,7 +245,9 @@ class InternshipRequestController extends Controller
             }
         });
 
-        return back()->with('success', 'Attestation marquée comme prête et message envoyé au stagiaire.');
+        return redirect()
+            ->route('attestations.show', $requestItem->intern)
+            ->with('success', 'Attestation generee. Vous pouvez maintenant l imprimer.');
     }
 
     public function rhMarkPrinted(Request $request, InternshipRequest $requestItem): RedirectResponse

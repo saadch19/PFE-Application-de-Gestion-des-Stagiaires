@@ -38,10 +38,21 @@ Route::middleware('auth')->group(function (): void {
     });
 
     Route::middleware('role:Administrateur,Responsable RH,Responsable de competence')->group(function (): void {
-        Route::resource('interns', InternController::class)->except(['destroy']);
+        Route::get('/interns', [InternController::class, 'index'])->name('interns.index');
+    });
+
+    Route::middleware('role:Administrateur,Responsable de competence')->group(function (): void {
+        Route::get('/interns/create', [InternController::class, 'create'])->name('interns.create');
+        Route::post('/interns', [InternController::class, 'store'])->name('interns.store');
+        Route::get('/interns/{intern}/edit', [InternController::class, 'edit'])->name('interns.edit');
+        Route::match(['put', 'patch'], '/interns/{intern}', [InternController::class, 'update'])->name('interns.update');
         Route::patch('/interns/{intern}/archive', [InternController::class, 'archive'])->name('interns.archive');
         Route::patch('/interns/{intern}/restore', [InternController::class, 'restore'])->name('interns.restore');
         Route::get('/interns/{intern}/convention', [InternshipController::class, 'internConvention'])->name('interns.convention');
+    });
+
+    Route::middleware('role:Administrateur,Responsable RH,Responsable de competence')->group(function (): void {
+        Route::get('/interns/{intern}', [InternController::class, 'show'])->name('interns.show');
     });
 
     Route::middleware('role:Administrateur,Responsable de competence')->group(function (): void {
