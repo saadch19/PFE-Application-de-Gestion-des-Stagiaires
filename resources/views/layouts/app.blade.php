@@ -427,11 +427,12 @@
             content: "\F2EE";
             font-family: "bootstrap-icons";
             position: absolute;
-            right: 1rem;
-            top: 1rem;
-            color: rgba(31, 111, 100, 0.12);
-            font-size: 2.1rem;
+            right: 0.75rem;
+            bottom: 0.65rem;
+            color: rgba(31, 111, 100, 0.07);
+            font-size: 1.75rem;
             line-height: 1;
+            pointer-events: none;
         }
 
         .stat-card:hover {
