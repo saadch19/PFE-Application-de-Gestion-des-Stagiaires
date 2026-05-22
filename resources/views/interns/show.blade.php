@@ -7,6 +7,12 @@
     $canViewInternTasks = ! auth()->user()->hasRole('Responsable de competence', 'Responsable RH');
     $isSupervisor = auth()->user()->hasRole('Encadrant');
     $isRh = auth()->user()->hasRole('Responsable RH');
+    $scoreColor = match ($score['badge']) {
+        'success' => '#078f79',
+        'warning' => '#f4b000',
+        'danger' => '#f04a22',
+        default => '#6b7a12',
+    };
     $supervisors = $intern->internships
         ->pluck('supervisor')
         ->filter()
@@ -49,24 +55,72 @@
     </div>
 </div>
 
-<div class="row g-4 mb-4">
-    <div class="col-lg-5 fade-in">
-        <div class="card card-soft h-100">
+<div class="row g-4 mb-4 align-items-start">
+    <div class="col-xl-7 col-lg-6 fade-in">
+        <div class="card card-soft">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
                     <div>
-                        <h2 class="h5 mb-1">Score automatique</h2>
+                        <h2 class="h5 mb-1 section-title"><span class="module-icon"><i class="bi bi-speedometer2"></i></span> Score automatique</h2>
                         <p class="text-muted mb-0">Évaluation calculée depuis les absences et les tâches.</p>
                     </div>
                     <span class="badge text-bg-{{ $score['badge'] }}">{{ $score['label'] }}</span>
                 </div>
 
-                <div class="display-5 fw-semibold mb-2">{{ $score['score'] }}/100</div>
-                <div class="progress mb-4" style="height: 10px;">
-                    <div class="progress-bar bg-{{ $score['badge'] }}" style="width: {{ $score['score'] }}%"></div>
+                <div class="row g-3 align-items-center mb-4">
+                    <div class="col-sm-4">
+                        <div class="score-donut" style="--score: {{ $score['score'] }}; --score-color: {{ $scoreColor }};">
+                            <div class="text-center">
+                                <div class="score-donut-value">{{ $score['score'] }}%</div>
+                                <div class="score-donut-caption">Score</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-8">
+                        <div class="row g-2">
+                            <div class="col-4">
+                                <div class="score-metric text-center">
+                                    <div class="fw-semibold">{{ $score['presence'] }}/40</div>
+                                    <small class="text-muted">Presence</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="score-metric text-center">
+                                    <div class="fw-semibold">{{ $score['tasks'] }}/40</div>
+                                    <small class="text-muted">Tâches</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="score-metric text-center">
+                                    <div class="fw-semibold">{{ $score['deadlines'] }}/20</div>
+                                    <small class="text-muted">Délais</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="row g-2">
+                <div>
+                    <div class="d-flex justify-content-between align-items-center gap-3 mb-2">
+                        <h3 class="h6 mb-0 section-title"><span class="module-icon"><i class="bi bi-bar-chart-line"></i></span> Tâches terminées / semaine</h3>
+                        <span class="text-muted small">6 dernières semaines</span>
+                    </div>
+                    <div class="weekly-chart">
+                        @foreach($taskCompletionChart['labels'] as $index => $label)
+                            @php
+                                $value = $taskCompletionChart['values'][$index] ?? 0;
+                                $height = $taskCompletionChart['max'] > 0 ? max(8, round(($value / $taskCompletionChart['max']) * 100)) : 4;
+                            @endphp
+                            <div class="weekly-chart-bar">
+                                <div class="weekly-chart-value">{{ $value }}</div>
+                                <div class="weekly-chart-fill" style="height: {{ $height }}%;"></div>
+                                <div class="weekly-chart-label">{{ $label }}</div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                <div class="d-none">
                     <div class="col-4">
                         <div class="border rounded p-2 text-center bg-light">
                             <div class="fw-semibold">{{ $score['presence'] }}/40</div>
@@ -90,10 +144,16 @@
         </div>
     </div>
 
-    <div class="col-lg-7 fade-in">
-        <div class="card card-soft h-100">
+    <div class="col-xl-5 col-lg-6 fade-in">
+        <div class="card card-soft">
             <div class="card-body">
-                <h2 class="h5 mb-3">Alertes intelligentes</h2>
+                <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                    <div>
+                        <h2 class="h5 mb-1 section-title"><span class="module-icon"><i class="bi bi-exclamation-triangle"></i></span> Alertes intelligentes</h2>
+                        <p class="text-muted mb-0">Risques detectes sur les taches et absences.</p>
+                    </div>
+                    <span class="badge text-bg-secondary">{{ count($alerts) }}</span>
+                </div>
                 @forelse($alerts as $alert)
                     <div class="alert alert-warning alert-dismissible fade show py-2 pe-5 mb-2" role="alert">
                         <div>{{ $alert['message'] }}</div>
@@ -103,7 +163,13 @@
                         <button type="button" class="btn-close py-3" data-bs-dismiss="alert" aria-label="Fermer"></button>
                     </div>
                 @empty
-                    <p class="text-muted mb-0">Aucune alerte détectée pour ce stagiaire.</p>
+                    <div class="empty-state">
+                        <span class="empty-state-icon"><i class="bi bi-check2-circle"></i></span>
+                        <div>
+                            <div class="fw-semibold text-body">Aucune alerte</div>
+                            <div class="small">Aucun risque detecte pour ce stagiaire.</div>
+                        </div>
+                    </div>
                 @endforelse
             </div>
         </div>

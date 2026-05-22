@@ -7,8 +7,12 @@
     <div class="col-md-6 col-lg-5 fade-in">
         <div class="card card-soft">
             <div class="card-body p-4 p-md-5">
-                <h1 class="h4 mb-3">Connexion</h1>
-                <p class="text-muted mb-4">Accedez a la plateforme de gestion des stagiaires.</p>
+                <div class="text-center">
+                    <img src="{{ asset('images/ALTEN-Logo.wine.png') }}" alt="Alten Logo" class="auth-logo mx-auto">
+                    <div class="page-kicker justify-content-center"><i class="bi bi-shield-lock"></i> Espace interne</div>
+                    <h1 class="h4 mb-2">Connexion</h1>
+                    <p class="text-muted mb-4">Accedez a la plateforme de gestion des stagiaires.</p>
+                </div>
 
                 <form action="{{ route('login.perform') }}" method="POST">
                     @csrf

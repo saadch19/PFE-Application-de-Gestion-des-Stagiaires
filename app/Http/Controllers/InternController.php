@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Intern;
 use App\Models\Role;
+use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -88,8 +89,23 @@ class InternController extends Controller
         $score = $intern->performanceScore();
         $alerts = $intern->smartAlerts();
         $tasks = $intern->evaluationTasks();
+        $weekStarts = collect(range(5, 0))
+            ->map(fn (int $weeksAgo) => now()->startOfWeek()->subWeeks($weeksAgo));
 
-        return view('interns.show', compact('intern', 'score', 'alerts', 'tasks'));
+        $taskCompletionChart = [
+            'labels' => $weekStarts->map(fn ($date) => $date->format('d/m'))->all(),
+            'values' => $weekStarts
+                ->map(fn ($date): int => Task::query()
+                    ->where('status', 'termine')
+                    ->whereBetween('updated_at', [$date->copy()->startOfWeek(), $date->copy()->endOfWeek()])
+                    ->whereHas('internship.interns', fn ($query) => $query->where('interns.id', $intern->id))
+                    ->count())
+                ->all(),
+        ];
+
+        $taskCompletionChart['max'] = max($taskCompletionChart['values'] ?: [0]);
+
+        return view('interns.show', compact('intern', 'score', 'alerts', 'tasks', 'taskCompletionChart'));
     }
 
     public function supervisorShow(Request $request, Intern $intern): View

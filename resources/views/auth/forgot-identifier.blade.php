@@ -7,6 +7,10 @@
     <div class="col-md-7 col-lg-6 fade-in">
         <div class="card card-soft">
             <div class="card-body p-4 p-md-5">
+                <div class="text-center">
+                    <img src="{{ asset('images/ALTEN-Logo.wine.png') }}" alt="Alten Logo" class="auth-logo mx-auto">
+                    <div class="page-kicker justify-content-center"><i class="bi bi-person-badge"></i> Recuperation</div>
+                </div>
                 <h1 class="h4 mb-3">Identifiant oublie</h1>
                 <p class="text-muted mb-4">Entrez votre nom complet pour retrouver votre identifiant.</p>
 
