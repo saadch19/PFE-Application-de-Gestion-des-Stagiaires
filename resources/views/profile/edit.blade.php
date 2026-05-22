@@ -3,6 +3,10 @@
 @section('title', 'Mon profil')
 
 @section('content')
+@php
+    $isIntern = $user->hasRole('Stagiaire');
+@endphp
+
 <div class="card card-soft fade-in">
     <div class="card-body">
         <h1 class="h4 mb-3">Mon profil</h1>
@@ -14,12 +18,29 @@
             <div class="row g-3">
                 <div class="col-md-6">
                     <label for="full_name" class="form-label">Nom complet</label>
-                    <input type="text" class="form-control" id="full_name" name="full_name" value="{{ old('full_name', $user->full_name) }}" required>
+                    <input
+                        type="text"
+                        class="form-control"
+                        id="full_name"
+                        name="full_name"
+                        value="{{ old('full_name', $user->full_name) }}"
+                        @if($isIntern) readonly disabled @else required @endif
+                    >
                 </div>
 
                 <div class="col-md-6">
                     <label for="email" class="form-label">Email</label>
-                    <input type="email" class="form-control" id="email" name="email" value="{{ old('email', $user->email) }}" required>
+                    <input
+                        type="email"
+                        class="form-control"
+                        id="email"
+                        name="email"
+                        value="{{ old('email', $user->email) }}"
+                        @if($isIntern) readonly disabled @else required @endif
+                    >
+                    @if($isIntern)
+                        <small class="text-muted">Votre email est géré par l'administration.</small>
+                    @endif
                 </div>
 
                 <div class="col-md-6">

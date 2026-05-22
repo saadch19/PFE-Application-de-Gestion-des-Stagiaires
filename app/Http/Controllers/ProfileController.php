@@ -21,16 +21,24 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
-        $validated = $request->validate([
-            'full_name' => ['required', 'string', 'max:120'],
-            'email' => ['required', 'email', 'max:120', Rule::unique('users', 'email')->ignore($user->id)],
-            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
-        ]);
+        if ($user->hasRole('Stagiaire')) {
+            $validated = $request->validate([
+                'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            ]);
 
-        $payload = [
-            'full_name' => $validated['full_name'],
-            'email' => $validated['email'],
-        ];
+            $payload = [];
+        } else {
+            $validated = $request->validate([
+                'full_name' => ['required', 'string', 'max:120'],
+                'email' => ['required', 'email', 'max:120', Rule::unique('users', 'email')->ignore($user->id)],
+                'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            ]);
+
+            $payload = [
+                'full_name' => $validated['full_name'],
+                'email' => $validated['email'],
+            ];
+        }
 
         if (! empty($validated['password'])) {
             $payload['password_hash'] = Hash::make($validated['password']);
