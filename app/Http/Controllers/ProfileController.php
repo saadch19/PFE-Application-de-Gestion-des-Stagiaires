@@ -21,7 +21,7 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
-        if ($user->hasRole('Stagiaire')) {
+        if (! $user->hasRole('Administrateur')) {
             $validated = $request->validate([
                 'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             ]);

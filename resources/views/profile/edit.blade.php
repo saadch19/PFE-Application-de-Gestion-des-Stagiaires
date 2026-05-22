@@ -4,7 +4,7 @@
 
 @section('content')
 @php
-    $isIntern = $user->hasRole('Stagiaire');
+    $canEditIdentity = $user->hasRole('Administrateur');
 @endphp
 
 <div class="card card-soft fade-in">
@@ -24,7 +24,7 @@
                         id="full_name"
                         name="full_name"
                         value="{{ old('full_name', $user->full_name) }}"
-                        @if($isIntern) readonly disabled @else required @endif
+                        @if($canEditIdentity) required @else readonly disabled @endif
                     >
                 </div>
 
@@ -36,11 +36,11 @@
                         id="email"
                         name="email"
                         value="{{ old('email', $user->email) }}"
-                        @if($isIntern) readonly disabled @else required @endif
+                        @if($canEditIdentity) required @else readonly disabled @endif
                     >
-                    @if($isIntern)
-                        <small class="text-muted">Votre email est géré par l'administration.</small>
-                    @endif
+                    @unless($canEditIdentity)
+                        <small class="text-muted">Votre nom et votre email sont gérés par l'administration.</small>
+                    @endunless
                 </div>
 
                 <div class="col-md-6">
