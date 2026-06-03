@@ -15,7 +15,7 @@
     $tasksByStatus = $tasks->getCollection()->groupBy('status');
     $isEncadrant = auth()->user()->hasRole('Encadrant');
     $isIntern = auth()->user()->hasRole('Stagiaire');
-    $myTasksOnly = $myTasksOnly ?? true;
+    $showAllTasks = $showAllTasks ?? false;
 @endphp
 
 <div class="card card-soft fade-in">
@@ -36,7 +36,7 @@
             </div>
         </div>
 
-        <form method="GET" class="row g-2 mb-3">
+        <form method="GET" action="{{ route('tasks.index') }}" class="row g-2 mb-3">
             <input type="hidden" name="view" value="{{ $view }}">
             @if($isEncadrant)
                 <div class="col-md-5">
@@ -62,17 +62,16 @@
             @if($isIntern)
                 <div class="col-md-4">
                     <div class="form-check mt-2">
-                        <input type="hidden" name="my_tasks" value="0">
                         <input
                             class="form-check-input"
                             type="checkbox"
-                            id="my_tasks"
-                            name="my_tasks"
+                            id="show_all"
+                            name="show_all"
                             value="1"
-                            @checked($myTasksOnly)
+                            @checked($showAllTasks)
                             onchange="this.form.submit()"
                         >
-                        <label class="form-check-label" for="my_tasks">Afficher uniquement mes tâches</label>
+                        <label class="form-check-label" for="show_all">Afficher toutes les tâches du stage</label>
                     </div>
                 </div>
             @endif

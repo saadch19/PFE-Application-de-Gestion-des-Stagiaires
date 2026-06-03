@@ -19,14 +19,14 @@ class TaskController extends Controller
         $user = $request->user();
         $status = (string) $request->string('status');
         $internshipId = (string) $request->string('internship_id');
-        $myTasksOnly = (string) $request->query('my_tasks', '1') === '1';
+        $showAllTasks = $request->boolean('show_all');
 
         $tasksQuery = Task::query()
             ->with(['internship.interns.user', 'assignedBy', 'assignedTo'])
-            ->when($user->hasRole('Stagiaire'), function ($query) use ($user, $myTasksOnly) {
+            ->when($user->hasRole('Stagiaire'), function ($query) use ($user, $showAllTasks) {
                 if ($user->intern !== null) {
                     $query->whereHas('internship.interns', fn ($subQuery) => $subQuery->where('interns.id', $user->intern->id));
-                    if ($myTasksOnly) {
+                    if (! $showAllTasks) {
                         $query->where('assigned_to', $user->id);
                     }
                 } else {
@@ -59,7 +59,7 @@ class TaskController extends Controller
                 ->get();
         }
 
-        return view('tasks.index', compact('tasks', 'status', 'internshipId', 'internships', 'myTasksOnly'));
+        return view('tasks.index', compact('tasks', 'status', 'internshipId', 'internships', 'showAllTasks'));
     }
 
     public function create(): View
