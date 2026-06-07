@@ -616,3 +616,134 @@ def admin_list_users_by_role(role_name: str) -> list[dict]:
     rows = _safe_rows(cur)
     conn.close()
     return rows
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Chat session persistence (DB-backed)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def create_chat_session(user_id: int, model: str) -> int:
+    """Create a new chat session and return its ID."""
+    conn = _get_conn()
+    cur = conn.cursor()
+    cur.execute(
+        "INSERT INTO chat_sessions (user_id, model, created_at, updated_at) VALUES (%s, %s, NOW(), NOW())",
+        (user_id, model),
+    )
+    conn.commit()
+    session_id = cur.lastrowid
+    conn.close()
+    log.info("Created chat session #%d for user %d", session_id, user_id)
+    return session_id
+
+
+def list_chat_sessions(user_id: int, limit: int = 30) -> list[dict]:
+    """List recent chat sessions for a user, with message count and preview."""
+    conn = _get_conn()
+    cur = conn.cursor(dictionary=True)
+    cur.execute(
+        """
+        SELECT  cs.id,
+                cs.title,
+                cs.model,
+                cs.created_at,
+                cs.updated_at,
+                COUNT(cm.id)        AS message_count,
+                MAX(cm.created_at)  AS last_message_at
+        FROM    chat_sessions cs
+        LEFT JOIN chat_messages cm ON cm.session_id = cs.id
+        WHERE   cs.user_id = %s
+        GROUP BY cs.id
+        ORDER BY COALESCE(MAX(cm.created_at), cs.updated_at) DESC
+        LIMIT %s
+        """,
+        (user_id, limit),
+    )
+    rows = _safe_rows(cur)
+    conn.close()
+    return rows
+
+
+def load_chat_messages(session_id: int, limit: int = 50) -> list[dict]:
+    """Load the message history for a session."""
+    conn = _get_conn()
+    cur = conn.cursor(dictionary=True)
+    cur.execute(
+        """
+        SELECT role, content, created_at
+        FROM   chat_messages
+        WHERE  session_id = %s
+        ORDER  BY created_at ASC
+        LIMIT  %s
+        """,
+        (session_id, limit),
+    )
+    rows = _safe_rows(cur)
+    conn.close()
+    return rows
+
+
+def save_chat_message(session_id: int, role: str, content: str) -> int:
+    """Save a single message to the DB and auto-title the session if needed."""
+    conn = _get_conn()
+    cur = conn.cursor()
+    cur.execute(
+        "INSERT INTO chat_messages (session_id, role, content, created_at) VALUES (%s, %s, %s, NOW())",
+        (session_id, role, content),
+    )
+    msg_id = cur.lastrowid
+
+    # Auto-title the session from the first user message
+    if role == "user":
+        cur.execute("SELECT title FROM chat_sessions WHERE id = %s", (session_id,))
+        row = cur.fetchone()
+        if row and (row[0] is None or row[0] == "" or row[0] == "Nouvelle conversation"):
+            title = content[:80].strip()
+            cur.execute(
+                "UPDATE chat_sessions SET title = %s, updated_at = NOW() WHERE id = %s",
+                (title, session_id),
+            )
+    
+    # Always update session timestamp
+    cur.execute("UPDATE chat_sessions SET updated_at = NOW() WHERE id = %s", (session_id,))
+
+    conn.commit()
+    conn.close()
+    return msg_id
+
+
+def update_session_model(session_id: int, model: str):
+    """Update the model used for a session."""
+    conn = _get_conn()
+    cur = conn.cursor()
+    cur.execute(
+        "UPDATE chat_sessions SET model = %s, updated_at = NOW() WHERE id = %s",
+        (model, session_id),
+    )
+    conn.commit()
+    conn.close()
+
+
+def update_session_title(session_id: int, title: str):
+    """Rename a chat session."""
+    conn = _get_conn()
+    cur = conn.cursor()
+    cur.execute(
+        "UPDATE chat_sessions SET title = %s, updated_at = NOW() WHERE id = %s",
+        (title, session_id),
+    )
+    conn.commit()
+    conn.close()
+    log.info("Renamed session #%d to '%s'", session_id, title)
+
+
+def delete_chat_session(session_id: int):
+    """Delete a chat session and all its messages."""
+    conn = _get_conn()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM chat_messages WHERE session_id = %s", (session_id,))
+    cur.execute("DELETE FROM chat_sessions WHERE id = %s", (session_id,))
+    conn.commit()
+    conn.close()
+    log.info("Deleted session #%d", session_id)
+

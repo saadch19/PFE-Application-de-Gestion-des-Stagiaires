@@ -53,8 +53,7 @@ Route::middleware('auth')->group(function (): void {
     });
 
     Route::middleware('role:Administrateur,Responsable de competence')->group(function (): void {
-        Route::get('/interns/create', [InternController::class, 'create'])->name('interns.create');
-        Route::post('/interns', [InternController::class, 'store'])->name('interns.store');
+        Route::redirect('/interns/create', '/users/create')->name('interns.create');
         Route::get('/interns/{intern}/edit', [InternController::class, 'edit'])->name('interns.edit');
         Route::match(['put', 'patch'], '/interns/{intern}', [InternController::class, 'update'])->name('interns.update');
         Route::patch('/interns/{intern}/archive', [InternController::class, 'archive'])->name('interns.archive');
