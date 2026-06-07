@@ -47,8 +47,13 @@
         <h1 class="h3 mb-1">{{ $intern->user?->full_name ?? 'Stagiaire non lie' }}</h1>
         <p class="text-muted mb-0">{{ $intern->school }} - {{ $intern->specialty }}</p>
     </div>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 flex-wrap">
         <a href="{{ $isSupervisor ? route('supervisor.interns') : route('interns.index') }}" class="btn btn-outline-secondary btn-sm">Retour</a>
+        @if($isSupervisor)
+            <a href="{{ route('ai.weekly-summary', $intern) }}" class="btn btn-sm btn-primary d-flex align-items-center gap-1">
+                🤖 Résumé IA
+            </a>
+        @endif
         @unless($isSupervisor || $isRh)
             <a href="{{ route('interns.edit', $intern) }}" class="btn btn-outline-primary btn-sm">Modifier</a>
         @endunless

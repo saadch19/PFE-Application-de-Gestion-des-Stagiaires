@@ -54,6 +54,11 @@ class Intern extends Model
         return $this->hasMany(InternshipRequest::class);
     }
 
+    public function dailyLogs(): HasMany
+    {
+        return $this->hasMany(DailyLog::class)->orderBy('log_date');
+    }
+
     public function evaluationTasks(): Collection
     {
         $this->loadMissing('internships.tasks');

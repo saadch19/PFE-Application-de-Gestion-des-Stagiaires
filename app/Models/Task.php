@@ -18,6 +18,7 @@ class Task extends Model
         'details',
         'due_date',
         'status',
+        'weekly_comment',
     ];
 
     protected function casts(): array

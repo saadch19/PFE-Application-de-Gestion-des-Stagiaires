@@ -182,6 +182,24 @@ class TaskController extends Controller
         return response()->json(['message' => 'Statut de la tâche mis à jour.']);
     }
 
+    public function updateWeeklyComment(Request $request, Task $task): JsonResponse
+    {
+        $user = $request->user();
+
+        // Only the assigned intern may write their own weekly comment
+        if ((int) $user->id !== (int) $task->assigned_to) {
+            abort(403, 'Seul le stagiaire assigné peut modifier ce commentaire.');
+        }
+
+        $validated = $request->validate([
+            'weekly_comment' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $task->update(['weekly_comment' => $validated['weekly_comment'] ?? null]);
+
+        return response()->json(['message' => 'Commentaire hebdomadaire sauvegardé.']);
+    }
+
     private function validateDueDateLimit(array $validated): void
     {
         $dueDate = $validated['due_date'] ?? null;

@@ -109,6 +109,19 @@
                                                 </div>
                                                 <div class="small text-muted mt-2">Assignée à : {{ $task->assignedTo?->full_name ?? '-' }}</div>
                                                 <div class="small text-muted">Date limite : {{ $task->due_date?->format('d/m/Y') ?? '-' }}</div>
+                                                @if($isIntern && $isOwner)
+                                                    <div class="mt-2">
+                                                        <textarea
+                                                            class="form-control form-control-sm weekly-comment-input"
+                                                            rows="2"
+                                                            placeholder="Commentaire hebdomadaire…"
+                                                            data-url="{{ route('tasks.weekly-comment', $task) }}"
+                                                            data-task-id="{{ $task->id }}"
+                                                            style="resize:none;font-size:0.78rem"
+                                                        >{{ $task->weekly_comment }}</textarea>
+                                                        <div class="weekly-comment-status text-success small mt-1" data-task-id="{{ $task->id }}" style="display:none">✓ Sauvegardé</div>
+                                                    </div>
+                                                @endif
                                                 @if(! $isIntern)
                                                     <div class="mt-2">
                                                         <select class="form-select form-select-sm task-status" data-url="{{ route('tasks.status', $task) }}">
@@ -150,11 +163,15 @@
                             <th>Assignée à</th>
                             <th>Date limite</th>
                             <th>Statut</th>
+                            @if($isIntern)
+                                <th>Commentaire hebdomadaire</th>
+                            @endif
                             <th class="text-end">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($tasks as $task)
+                            @php $isOwner = (string) $task->assigned_to === (string) auth()->id(); @endphp
                             <tr>
                                 <td>{{ $task->title }}</td>
                                 <td>{{ $task->internship?->title ?? '-' }}</td>
@@ -168,6 +185,25 @@
                                         @endforeach
                                     </select>
                                 </td>
+                                @if($isIntern)
+                                    <td style="min-width:220px">
+                                        @if($isOwner)
+                                            <div class="input-group input-group-sm">
+                                                <textarea
+                                                    class="form-control weekly-comment-input"
+                                                    rows="2"
+                                                    placeholder="Votre avancement cette semaine…"
+                                                    data-url="{{ route('tasks.weekly-comment', $task) }}"
+                                                    data-task-id="{{ $task->id }}"
+                                                    style="resize:none;font-size:0.8rem"
+                                                >{{ $task->weekly_comment }}</textarea>
+                                            </div>
+                                            <div class="weekly-comment-status text-success small mt-1" data-task-id="{{ $task->id }}" style="display:none">✓ Sauvegardé</div>
+                                        @else
+                                            <span class="text-muted small">{{ $task->weekly_comment ?: '—' }}</span>
+                                        @endif
+                                    </td>
+                                @endif
                                 <td class="text-end">
                                     @if($canManage)
                                         <div class="d-inline-flex align-items-center justify-content-end gap-1 flex-nowrap">
@@ -182,7 +218,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="7" class="text-center text-muted">Aucune tâche.</td></tr>
+                            <tr><td colspan="{{ $isIntern ? 8 : 7 }}" class="text-center text-muted">Aucune tâche.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -214,6 +250,36 @@
 
                 alert(message);
             });
+        });
+
+        // ── Weekly comment auto-save (debounced, intern only) ──
+        let commentTimers = {};
+        $(document).on('input', '.weekly-comment-input', function () {
+            const $ta     = $(this);
+            const taskId  = $ta.data('task-id');
+            const url     = $ta.data('url');
+            const $status = $(`.weekly-comment-status[data-task-id="${taskId}"]`);
+
+            clearTimeout(commentTimers[taskId]);
+            $status.hide();
+
+            commentTimers[taskId] = setTimeout(function () {
+                $.ajax({
+                    url: url,
+                    method: 'PATCH',
+                    data: {
+                        _token: $('meta[name="csrf-token"]').attr('content'),
+                        weekly_comment: $ta.val()
+                    }
+                }).done(function () {
+                    $status.fadeIn().delay(2000).fadeOut();
+                }).fail(function (xhr) {
+                    const msg = xhr.status === 403
+                        ? 'Non autorisé.'
+                        : 'Erreur de sauvegarde.';
+                    alert(msg);
+                });
+            }, 900);
         });
 
         const isIntern = {{ $isIntern ? 'true' : 'false' }};

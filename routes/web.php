@@ -1,8 +1,11 @@
 <?php
 
 use App\Http\Controllers\AbsenceController;
+use App\Http\Controllers\AiSummaryController;
 use App\Http\Controllers\AttestationController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ChatController;
+use App\Http\Controllers\DailyLogController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InternController;
 use App\Http\Controllers\InternshipController;
@@ -32,6 +35,13 @@ Route::middleware('auth')->group(function (): void {
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // ── AI Chat assistant (available to all authenticated users) ──
+    Route::post('/chat/send', [ChatController::class, 'send'])->name('chat.send');
+    Route::get('/chat/models', [ChatController::class, 'models'])->name('chat.models');
+    Route::post('/chat/clear', [ChatController::class, 'clearSession'])->name('chat.clear');
+    Route::get('/chat/history', [ChatController::class, 'history'])->name('chat.history');
+    Route::get('/chat/sessions', [ChatController::class, 'sessions'])->name('chat.sessions');
 
     Route::middleware('role:Administrateur')->group(function (): void {
         Route::resource('users', UserController::class)->except(['show']);
@@ -74,11 +84,22 @@ Route::middleware('auth')->group(function (): void {
         Route::get('/mes-stages/{internship}', [InternshipController::class, 'supervisorShow'])->name('supervisor.internships.show');
         Route::patch('/mes-stages/{internship}/valider-fin', [InternshipController::class, 'supervisorValidate'])->name('supervisor.internships.validate');
         Route::patch('/mes-stages/{internship}/annuler-fin', [InternshipController::class, 'supervisorUndoValidate'])->name('supervisor.internships.undo');
+
+        // AI Encadrant Copilot — weekly summary
+        Route::get('/ai/resume-hebdo/{intern}', [AiSummaryController::class, 'weeklyReport'])->name('ai.weekly-summary');
+        Route::post('/ai/resume-hebdo/{intern}/generate', [AiSummaryController::class, 'generate'])->name('ai.weekly-summary.generate');
     });
 
     Route::middleware('role:Administrateur,Encadrant,Stagiaire')->group(function (): void {
         Route::get('/tasks', [TaskController::class, 'index'])->name('tasks.index');
         Route::patch('/tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('tasks.status');
+    });
+
+    // Interns: weekly comment + daily journal
+    Route::middleware('role:Stagiaire')->group(function (): void {
+        Route::patch('/tasks/{task}/weekly-comment', [TaskController::class, 'updateWeeklyComment'])->name('tasks.weekly-comment');
+        Route::get('/journal', [DailyLogController::class, 'index'])->name('daily-log.index');
+        Route::post('/journal', [DailyLogController::class, 'store'])->name('daily-log.store');
     });
 
     Route::middleware('role:Administrateur,Encadrant')->group(function (): void {

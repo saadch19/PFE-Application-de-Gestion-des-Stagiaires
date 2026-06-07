@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             DefaultUsersSeeder::class,
             InternsAndTasksSeeder::class,
+            AgentTestScenarioSeeder::class,
         ]);
     }
 }
