@@ -159,7 +159,9 @@ from agent.chat_db import (
     list_chat_sessions,
     load_chat_messages,
     update_session_model,
+    update_session_title,
 )
+from dotenv import dotenv_values
 
 class ChatRequest(BaseModel):
     user_id: int
@@ -180,9 +182,10 @@ class ChatResponse(BaseModel):
 def chat_endpoint(req: ChatRequest):
     """Send a message to the AI assistant. The response is scoped by user role."""
     
-    # Resolve model
-    default_model = os.getenv("CHAT_DEFAULT_MODEL", "deepseek/deepseek-v4-flash")
-    available_raw = os.getenv("CHAT_MODELS", default_model)
+    # Resolve model dynamically so changes in .env reflect immediately
+    config = dotenv_values(".env")
+    default_model = config.get("CHAT_DEFAULT_MODEL", "deepseek/deepseek-v4-flash")
+    available_raw = config.get("CHAT_MODELS", default_model)
     available = [m.strip() for m in available_raw.split(",") if m.strip()]
     model = req.model if (req.model and req.model in available) else default_model
 
@@ -218,9 +221,10 @@ def chat_endpoint(req: ChatRequest):
 
 @app.get("/api/chat/models", tags=["Chat"])
 def chat_models():
-    """Return the list of available chat models."""
-    default_model = os.getenv("CHAT_DEFAULT_MODEL", "deepseek/deepseek-v4-flash")
-    available_raw = os.getenv("CHAT_MODELS", default_model)
+    """Return the list of available chat models dynamically from .env."""
+    config = dotenv_values(".env")
+    default_model = config.get("CHAT_DEFAULT_MODEL", "deepseek/deepseek-v4-flash")
+    available_raw = config.get("CHAT_MODELS", default_model)
     models = [m.strip() for m in available_raw.split(",") if m.strip()]
     return {"models": models, "default": default_model}
 
@@ -244,6 +248,16 @@ def chat_clear_session(session_id: int):
     """Clear the conversation history for a session."""
     delete_chat_session(session_id)
     return {"success": True, "message": "Session deleted."}
+
+
+class RenameRequest(BaseModel):
+    title: str
+
+@app.put("/api/chat/session/{session_id}/title", tags=["Chat"])
+def chat_rename_session(session_id: int, req: RenameRequest):
+    """Rename a chat session."""
+    update_session_title(session_id, req.title)
+    return {"success": True, "message": "Session renamed."}
 
 
 # ─────────────────────────────────────────────────────────────────────────────

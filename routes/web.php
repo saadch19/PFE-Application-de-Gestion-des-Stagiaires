@@ -42,6 +42,7 @@ Route::middleware('auth')->group(function (): void {
     Route::post('/chat/clear', [ChatController::class, 'clearSession'])->name('chat.clear');
     Route::get('/chat/history', [ChatController::class, 'history'])->name('chat.history');
     Route::get('/chat/sessions', [ChatController::class, 'sessions'])->name('chat.sessions');
+    Route::put('/chat/rename', [ChatController::class, 'renameSession'])->name('chat.rename');
 
     Route::middleware('role:Administrateur')->group(function (): void {
         Route::resource('users', UserController::class)->except(['show']);

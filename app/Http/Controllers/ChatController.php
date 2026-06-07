@@ -20,6 +20,9 @@ class ChatController extends Controller
      */
     public function send(Request $request): JsonResponse
     {
+        // Prevent PHP from killing the request after 30 seconds if the LLM is slow
+        set_time_limit(0);
+
         $validated = $request->validate([
             'message'    => ['required', 'string', 'max:2000'],
             'session_id' => ['nullable', 'string', 'max:100'],
@@ -118,6 +121,29 @@ class ChatController extends Controller
             return response()->json($response->json());
         } catch (\Throwable) {
             return response()->json(['sessions' => []]);
+        }
+    }
+
+    /**
+     * Rename a chat session.
+     */
+    public function renameSession(Request $request): JsonResponse
+    {
+        $request->validate([
+            'session_id' => 'required|integer',
+            'title'      => 'required|string|max:255',
+        ]);
+
+        $sessionId = $request->input('session_id');
+        $title     = $request->input('title');
+
+        try {
+            $response = Http::timeout(10)->put("{$this->agentBaseUrl}/api/chat/session/{$sessionId}/title", [
+                'title' => $title
+            ]);
+            return response()->json($response->json());
+        } catch (\Throwable) {
+            return response()->json(['success' => false], 500);
         }
     }
 }

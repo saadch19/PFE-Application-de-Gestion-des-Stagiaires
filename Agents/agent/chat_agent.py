@@ -13,7 +13,7 @@ import textwrap
 import time
 from typing import Optional
 
-from dotenv import load_dotenv
+from dotenv import load_dotenv, dotenv_values
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
@@ -221,11 +221,12 @@ def chat(
     tools = _build_tools(user_id, role, intern_id)
 
     # 3. Create the LLM
-    chosen_model = model or os.getenv("CHAT_DEFAULT_MODEL", "deepseek/deepseek-v4-flash")
+    config = dotenv_values(".env")
+    chosen_model = model or config.get("CHAT_DEFAULT_MODEL", "deepseek/deepseek-v4-flash")
     llm = ChatOpenAI(
         model=chosen_model,
-        api_key=os.getenv("OPENROUTER_API_KEY", ""),
-        base_url=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"),
+        api_key=config.get("OPENROUTER_API_KEY", ""),
+        base_url=config.get("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"),
         temperature=0.4,
         max_tokens=1500,
     )

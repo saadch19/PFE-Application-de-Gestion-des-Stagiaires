@@ -1056,6 +1056,7 @@
         const CLEAR_URL  = '{{ route("chat.clear") }}';
         const HIST_URL   = '{{ route("chat.history") }}';
         const SESSIONS_URL = '{{ route("chat.sessions") }}';
+        const RENAME_URL = '{{ route("chat.rename") }}';
         const USER_ID    = '{{ auth()->id() }}';
         
         const LS_SESSION = 'ai_chat_session_' + USER_ID;
@@ -1113,15 +1114,20 @@
                                 <div class="chat-history-item-title">${escapeHtml(sess.title || 'Nouvelle conversation')}</div>
                                 <div class="chat-history-item-meta">${date} • ${sess.message_count} msg • ${sess.model ? sess.model.split('/').pop() : 'Default'}</div>
                             </div>
-                            <button class="btn btn-sm btn-link text-danger p-0 delete-session-btn" title="Supprimer" style="margin-left:10px;">
-                                <i class="bi bi-trash"></i>
-                            </button>
+                            <div style="display:flex;align-items:center;">
+                                <button class="btn btn-sm btn-link text-secondary p-0 rename-session-btn" title="Renommer" style="margin-left:5px;">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-link text-danger p-0 delete-session-btn" title="Supprimer" style="margin-left:10px;">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
                         </div>
                     `);
                     
                     // Click to resume
                     $item.on('click', function(e) {
-                        if ($(e.target).closest('.delete-session-btn').length > 0) return;
+                        if ($(e.target).closest('.delete-session-btn, .rename-session-btn').length > 0) return;
                         resumeSession(sess.id, sess.model);
                     });
                     
@@ -1137,6 +1143,21 @@
                             });
                         }
                     });
+
+                    // Click to rename
+                    $item.find('.rename-session-btn').on('click', function(e) {
+                        e.stopPropagation();
+                        const newTitle = prompt('Nouveau nom de la conversation :', sess.title || 'Nouvelle conversation');
+                        if (newTitle && newTitle.trim() !== '') {
+                            $.ajax({
+                                url: RENAME_URL,
+                                method: 'PUT',
+                                data: { _token: CSRF, session_id: sess.id, title: newTitle.trim() }
+                            }).done(function() {
+                                loadSessionsList();
+                            });
+                        }
+                    });
                     
                     $histList.append($item);
                 });
@@ -1146,13 +1167,21 @@
         // ── Load models ─────────────────────────────────────
         $.getJSON(MODELS_URL, function (data) {
             $modelSel.empty();
-            let savedModel = localStorage.getItem(LS_MODEL) || data.default;
+            let savedModel = localStorage.getItem(LS_MODEL);
+            
+            // If the saved model is not in the available models list, fallback to default
+            if (!savedModel || (data.models && !data.models.includes(savedModel))) {
+                savedModel = data.default;
+            }
             
             (data.models || []).forEach(function (m) {
                 const label = m.split('/').pop();
                 const isSelected = m === savedModel;
                 $modelSel.append(`<option value="${m}" ${isSelected ? 'selected' : ''}>${label}</option>`);
             });
+            
+            // Update localStorage just in case it was invalid
+            localStorage.setItem(LS_MODEL, savedModel);
         });
 
         // Save model choice when changed
