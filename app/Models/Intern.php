@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
+use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 
 class Intern extends Model
 {
@@ -59,6 +61,11 @@ class Intern extends Model
         return $this->hasMany(DailyLog::class)->orderBy('log_date');
     }
 
+    public function weeklyReports(): HasMany
+    {
+        return $this->hasMany(WeeklyReport::class)->orderByDesc('week_start');
+    }
+
     public function evaluationTasks(): Collection
     {
         $this->loadMissing('internships.tasks');
@@ -74,52 +81,117 @@ class Intern extends Model
             ->values();
     }
 
+    // ─────────────────────────────────────────────────────────────────────
+    // Absence count — journal-based + official absences
+    // ─────────────────────────────────────────────────────────────────────
+
+    /**
+     * Count absence days combining:
+     *  1. Admin/RC-recorded absences (always count)
+     *  2. Missing daily logs on working days (Mon–Fri) = absent by default
+     */
     public function absenceCount(): int
     {
-        if ($this->relationLoaded('absences')) {
-            return $this->absences->count();
+        if (! $this->start_date || ! $this->end_date) {
+            return 0;
         }
 
-        return $this->absences()->count();
+        $periodEnd = min(today(), $this->end_date);
+        if ($this->start_date->gt($periodEnd)) {
+            return 0;
+        }
+
+        // Get all working days (Mon–Fri) in the internship period
+        $workingDays = CarbonPeriod::create($this->start_date, $periodEnd)
+            ->filter(fn (Carbon $date) => $date->isWeekday());
+
+        // Load official absences (recorded by admin/RC) — these always override
+        $officialAbsences = $this->absences()
+            ->pluck('date_absence')
+            ->map(fn ($d) => Carbon::parse($d)->format('Y-m-d'))
+            ->flip()
+            ->all();
+
+        // Load daily logs where the intern checked in AND left a comment
+        $presentDays = $this->dailyLogs()
+            ->where('is_present', true)
+            ->whereNotNull('daily_note')
+            ->where('daily_note', '!=', '')
+            ->pluck('log_date')
+            ->map(fn ($d) => Carbon::parse($d)->format('Y-m-d'))
+            ->flip()
+            ->all();
+
+        $absentCount = 0;
+        foreach ($workingDays as $day) {
+            $dateStr = $day->format('Y-m-d');
+
+            // Official absence always takes priority
+            if (isset($officialAbsences[$dateStr])) {
+                $absentCount++;
+                continue;
+            }
+
+            // No daily log entry = absent
+            if (! isset($presentDays[$dateStr])) {
+                $absentCount++;
+            }
+        }
+
+        return $absentCount;
     }
 
+    // ─────────────────────────────────────────────────────────────────────
+    // Performance score — AI-report-based
+    // ─────────────────────────────────────────────────────────────────────
+
+    /**
+     * Calculate the intern's performance score.
+     *
+     * If AI weekly reports exist → average their week_score.
+     * If no reports → return "no data" state.
+     */
     public function performanceScore(): array
     {
-        $tasks = $this->evaluationTasks();
-        $absenceCount = $this->absenceCount();
+        $reports = $this->weeklyReports;
 
-        $presenceScore = max(0, 40 - ($absenceCount * 10));
+        if ($reports->isEmpty()) {
+            return [
+                'score'    => null,
+                'presence' => null,
+                'tasks'    => null,
+                'deadlines' => null,
+                'label'    => 'Aucun rapport IA',
+                'badge'    => 'secondary',
+                'has_data' => false,
+            ];
+        }
 
-        $totalTasks = $tasks->count();
-        $completedTasks = $tasks->where('status', 'termine')->count();
-        $taskScore = $totalTasks === 0
-            ? 40
-            : (int) round(($completedTasks / $totalTasks) * 40);
+        $avgScore      = (int) round($reports->avg('week_score'));
+        $avgEngagement = round($reports->avg('engagement_score'), 1);
+        $avgCompletion = (int) round($reports->avg('task_completion_rate'));
+        $reportCount   = $reports->count();
 
-        $deadlineTasks = $tasks->filter(function (Task $task): bool {
-            return $task->due_date !== null
-                && ($task->status === 'termine' || $task->due_date->lt(today()));
-        });
-
-        $onTimeTasks = $deadlineTasks->filter(function (Task $task): bool {
-            return $task->status === 'termine'
-                && $task->updated_at !== null
-                && $task->updated_at->toDateString() <= $task->due_date->toDateString();
-        })->count();
-
-        $deadlineScore = $deadlineTasks->count() === 0
-            ? 20
-            : (int) round(($onTimeTasks / $deadlineTasks->count()) * 20);
-
-        $score = min(100, $presenceScore + $taskScore + $deadlineScore);
+        // Derive sub-scores from the AI data for display consistency
+        // Engagement (0–10) → mapped to /40
+        $presenceScore = (int) round(($avgEngagement / 10) * 40);
+        // Task completion (0–100) → mapped to /40
+        $taskScore     = (int) round(($avgCompletion / 100) * 40);
+        // Remainder → deadlines
+        $deadlineScore = max(0, $avgScore - $presenceScore - $taskScore);
+        $deadlineScore = min(20, $deadlineScore);
 
         return [
-            'score' => $score,
-            'presence' => $presenceScore,
-            'tasks' => $taskScore,
-            'deadlines' => $deadlineScore,
-            'label' => $this->scoreLabel($score),
-            'badge' => $this->scoreBadge($score),
+            'score'        => $avgScore,
+            'presence'     => $presenceScore,
+            'tasks'        => $taskScore,
+            'deadlines'    => $deadlineScore,
+            'label'        => $this->scoreLabel($avgScore),
+            'badge'        => $this->scoreBadge($avgScore),
+            'has_data'     => true,
+            'report_count' => $reportCount,
+            'avg_engagement' => $avgEngagement,
+            'avg_completion' => $avgCompletion,
         ];
     }
 
@@ -139,6 +211,15 @@ class Intern extends Model
                 'type' => 'task',
                 'message' => 'Tâche en retard : difficulté possible du stagiaire',
                 'task' => $task,
+            ];
+        }
+
+        // Alert if latest AI report shows negative/concerning sentiment
+        $latestReport = $this->weeklyReports->first();
+        if ($latestReport && in_array($latestReport->overall_sentiment, ['negative', 'concerning'])) {
+            $alerts[] = [
+                'type' => 'sentiment',
+                'message' => 'Sentiment négatif détecté dans le dernier rapport IA (semaine du ' . $latestReport->week_start->format('d/m') . ')',
             ];
         }
 

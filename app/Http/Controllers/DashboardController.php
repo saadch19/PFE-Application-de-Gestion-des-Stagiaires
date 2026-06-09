@@ -164,14 +164,14 @@ class DashboardController extends Controller
 
         if ($isAdmin || $isHr) {
             $allEvaluatedInterns = Intern::query()
-                ->with(['user', 'absences', 'internships.tasks'])
+                ->with(['user', 'absences', 'internships.tasks', 'weeklyReports'])
                 ->where('is_archived', false)
                 ->latest()
                 ->get();
             $alertEvaluatedInterns = $allEvaluatedInterns;
         } elseif ($isManager) {
             $allEvaluatedInterns = Intern::query()
-                ->with(['user', 'absences', 'internships.tasks'])
+                ->with(['user', 'absences', 'internships.tasks', 'weeklyReports'])
                 ->where('is_archived', false)
                 ->when($managedInternIds->isEmpty(), fn ($query) => $query->whereRaw('1 = 0'))
                 ->when($managedInternIds->isNotEmpty(), fn ($query) => $query->whereIn('id', $managedInternIds))
@@ -194,13 +194,13 @@ class DashboardController extends Controller
                 ->get();
         } elseif ($isIntern && $user->intern !== null) {
             $allEvaluatedInterns = collect([
-                $user->intern->load(['user', 'absences', 'internships.tasks']),
+                $user->intern->load(['user', 'absences', 'internships.tasks', 'weeklyReports']),
             ]);
             $alertEvaluatedInterns = $allEvaluatedInterns;
         }
 
         $sortedInternsByScore = $allEvaluatedInterns
-            ->sortByDesc(fn (Intern $intern): int => $intern->performanceScore()['score'])
+            ->sortByDesc(fn (Intern $intern): int => $intern->performanceScore()['score'] ?? -1)
             ->values();
 
         $scoresPage = max(1, (int) request()->query('scores_page', 1));

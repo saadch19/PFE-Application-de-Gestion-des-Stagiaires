@@ -11,8 +11,9 @@
         'success' => '#078f79',
         'warning' => '#f4b000',
         'danger' => '#f04a22',
-        default => '#6b7a12',
+        default => '#9ca3af',
     };
+    $hasScoreData = $score['has_data'] ?? false;
     $supervisors = $intern->internships
         ->pluck('supervisor')
         ->filter()
@@ -49,7 +50,7 @@
     </div>
     <div class="d-flex gap-2 flex-wrap">
         <a href="{{ $isSupervisor ? route('supervisor.interns') : route('interns.index') }}" class="btn btn-outline-secondary btn-sm">Retour</a>
-        @if($isSupervisor)
+        @if($isSupervisor || auth()->user()->hasRole('Administrateur'))
             <a href="{{ route('ai.weekly-summary', $intern) }}" class="btn btn-sm btn-primary d-flex align-items-center gap-1">
                 🤖 Résumé IA
             </a>
@@ -67,43 +68,57 @@
                 <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
                     <div>
                         <h2 class="h5 mb-1 section-title"><span class="module-icon"><i class="bi bi-speedometer2"></i></span> Score automatique</h2>
-                        <p class="text-muted mb-0">Évaluation calculée depuis les absences et les tâches.</p>
+                        <p class="text-muted mb-0">
+                            @if($hasScoreData)
+                                Moyenne calculée à partir de {{ $score['report_count'] }} rapport(s) IA.
+                            @else
+                                Aucun rapport IA généré. Le score sera disponible après le premier résumé hebdomadaire.
+                            @endif
+                        </p>
                     </div>
                     <span class="badge text-bg-{{ $score['badge'] }}">{{ $score['label'] }}</span>
                 </div>
 
                 <div class="row g-3 align-items-center mb-4">
                     <div class="col-sm-4">
-                        <div class="score-donut" style="--score: {{ $score['score'] }}; --score-color: {{ $scoreColor }};">
+                        <div class="score-donut" style="--score: {{ $score['score'] ?? 0 }}; --score-color: {{ $scoreColor }};">
                             <div class="text-center">
-                                <div class="score-donut-value">{{ $score['score'] }}%</div>
+                                <div class="score-donut-value">{{ $score['score'] !== null ? $score['score'] . '%' : 'N/A' }}</div>
                                 <div class="score-donut-caption">Score</div>
                             </div>
                         </div>
                     </div>
                     <div class="col-sm-8">
+                        @if($hasScoreData)
                         <div class="row g-2">
                             <div class="col-4">
                                 <div class="score-metric text-center">
-                                    <div class="fw-semibold">{{ $score['presence'] }}/40</div>
-                                    <small class="text-muted">Presence</small>
+                                    <div class="fw-semibold">{{ $score['avg_engagement'] }}/10</div>
+                                    <small class="text-muted">Engagement</small>
                                 </div>
                             </div>
                             <div class="col-4">
                                 <div class="score-metric text-center">
-                                    <div class="fw-semibold">{{ $score['tasks'] }}/40</div>
+                                    <div class="fw-semibold">{{ $score['avg_completion'] }}%</div>
                                     <small class="text-muted">Tâches</small>
                                 </div>
                             </div>
                             <div class="col-4">
                                 <div class="score-metric text-center">
-                                    <div class="fw-semibold">{{ $score['deadlines'] }}/20</div>
-                                    <small class="text-muted">Délais</small>
+                                    <div class="fw-semibold">{{ $score['report_count'] }}</div>
+                                    <small class="text-muted">Rapports</small>
                                 </div>
                             </div>
                         </div>
+                        @else
+                        <div class="text-center text-muted py-3">
+                            <i class="bi bi-robot fs-3 d-block mb-2"></i>
+                            <small>Demandez à l'encadrant de générer un résumé IA pour calculer le score.</small>
+                        </div>
+                        @endif
                     </div>
                 </div>
+
 
                 <div>
                     <div class="d-flex justify-content-between align-items-center gap-3 mb-2">
@@ -125,26 +140,7 @@
                     </div>
                 </div>
 
-                <div class="d-none">
-                    <div class="col-4">
-                        <div class="border rounded p-2 text-center bg-light">
-                            <div class="fw-semibold">{{ $score['presence'] }}/40</div>
-                            <small class="text-muted">Presence</small>
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="border rounded p-2 text-center bg-light">
-                            <div class="fw-semibold">{{ $score['tasks'] }}/40</div>
-                            <small class="text-muted">Tâches</small>
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="border rounded p-2 text-center bg-light">
-                            <div class="fw-semibold">{{ $score['deadlines'] }}/20</div>
-                            <small class="text-muted">Délais</small>
-                        </div>
-                    </div>
-                </div>
+
             </div>
         </div>
     </div>
@@ -195,6 +191,9 @@
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link text-nowrap" id="absences-tab" data-bs-toggle="tab" data-bs-target="#absences-pane" type="button" role="tab">Absences</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link text-nowrap" id="ai-reports-tab" data-bs-toggle="tab" data-bs-target="#ai-reports-pane" type="button" role="tab">🤖 Rapports IA</button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link text-nowrap" id="report-tab" data-bs-toggle="tab" data-bs-target="#report-pane" type="button" role="tab">Rapport</button>
@@ -284,6 +283,119 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+
+            <div class="tab-pane fade" id="ai-reports-pane" role="tabpanel" aria-labelledby="ai-reports-tab" tabindex="0">
+                @if(isset($weeklyReports) && $weeklyReports->count() > 0)
+                    <div class="mb-3">
+                        <span class="badge text-bg-primary">{{ $weeklyReports->count() }} rapport(s)</span>
+                        <span class="badge text-bg-info">Score moyen : {{ round($weeklyReports->avg('week_score')) }}/100</span>
+                    </div>
+                    <div class="accordion" id="aiReportsAccordion">
+                        @foreach($weeklyReports as $rIndex => $report)
+                            @php
+                                $sentimentIcon = match($report->overall_sentiment) {
+                                    'positive' => '😊',
+                                    'negative' => '😟',
+                                    'concerning' => '😰',
+                                    default => '😐',
+                                };
+                                $scoreBadge = $report->week_score >= 80 ? 'success' : ($report->week_score >= 50 ? 'warning' : 'danger');
+                                $rData = $report->report_json ?? [];
+                            @endphp
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button {{ $rIndex > 0 ? 'collapsed' : '' }}" type="button" data-bs-toggle="collapse" data-bs-target="#aiReport{{ $report->id }}">
+                                        <div class="d-flex align-items-center gap-3 w-100">
+                                            <span class="badge text-bg-{{ $scoreBadge }}">{{ $report->week_score }}/100</span>
+                                            <span>Semaine du {{ $report->week_start->format('d/m/Y') }} au {{ $report->week_end->format('d/m/Y') }}</span>
+                                            <span>{{ $sentimentIcon }}</span>
+                                            <span class="text-muted small ms-auto me-3">par {{ $report->generatedBy?->full_name ?? '?' }}</span>
+                                        </div>
+                                    </button>
+                                </h2>
+                                <div id="aiReport{{ $report->id }}" class="accordion-collapse collapse {{ $rIndex === 0 ? 'show' : '' }}" data-bs-parent="#aiReportsAccordion">
+                                    <div class="accordion-body">
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-sm-4">
+                                                <div class="border rounded p-2 text-center">
+                                                    <div class="h4 mb-0 fw-bold text-success">{{ $rData['task_completion_rate'] ?? $report->task_completion_rate }}%</div>
+                                                    <small class="text-muted">Tâches complétées</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-4">
+                                                <div class="border rounded p-2 text-center">
+                                                    <div class="h4 mb-0 fw-bold text-primary">{{ $rData['engagement_score'] ?? $report->engagement_score }}/10</div>
+                                                    <small class="text-muted">Engagement</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-4">
+                                                <div class="border rounded p-2 text-center">
+                                                    <div class="h4 mb-0">{{ $sentimentIcon }}</div>
+                                                    <small class="text-muted">{{ ucfirst($report->overall_sentiment) }}</small>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        @if(!empty($rData['executive_summary']))
+                                            <h6 class="fw-semibold">📝 Résumé</h6>
+                                            <p class="small text-secondary mb-3">{{ $rData['executive_summary'] }}</p>
+                                        @endif
+
+                                        <div class="row g-3 mb-3">
+                                            @if(!empty($rData['achievements']))
+                                                <div class="col-md-6">
+                                                    <h6 class="fw-semibold">🏆 Réalisations</h6>
+                                                    <ul class="small mb-0">
+                                                        @foreach($rData['achievements'] as $item)
+                                                            <li>{{ $item }}</li>
+                                                        @endforeach
+                                                    </ul>
+                                                </div>
+                                            @endif
+                                            @if(!empty($rData['blockers']))
+                                                <div class="col-md-6">
+                                                    <h6 class="fw-semibold">🚧 Blocages</h6>
+                                                    <ul class="small mb-0">
+                                                        @foreach($rData['blockers'] as $item)
+                                                            <li>{{ $item }}</li>
+                                                        @endforeach
+                                                    </ul>
+                                                </div>
+                                            @endif
+                                        </div>
+
+                                        @if(!empty($rData['recommended_actions']))
+                                            <h6 class="fw-semibold">📋 Actions recommandées</h6>
+                                            <ul class="small mb-0">
+                                                @foreach($rData['recommended_actions'] as $item)
+                                                    <li>{{ $item }}</li>
+                                                @endforeach
+                                            </ul>
+                                        @endif
+
+                                        @if(!empty($rData['red_flags']))
+                                            <div class="alert alert-danger mt-3 mb-0 small">
+                                                <h6 class="fw-semibold">⚠️ Signaux d'alarme</h6>
+                                                <ul class="mb-0">
+                                                    @foreach($rData['red_flags'] as $item)
+                                                        <li>{{ $item }}</li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-robot fs-1 d-block mb-2"></i>
+                        <p class="fw-semibold">Aucun rapport IA disponible</p>
+                        <p class="small">L'encadrant doit générer un résumé hebdomadaire IA depuis la page « Résumé IA ».</p>
+                    </div>
+                @endif
             </div>
 
             <div class="tab-pane fade" id="report-pane" role="tabpanel" aria-labelledby="report-tab" tabindex="0">

@@ -84,10 +84,13 @@ Route::middleware('auth')->group(function (): void {
         Route::get('/mes-stages/{internship}', [InternshipController::class, 'supervisorShow'])->name('supervisor.internships.show');
         Route::patch('/mes-stages/{internship}/valider-fin', [InternshipController::class, 'supervisorValidate'])->name('supervisor.internships.validate');
         Route::patch('/mes-stages/{internship}/annuler-fin', [InternshipController::class, 'supervisorUndoValidate'])->name('supervisor.internships.undo');
+    });
 
-        // AI Encadrant Copilot — weekly summary
+    // AI Copilot — weekly summary (Admin + Encadrant)
+    Route::middleware('role:Administrateur,Encadrant')->group(function (): void {
         Route::get('/ai/resume-hebdo/{intern}', [AiSummaryController::class, 'weeklyReport'])->name('ai.weekly-summary');
         Route::post('/ai/resume-hebdo/{intern}/generate', [AiSummaryController::class, 'generate'])->name('ai.weekly-summary.generate');
+        Route::get('/ai/rapport/{report}', [AiSummaryController::class, 'savedReport'])->name('ai.weekly-summary.saved');
     });
 
     Route::middleware('role:Administrateur,Encadrant,Stagiaire')->group(function (): void {

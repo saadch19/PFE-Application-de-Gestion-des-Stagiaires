@@ -79,10 +79,14 @@
                                     <tr>
                                         <td>{{ $intern->user?->full_name ?? 'Non lié' }}</td>
                                         <td>
-                                            <div class="fw-semibold">{{ $score['score'] }}/100</div>
-                                            <div class="progress" style="height: 6px;">
-                                                <div class="progress-bar bg-{{ $score['badge'] }}" style="width: {{ $score['score'] }}%"></div>
-                                            </div>
+                                            @if($score['has_data'] ?? false)
+                                                <div class="fw-semibold">{{ $score['score'] }}/100</div>
+                                                <div class="progress" style="height: 6px;">
+                                                    <div class="progress-bar bg-{{ $score['badge'] }}" style="width: {{ $score['score'] }}%"></div>
+                                                </div>
+                                            @else
+                                                <span class="text-muted small">Aucun rapport</span>
+                                            @endif
                                         </td>
                                         <td><span class="badge text-bg-{{ $score['badge'] }}">{{ $score['label'] }}</span></td>
                                         <td class="text-end">

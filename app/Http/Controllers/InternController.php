@@ -84,11 +84,13 @@ class InternController extends Controller
             'internships.supervisor',
             'internships.responsible',
             'requests',
+            'weeklyReports.generatedBy',
         ]);
 
         $score = $intern->performanceScore();
         $alerts = $intern->smartAlerts();
         $tasks = $intern->evaluationTasks();
+        $weeklyReports = $intern->weeklyReports;
         $weekStarts = collect(range(5, 0))
             ->map(fn (int $weeksAgo) => now()->startOfWeek()->subWeeks($weeksAgo));
 
@@ -105,7 +107,7 @@ class InternController extends Controller
 
         $taskCompletionChart['max'] = max($taskCompletionChart['values'] ?: [0]);
 
-        return view('interns.show', compact('intern', 'score', 'alerts', 'tasks', 'taskCompletionChart'));
+        return view('interns.show', compact('intern', 'score', 'alerts', 'tasks', 'taskCompletionChart', 'weeklyReports'));
     }
 
     public function supervisorShow(Request $request, Intern $intern): View

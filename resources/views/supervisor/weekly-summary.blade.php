@@ -77,6 +77,34 @@
                 </ul>
             </div>
         </div>
+
+        {{-- Previous reports --}}
+        @if(isset($previousReports) && $previousReports->count() > 0)
+            <div class="card card-soft mt-3">
+                <div class="card-body">
+                    <h6 class="fw-semibold mb-2">📂 Rapports précédents</h6>
+                    <div class="list-group list-group-flush" style="max-height: 300px; overflow-y: auto;">
+                        @foreach($previousReports as $prevReport)
+                            @php
+                                $pScoreBadge = $prevReport->week_score >= 80 ? 'success' : ($prevReport->week_score >= 50 ? 'warning' : 'danger');
+                            @endphp
+                            <a href="#" class="list-group-item list-group-item-action py-2 load-saved-report"
+                               data-report-url="{{ route('ai.weekly-summary.saved', $prevReport) }}"
+                               data-week-start="{{ $prevReport->week_start->format('Y-m-d') }}"
+                               data-week-end="{{ $prevReport->week_end->format('Y-m-d') }}">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="small fw-medium">{{ $prevReport->week_start->format('d/m') }} → {{ $prevReport->week_end->format('d/m/Y') }}</div>
+                                        <div class="text-muted" style="font-size: 0.75rem;">{{ ucfirst($prevReport->overall_sentiment) }}</div>
+                                    </div>
+                                    <span class="badge text-bg-{{ $pScoreBadge }}">{{ $prevReport->week_score }}/100</span>
+                                </div>
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        @endif
     </div>
 
     {{-- ── RIGHT: report output ──────────────────────────────── --}}
@@ -350,6 +378,42 @@ $(function () {
         // Show
         $('#report-output').removeClass('d-none');
     }
+
+    // ── Load saved report from sidebar ───────────────────────────
+    $(document).on('click', '.load-saved-report', function (e) {
+        e.preventDefault();
+        const $link = $(this);
+        const url = $link.data('report-url');
+
+        // Update date fields
+        $('#week-start').val($link.data('week-start'));
+        $('#week-end').val($link.data('week-end'));
+
+        // Highlight active
+        $('.load-saved-report').removeClass('active');
+        $link.addClass('active');
+
+        // Show loading
+        $('#report-placeholder').addClass('d-none');
+        $('#report-output').addClass('d-none');
+        $('#report-loading').removeClass('d-none');
+        $('#agent-error').addClass('d-none');
+
+        $.ajax({ url: url, method: 'GET' })
+        .done(function (data) {
+            if (!data.success) {
+                showError(data.error || 'Erreur inconnue.');
+                return;
+            }
+            renderReport(data);
+        })
+        .fail(function (xhr) {
+            showError('Impossible de charger le rapport.');
+        })
+        .always(function () {
+            $('#report-loading').addClass('d-none');
+        });
+    });
 });
 </script>
 
