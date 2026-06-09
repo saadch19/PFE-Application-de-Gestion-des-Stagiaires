@@ -61,6 +61,12 @@ Route::middleware('auth')->group(function (): void {
         Route::get('/interns/{intern}/convention', [InternshipController::class, 'internConvention'])->name('interns.convention');
     });
 
+    // RC can quickly add a new intern from the interns list
+    Route::middleware('role:Responsable de competence')->group(function (): void {
+        Route::get('/interns/nouveau-stagiaire', [UserController::class, 'createIntern'])->name('interns.create-intern');
+        Route::post('/interns/nouveau-stagiaire', [UserController::class, 'storeIntern'])->name('interns.store-intern');
+    });
+
     Route::middleware('role:Administrateur,Responsable RH,Responsable de competence')->group(function (): void {
         Route::get('/interns/{intern}', [InternController::class, 'show'])->name('interns.show');
     });

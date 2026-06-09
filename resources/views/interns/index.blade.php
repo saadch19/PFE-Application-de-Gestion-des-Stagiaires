@@ -14,6 +14,11 @@
     <div class="card-body">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
             <h1 class="h4 mb-0">Gestion des stagiaires</h1>
+            @if(auth()->user()->hasRole('Responsable de competence'))
+                <a href="{{ route('interns.create-intern') }}" class="btn btn-success btn-sm">
+                    <i class="bi bi-person-plus me-1"></i> Nouveau stagiaire
+                </a>
+            @endif
         </div>
 
         <form method="GET" class="row g-2 mb-3">

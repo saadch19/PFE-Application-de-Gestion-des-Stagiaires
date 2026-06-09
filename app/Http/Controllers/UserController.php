@@ -39,7 +39,88 @@ class UserController extends Controller
     {
         $roles = Role::query()->orderBy('name')->get();
 
-        return view('users.create', compact('roles'));
+        return view('users.create', [
+            'roles'     => $roles,
+            'actionUrl' => route('users.store'),
+            'cancelUrl' => route('users.index'),
+        ]);
+    }
+
+    /**
+     * Show the create form pre-locked to the Stagiaire role (for RC).
+     */
+    public function createIntern(): View
+    {
+        $stagiaireRole = Role::query()->where('name', 'Stagiaire')->firstOrFail();
+
+        // Only pass the Stagiaire role so the form is locked to it
+        $roles = collect([$stagiaireRole]);
+
+        return view('users.create', [
+            'roles'            => $roles,
+            'lockRoleToIntern' => true,
+            'actionUrl'        => route('interns.store-intern'),
+            'cancelUrl'        => route('interns.index'),
+        ]);
+    }
+
+    /**
+     * Store a newly created intern user (for RC).
+     */
+    public function storeIntern(Request $request): RedirectResponse
+    {
+        $stagiaireRole = Role::query()->where('name', 'Stagiaire')->firstOrFail();
+        
+        // Force role_id to be Stagiaire
+        $request->merge(['role_id' => $stagiaireRole->id]);
+
+        // Base validation rules
+        $rules = [
+            'full_name' => ['required', 'string', 'max:120'],
+            'email'     => ['required', 'email', 'max:120', 'unique:users,email'],
+            'password'  => ['required', 'string', 'min:8'],
+            'role_id'   => ['required', 'exists:roles,id'],
+            'is_active' => ['nullable', 'boolean'],
+            'cin'        => ['required', 'string', 'max:40', 'unique:interns,cin'],
+            'school'     => ['required', 'string', 'max:120'],
+            'specialty'  => ['required', 'string', 'max:120'],
+            'phone'      => ['nullable', 'string', 'max:30'],
+            'start_date' => ['required', 'date_format:d/m/Y'],
+            'end_date'   => ['required', 'date_format:d/m/Y'],
+        ];
+
+        $validated = $request->validate($rules);
+
+        // Validate date ordering
+        $startDate = Carbon::createFromFormat('d/m/Y', $validated['start_date']);
+        $endDate   = Carbon::createFromFormat('d/m/Y', $validated['end_date']);
+
+        if ($endDate->lt($startDate)) {
+            return back()->withErrors(['end_date' => 'La date de fin doit être après ou égale à la date de début.'])->withInput();
+        }
+
+        DB::transaction(function () use ($validated, $request) {
+            $user = User::query()->create([
+                'full_name'     => $validated['full_name'],
+                'email'         => $validated['email'],
+                'password_hash' => Hash::make($validated['password']),
+                'role_id'       => (int) $validated['role_id'],
+                'is_active'     => $request->boolean('is_active', true),
+            ]);
+
+            Intern::query()->create([
+                'user_id'     => $user->id,
+                'cin'         => $validated['cin'],
+                'school'      => $validated['school'],
+                'specialty'   => $validated['specialty'],
+                'phone'       => $validated['phone'] ?? null,
+                'start_date'  => Carbon::createFromFormat('d/m/Y', $validated['start_date'])->toDateString(),
+                'end_date'    => Carbon::createFromFormat('d/m/Y', $validated['end_date'])->toDateString(),
+                'is_archived' => false,
+            ]);
+        });
+
+        return redirect()->route('interns.index')->with('success', 'Stagiaire créé avec succès.');
     }
 
     public function store(Request $request): RedirectResponse

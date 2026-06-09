@@ -1,5 +1,6 @@
 @php
     $editing = isset($user);
+    $locked  = $lockRoleToIntern ?? false;
     $stagiaire = $roles->firstWhere('name', 'Stagiaire');
     $stagiaireRoleId = $stagiaire?->id ?? 0;
 
@@ -27,12 +28,21 @@
 
     <div class="col-md-4">
         <label for="role_id" class="form-label">Role</label>
-        <select class="form-select" id="role_id" name="role_id" required>
-            <option value="">Sélectionner</option>
-            @foreach($roles as $role)
-                <option value="{{ $role->id }}" @selected((string) old('role_id', $user->role_id ?? '') === (string) $role->id)>{{ $role->name }}</option>
-            @endforeach
-        </select>
+        @if($locked)
+            {{-- Locked to Stagiaire — show read-only badge + hidden input --}}
+            <div class="form-control-plaintext d-flex align-items-center gap-2">
+                <span class="badge text-bg-primary fs-6">Stagiaire</span>
+                <small class="text-muted">(fixé)</small>
+            </div>
+            <input type="hidden" name="role_id" value="{{ $stagiaireRoleId }}">
+        @else
+            <select class="form-select" id="role_id" name="role_id" required>
+                <option value="">Sélectionner</option>
+                @foreach($roles as $role)
+                    <option value="{{ $role->id }}" @selected((string) old('role_id', $user->role_id ?? '') === (string) $role->id)>{{ $role->name }}</option>
+                @endforeach
+            </select>
+        @endif
     </div>
 
     <div class="col-md-2 d-flex align-items-end">
@@ -88,12 +98,11 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const roleSelect = document.getElementById('role_id');
     const internFields = document.getElementById('intern-fields');
     const stagiaireRoleId = '{{ $stagiaireRoleId }}';
+    const locked = {{ $locked ? 'true' : 'false' }};
 
-    function toggleInternFields() {
-        const isIntern = roleSelect.value === stagiaireRoleId;
+    function toggleInternFields(isIntern) {
         internFields.style.display = isIntern ? 'block' : 'none';
 
         // Toggle required on intern-specific fields
@@ -104,7 +113,15 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    roleSelect.addEventListener('change', toggleInternFields);
-    toggleInternFields(); // Run on page load
+    if (locked) {
+        // Role is fixed to Stagiaire — always show intern fields
+        toggleInternFields(true);
+    } else {
+        const roleSelect = document.getElementById('role_id');
+        roleSelect.addEventListener('change', function () {
+            toggleInternFields(roleSelect.value === stagiaireRoleId);
+        });
+        toggleInternFields(roleSelect.value === stagiaireRoleId); // Run on page load
+    }
 });
 </script>
