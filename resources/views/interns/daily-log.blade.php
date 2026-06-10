@@ -77,20 +77,35 @@
                         {{ $day['date']->isoFormat('D MMM') }}
                     </div>
                 </div>
-                @if($day['isToday'])
-                    <span class="badge text-bg-primary" style="font-size:.65rem">Aujourd'hui</span>
-                @elseif($hasLog)
-                    <span class="badge text-bg-success" style="font-size:.65rem">✓ Journalisé</span>
-                @endif
+                <div class="d-flex flex-column align-items-end gap-1">
+                    @if($day['isToday'])
+                        <span class="badge text-bg-primary text-nowrap" style="font-size:.65rem">Aujourd'hui</span>
+                    @endif
+                    @if($hasLog)
+                        <span class="badge text-bg-success journalised-badge text-nowrap" style="font-size:.65rem">
+                            ✓ Journalisé ({{ $isPresent ? 'Présent' : 'Absent' }})
+                        </span>
+                    @endif
+                </div>
             </div>
 
             <div class="card-body d-flex flex-column gap-3">
 
                 @if($day['isFuture'])
                     {{-- Future day placeholder --}}
-                    <div class="text-center text-muted py-3" style="font-size:.85rem">
-                        <div style="font-size:1.5rem;opacity:.3">🔒</div>
-                        Pas encore disponible
+                    <div class="text-center py-3" style="font-size:.85rem">
+                        <div class="text-muted mb-2">
+                            <span style="font-size:1.5rem;opacity:.3">🔒</span><br>
+                            Pas encore disponible
+                        </div>
+                        <button type="button" 
+                                class="btn btn-outline-primary btn-sm request-absence-btn" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#absenceRequestModal"
+                                data-date="{{ $day['date']->isoFormat('dddd D MMMM YYYY') }}"
+                                data-date-str="{{ $day['date']->format('d/m/Y') }}">
+                            <i class="bi bi-calendar-event me-1"></i> Demander une absence
+                        </button>
                     </div>
                 @else
                     {{-- Presence toggle --}}
@@ -101,12 +116,14 @@
                              data-present="{{ $isPresent ? '1' : '0' }}">
                             <button type="button"
                                     class="btn btn-sm w-50 presence-btn {{ $isPresent ? 'btn-success active' : 'btn-outline-success' }}"
-                                    data-value="1">
+                                    data-value="1"
+                                    @if($hasLog) disabled @endif>
                                 ✓ Présent
                             </button>
                             <button type="button"
                                     class="btn btn-sm w-50 presence-btn {{ !$isPresent ? 'btn-danger active' : 'btn-outline-danger' }}"
-                                    data-value="0">
+                                    data-value="0"
+                                    @if($hasLog) disabled @endif>
                                 ✗ Absent
                             </button>
                         </div>
@@ -221,6 +238,51 @@
         </div>
     </div>
 </div>
+
+{{-- Modal Demande d'absence --}}
+<div class="modal fade" id="absenceRequestModal" tabindex="-1" aria-labelledby="absenceRequestModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form action="{{ route('requests.store') }}" method="POST" class="modal-content">
+            @csrf
+            <input type="hidden" name="type" value="absence">
+            
+            <div class="modal-header">
+                <h5 class="modal-title" id="absenceRequestModalLabel">Demande d'absence</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <div class="modal-body vstack gap-3">
+                <div class="alert alert-info py-2 px-3 mb-0" style="font-size: 0.88rem;">
+                    Vous demandez une absence pour le <strong id="absenceModalTargetDate"></strong>.
+                </div>
+                
+                <div>
+                    <label for="modal_motif_absence" class="form-label small fw-semibold">Motif d'absence</label>
+                    <input type="text" 
+                           class="form-control" 
+                           id="modal_motif_absence" 
+                           name="motif_absence" 
+                           required 
+                           placeholder="Exemple : Maladie, rendez-vous médical, urgence...">
+                </div>
+                
+                <div>
+                    <label for="modal_message" class="form-label small fw-semibold">Message / Justification</label>
+                    <textarea class="form-control" 
+                              id="modal_message" 
+                              name="message" 
+                              rows="4" 
+                              required></textarea>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" class="btn btn-sm btn-success">Envoyer la demande</button>
+            </div>
+        </form>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -252,12 +314,18 @@ $(function () {
         })
         .done(() => {
             $status.fadeIn().delay(2500).fadeOut();
-            // Update badge
-            const $card2 = $(`.daily-card[data-date="${date}"]`);
-            if (!$card2.find('.badge.text-bg-success').length) {
-                $card2.find('.card-header .text-muted, .card-header .badge.text-bg-primary').after(
-                    '<span class="badge text-bg-success ms-auto" style="font-size:.65rem">✓ Journalisé</span>'
-                );
+            
+            // Disable the presence buttons to lock them
+            $card.find('.presence-btn').prop('disabled', true);
+            
+            // Update badge to show "✓ Journalisé (Présent)" or "✓ Journalisé (Absent)"
+            const statusLabel = isPresent === 1 ? 'Présent' : 'Absent';
+            let $badge = $card.find('.journalised-badge');
+            if ($badge.length) {
+                $badge.text(`✓ Journalisé (${statusLabel})`);
+            } else {
+                const $container = $card.find('.card-header .d-flex.flex-column');
+                $container.append(`<span class="badge text-bg-success journalised-badge text-nowrap" style="font-size:.65rem">✓ Journalisé (${statusLabel})</span>`);
             }
         })
         .fail((xhr) => {
@@ -357,6 +425,16 @@ $(function () {
                 alert(msg);
             });
         }, 900);
+    });
+
+    // ── Absence request modal pre-fill ─────────────────────────
+    $(document).on('click', '.request-absence-btn', function () {
+        const dateFormatted = $(this).data('date');
+        const dateStr = $(this).data('date-str');
+        
+        $('#absenceModalTargetDate').text(dateFormatted);
+        $('#modal_message').val(`Demande d'absence pour le ${dateStr}.\n\nDétails : `);
+        $('#modal_motif_absence').val('');
     });
 });
 </script>
