@@ -36,7 +36,15 @@ class DailyLogController extends Controller
             ->get()
             ->keyBy(fn (DailyLog $l) => $l->log_date->format('Y-m-d'));
 
-        return view('interns.daily-log', compact('intern', 'logs', 'weekStart', 'weekEnd'));
+        // Load in-progress tasks assigned to the intern
+        $inProgressTasks = \App\Models\Task::query()
+            ->with(['internship', 'assignedBy', 'assignedTo'])
+            ->where('assigned_to', $user->id)
+            ->where('status', 'en_cours')
+            ->latest()
+            ->get();
+
+        return view('interns.daily-log', compact('intern', 'logs', 'weekStart', 'weekEnd', 'inProgressTasks'));
     }
 
     /**

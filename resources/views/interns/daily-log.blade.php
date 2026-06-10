@@ -138,6 +138,74 @@
     @endforeach
 </div>
 
+{{-- ── Tasks in Progress Section ────────────────────────────── --}}
+<div class="card card-soft mb-4 fade-in">
+    <div class="card-body">
+        <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+            📋 Mes tâches en cours
+        </h5>
+        
+        @if($inProgressTasks->isEmpty())
+            <div class="text-center text-muted py-3" style="font-size:.9rem">
+                Aucune tâche en cours pour le moment.
+            </div>
+        @else
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
+                    <thead>
+                        <tr>
+                            <th>Titre</th>
+                            <th>Stage</th>
+                            <th>Assignée par</th>
+                            <th>Date limite</th>
+                            <th>Statut</th>
+                            <th>Commentaire hebdomadaire</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($inProgressTasks as $task)
+                            <tr>
+                                <td class="fw-semibold">{{ $task->title }}</td>
+                                <td>{{ $task->internship?->title ?? '-' }}</td>
+                                <td>{{ $task->assignedBy?->full_name ?? '-' }}</td>
+                                <td>
+                                    @if($task->due_date)
+                                        <span class="text-nowrap">
+                                            {{ $task->due_date->format('d/m/Y') }}
+                                        </span>
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                                <td>
+                                    <select class="form-select form-select-sm task-status" data-url="{{ route('tasks.status', $task) }}" style="width: auto; min-width: 120px;">
+                                        @foreach(['a_faire' => 'À faire', 'en_cours' => 'En cours', 'termine' => 'Terminé'] as $key => $label)
+                                            <option value="{{ $key }}" @selected($task->status === $key)>{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                </td>
+                                <td style="min-width: 250px;">
+                                    <div class="input-group input-group-sm">
+                                        <textarea
+                                            class="form-control weekly-comment-input"
+                                            rows="2"
+                                            placeholder="Votre avancement cette semaine…"
+                                            data-url="{{ route('tasks.weekly-comment', $task) }}"
+                                            data-task-id="{{ $task->id }}"
+                                            style="resize:none; font-size:0.8rem"
+                                        >{{ $task->weekly_comment }}</textarea>
+                                    </div>
+                                    <div class="weekly-comment-status text-success small mt-1" data-task-id="{{ $task->id }}" style="display:none">✓ Sauvegardé</div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+    </div>
+</div>
+
 {{-- ── Info card ─────────────────────────────────────────────── --}}
 <div class="card card-soft">
     <div class="card-body d-flex gap-3 align-items-start">
@@ -229,6 +297,66 @@ $(function () {
         const date = $(this).data('date');
         clearTimeout(timers[date]);
         timers[date] = setTimeout(() => saveLog(date), 800);
+    });
+
+    // ── Task status change ─────────────────────────────────────
+    $(document).on('change', '.task-status', function () {
+        const $select = $(this);
+
+        $.ajax({
+            url: $select.data('url'),
+            method: 'PATCH',
+            data: {
+                _token: CSRF,
+                status: $select.val()
+            }
+        }).done(function () {
+            // Fade out the row if the task is no longer in_progress ("en_cours")
+            if ($select.val() !== 'en_cours') {
+                $select.closest('tr').fadeOut(400, function () {
+                    $(this).remove();
+                    if ($('.table-responsive tbody tr').length === 0) {
+                        $('.table-responsive').replaceWith('<div class="text-center text-muted py-3" style="font-size:.9rem">Aucune tâche en cours pour le moment.</div>');
+                    }
+                });
+            }
+        }).fail(function (xhr) {
+            const message = xhr.status === 403
+                ? 'Vous n\'êtes pas autorisé à modifier cette tâche.'
+                : 'Erreur lors de la mise à jour du statut.';
+
+            alert(message);
+        });
+    });
+
+    // ── Weekly comment auto-save (debounced 900ms) ──────────────
+    let commentTimers = {};
+    $(document).on('input', '.weekly-comment-input', function () {
+        const $ta     = $(this);
+        const taskId  = $ta.data('task-id');
+        const url     = $ta.data('url');
+        const $status = $(`.weekly-comment-status[data-task-id="${taskId}"]`);
+
+        clearTimeout(commentTimers[taskId]);
+        $status.hide();
+
+        commentTimers[taskId] = setTimeout(function () {
+            $.ajax({
+                url: url,
+                method: 'PATCH',
+                data: {
+                    _token: CSRF,
+                    weekly_comment: $ta.val()
+                }
+            }).done(function () {
+                $status.fadeIn().delay(2000).fadeOut();
+            }).fail(function (xhr) {
+                const msg = xhr.status === 403
+                    ? 'Non autorisé.'
+                    : 'Erreur de sauvegarde.';
+                alert(msg);
+            });
+        }, 900);
     });
 });
 </script>
