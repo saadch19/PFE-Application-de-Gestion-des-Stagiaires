@@ -13,10 +13,6 @@
                 <p class="text-muted mb-0">Vue d'ensemble de l'activite des stages.</p>
             </div>
         </div>
-        <div class="d-flex gap-2 flex-wrap">
-            <span class="badge text-bg-light border"><i class="bi bi-people me-1"></i> Suivi stagiaires</span>
-            <span class="badge text-bg-light border"><i class="bi bi-clipboard-check me-1"></i> Demandes</span>
-        </div>
     </div>
 </div>
 <div class="d-none">
@@ -57,9 +53,13 @@
     </div>
 @endif
 
-@if($evaluatedInterns->count() > 0)
+@php
+    $showScores = $evaluatedInterns->count() > 0;
+@endphp
+
+@if($showScores)
     <div class="row g-4 mb-4">
-        <div class="col-lg-7 fade-in">
+        <div class="{{ $canViewTasks ? 'col-lg-7' : 'col-12' }} fade-in">
             <div class="card card-soft h-100">
                 <div class="card-body">
                     <h2 class="h5 mb-3 section-title"><span class="module-icon"><i class="bi bi-activity"></i></span> Scores automatiques des stagiaires</h2>
@@ -70,7 +70,7 @@
                                     <th>Stagiaire</th>
                                     <th>Score</th>
                                     <th>Statut</th>
-                                    <th class="text-end">Detail</th>
+                                    <th class="text-end">Détail</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -110,7 +110,7 @@
                                 class="btn btn-sm btn-outline-secondary {{ $evaluatedInterns->onFirstPage() ? 'disabled' : '' }}"
                                 @if($evaluatedInterns->onFirstPage()) aria-disabled="true" @endif
                             >
-                                Precedent
+                                Précédent
                             </a>
                             <span class="text-muted small">
                                 Page {{ $evaluatedInterns->currentPage() }} / {{ $evaluatedInterns->lastPage() }}
@@ -128,75 +128,157 @@
             </div>
         </div>
 
-        <div class="col-lg-5 fade-in">
+        @if($canViewTasks)
+            <div class="col-lg-5 fade-in">
+                <div class="card card-soft h-100">
+                    <div class="card-body">
+                        <h2 class="h5 mb-3 section-title"><span class="module-icon"><i class="bi bi-list-check"></i></span> Dernières tâches</h2>
+                        <div class="d-grid gap-2">
+                            @forelse($latestTasks as $task)
+                                <div class="border-bottom pb-2">
+                                    <div class="d-flex justify-content-between align-items-start gap-3">
+                                        <div class="min-w-0">
+                                            <div class="fw-semibold text-break">{{ $task->title }}</div>
+                                            <small class="text-muted">Assignée à : {{ $task->assignedTo?->full_name ?? '-' }}</small>
+                                        </div>
+                                        <span class="flex-shrink-0">@statusBadge($task->status)</span>
+                                    </div>
+                                </div>
+                            @empty
+                                <p class="text-muted mb-0">Aucune tâche pour le moment.</p>
+                            @endforelse
+                        </div>
+                        @if($latestTasks->hasPages())
+                            <div class="d-flex justify-content-between align-items-center gap-2 mt-3">
+                                <a
+                                    href="{{ $latestTasks->previousPageUrl() ?? '#' }}"
+                                    class="btn btn-sm btn-outline-secondary {{ $latestTasks->onFirstPage() ? 'disabled' : '' }}"
+                                >Précédent</a>
+                                <span class="text-muted small">Page {{ $latestTasks->currentPage() }} / {{ $latestTasks->lastPage() }}</span>
+                                <a
+                                    href="{{ $latestTasks->nextPageUrl() ?? '#' }}"
+                                    class="btn btn-sm btn-outline-secondary {{ $latestTasks->hasMorePages() ? '' : 'disabled' }}"
+                                >Suivant</a>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        @endif
+    </div>
+
+    <div class="row g-4">
+        <div class="col-12 fade-in">
             <div class="card card-soft h-100">
                 <div class="card-body">
-                    <h2 class="h5 mb-3 section-title"><span class="module-icon"><i class="bi bi-exclamation-triangle"></i></span> Alertes intelligentes</h2>
-                    @forelse($smartAlerts as $item)
-                        <div class="alert alert-warning alert-dismissible fade show py-2 pe-5 mb-2" role="alert">
-                            <div class="fw-semibold">{{ $item['intern']->user?->full_name ?? 'Stagiaire non lie' }}</div>
-                            <div>{{ $item['alert']['message'] }}</div>
-                            @if($canViewTasks && isset($item['alert']['task']))
-                                <small class="text-muted">Tâche : {{ $item['alert']['task']->title }}</small>
-                            @endif
-                            <button type="button" class="btn-close py-3" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                    <h2 class="h5 mb-3 section-title"><span class="module-icon"><i class="bi bi-file-earmark-text"></i></span> Dernières demandes</h2>
+                    <div class="d-grid gap-2">
+                        @forelse($latestRequests as $requestItem)
+                            <div class="border-bottom pb-2">
+                                <div class="d-flex justify-content-between align-items-start gap-3">
+                                    <div class="min-w-0">
+                                        <div class="fw-semibold text-break">{{ $requestItem->intern->user?->full_name ?? 'Non lié' }}</div>
+                                        <small class="text-muted">Type : {{ $requestItem->type }}</small>
+                                    </div>
+                                    <span class="flex-shrink-0">@statusBadge($requestItem->status)</span>
+                                </div>
+                            </div>
+                        @empty
+                            <p class="text-muted mb-0">Aucune demande récente.</p>
+                        @endforelse
+                    </div>
+                    @if($latestRequests->hasPages())
+                        <div class="d-flex justify-content-between align-items-center gap-2 mt-3">
+                            <a
+                                href="{{ $latestRequests->previousPageUrl() ?? '#' }}"
+                                class="btn btn-sm btn-outline-secondary {{ $latestRequests->onFirstPage() ? 'disabled' : '' }}"
+                            >Précédent</a>
+                            <span class="text-muted small">Page {{ $latestRequests->currentPage() }} / {{ $latestRequests->lastPage() }}</span>
+                            <a
+                                href="{{ $latestRequests->nextPageUrl() ?? '#' }}"
+                                class="btn btn-sm btn-outline-secondary {{ $latestRequests->hasMorePages() ? '' : 'disabled' }}"
+                            >Suivant</a>
                         </div>
-                    @empty
-                        <p class="text-muted mb-0">Aucune alerte détectée pour le moment.</p>
-                    @endforelse
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+@else
+    <div class="row g-4">
+        @if($canViewTasks)
+            <div class="col-lg-6 fade-in">
+                <div class="card card-soft h-100">
+                    <div class="card-body">
+                        <h2 class="h5 mb-3 section-title"><span class="module-icon"><i class="bi bi-list-check"></i></span> Dernières tâches</h2>
+                        <div class="d-grid gap-2">
+                            @forelse($latestTasks as $task)
+                                <div class="border-bottom pb-2">
+                                    <div class="d-flex justify-content-between align-items-start gap-3">
+                                        <div class="min-w-0">
+                                            <div class="fw-semibold text-break">{{ $task->title }}</div>
+                                            <small class="text-muted">Assignée à : {{ $task->assignedTo?->full_name ?? '-' }}</small>
+                                        </div>
+                                        <span class="flex-shrink-0">@statusBadge($task->status)</span>
+                                    </div>
+                                </div>
+                            @empty
+                                <p class="text-muted mb-0">Aucune tâche pour le moment.</p>
+                            @endforelse
+                        </div>
+                        @if($latestTasks->hasPages())
+                            <div class="d-flex justify-content-between align-items-center gap-2 mt-3">
+                                <a
+                                    href="{{ $latestTasks->previousPageUrl() ?? '#' }}"
+                                    class="btn btn-sm btn-outline-secondary {{ $latestTasks->onFirstPage() ? 'disabled' : '' }}"
+                                >Précédent</a>
+                                <span class="text-muted small">Page {{ $latestTasks->currentPage() }} / {{ $latestTasks->lastPage() }}</span>
+                                <a
+                                    href="{{ $latestTasks->nextPageUrl() ?? '#' }}"
+                                    class="btn btn-sm btn-outline-secondary {{ $latestTasks->hasMorePages() ? '' : 'disabled' }}"
+                                >Suivant</a>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        <div class="{{ $canViewTasks ? 'col-lg-6' : 'col-12' }} fade-in">
+            <div class="card card-soft h-100">
+                <div class="card-body">
+                    <h2 class="h5 mb-3 section-title"><span class="module-icon"><i class="bi bi-file-earmark-text"></i></span> Dernières demandes</h2>
+                    <div class="d-grid gap-2">
+                        @forelse($latestRequests as $requestItem)
+                            <div class="border-bottom pb-2">
+                                <div class="d-flex justify-content-between align-items-start gap-3">
+                                    <div class="min-w-0">
+                                        <div class="fw-semibold text-break">{{ $requestItem->intern->user?->full_name ?? 'Non lié' }}</div>
+                                        <small class="text-muted">Type : {{ $requestItem->type }}</small>
+                                    </div>
+                                    <span class="flex-shrink-0">@statusBadge($requestItem->status)</span>
+                                </div>
+                            </div>
+                        @empty
+                            <p class="text-muted mb-0">Aucune demande récente.</p>
+                        @endforelse
+                    </div>
+                    @if($latestRequests->hasPages())
+                        <div class="d-flex justify-content-between align-items-center gap-2 mt-3">
+                            <a
+                                href="{{ $latestRequests->previousPageUrl() ?? '#' }}"
+                                class="btn btn-sm btn-outline-secondary {{ $latestRequests->onFirstPage() ? 'disabled' : '' }}"
+                            >Précédent</a>
+                            <span class="text-muted small">Page {{ $latestRequests->currentPage() }} / {{ $latestRequests->lastPage() }}</span>
+                            <a
+                                href="{{ $latestRequests->nextPageUrl() ?? '#' }}"
+                                class="btn btn-sm btn-outline-secondary {{ $latestRequests->hasMorePages() ? '' : 'disabled' }}"
+                            >Suivant</a>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
 @endif
-
-<div class="row g-4">
-    @if($canViewTasks)
-        <div class="col-lg-6 fade-in">
-            <div class="card card-soft h-100">
-                <div class="card-body">
-                    <h2 class="h5 mb-3 section-title"><span class="module-icon"><i class="bi bi-list-check"></i></span> Dernières tâches</h2>
-                    <div class="d-grid gap-2">
-                        @forelse($latestTasks as $task)
-                            <div class="border-bottom pb-2">
-                                <div class="d-flex justify-content-between align-items-start gap-3">
-                                    <div class="min-w-0">
-                                        <div class="fw-semibold text-break">{{ $task->title }}</div>
-                                        <small class="text-muted">Assignée à : {{ $task->assignedTo?->full_name ?? '-' }}</small>
-                                    </div>
-                                    <span class="flex-shrink-0">@statusBadge($task->status)</span>
-                                </div>
-                            </div>
-                        @empty
-                            <p class="text-muted mb-0">Aucune tâche pour le moment.</p>
-                        @endforelse
-                    </div>
-                </div>
-            </div>
-        </div>
-    @endif
-
-    <div class="col-lg-6 fade-in">
-        <div class="card card-soft h-100">
-            <div class="card-body">
-                <h2 class="h5 mb-3 section-title"><span class="module-icon"><i class="bi bi-file-earmark-text"></i></span> Dernières demandes</h2>
-                <div class="d-grid gap-2">
-                    @forelse($latestRequests as $requestItem)
-                        <div class="border-bottom pb-2">
-                            <div class="d-flex justify-content-between align-items-start gap-3">
-                                <div class="min-w-0">
-                                    <div class="fw-semibold text-break">{{ $requestItem->intern->user?->full_name ?? 'Non lié' }}</div>
-                                    <small class="text-muted">Type : {{ $requestItem->type }}</small>
-                                </div>
-                                <span class="flex-shrink-0">@statusBadge($requestItem->status)</span>
-                            </div>
-                        </div>
-                    @empty
-                        <p class="text-muted mb-0">Aucune demande récente.</p>
-                    @endforelse
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 @endsection

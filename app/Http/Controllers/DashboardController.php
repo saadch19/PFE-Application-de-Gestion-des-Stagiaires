@@ -123,6 +123,8 @@ class DashboardController extends Controller
 
         $latestTasks = collect();
 
+        $latestTasks = new \Illuminate\Pagination\LengthAwarePaginator(collect(), 0, 5, 1);
+
         if ($canViewTasks) {
             $latestTasks = Task::query()
                 ->with(['assignedBy', 'assignedTo'])
@@ -139,8 +141,8 @@ class DashboardController extends Controller
                     }
                 })
                 ->latest()
-                ->take(self::RECENT_LIMIT)
-                ->get();
+                ->paginate(5, ['*'], 'tasks_page')
+                ->withQueryString();
         }
 
         $latestRequests = InternshipRequest::query()
@@ -156,8 +158,8 @@ class DashboardController extends Controller
                 }
             })
             ->latest()
-            ->take(self::RECENT_LIMIT)
-            ->get();
+            ->paginate(5, ['*'], 'req_page')
+            ->withQueryString();
 
         $allEvaluatedInterns = collect();
         $alertEvaluatedInterns = collect();
@@ -241,5 +243,49 @@ class DashboardController extends Controller
                 $subQuery->orWhere('supervisor_id', $user->id);
             }
         });
+    }
+
+    /**
+     * Load smart alerts for the navbar notification bell.
+     * Called from app.blade.php via app(DashboardController::class).
+     */
+    public function getSmartAlertsForNav(User $user): array
+    {
+        $isAdmin = $user->hasRole('Administrateur');
+        $isHr    = $user->hasRole('Responsable RH');
+        $isManager = $user->hasRole('Responsable de competence', 'Encadrant');
+
+        $managedInternIds = collect();
+        if ($isManager) {
+            $managedInternIds = Intern::query()
+                ->whereHas('internships', function ($query) use ($user) {
+                    $this->scopeManagedInternships($query, $user);
+                })
+                ->pluck('id')->unique()->values();
+        }
+
+        if ($isAdmin || $isHr) {
+            $interns = Intern::query()
+                ->with(['user', 'absences', 'internships.tasks', 'weeklyReports'])
+                ->where('is_archived', false)
+                ->latest()
+                ->get();
+        } elseif ($isManager) {
+            $interns = Intern::query()
+                ->with(['user', 'absences', 'internships.tasks', 'weeklyReports'])
+                ->where('is_archived', false)
+                ->when($managedInternIds->isEmpty(), fn ($q) => $q->whereRaw('1=0'))
+                ->when($managedInternIds->isNotEmpty(), fn ($q) => $q->whereIn('id', $managedInternIds))
+                ->latest()
+                ->get();
+        } else {
+            return [];
+        }
+
+        return $interns
+            ->flatMap(fn (Intern $intern) => collect($intern->smartAlerts())
+                ->map(fn (array $alert) => ['intern' => $intern, 'alert' => $alert]))
+            ->values()
+            ->all();
     }
 }

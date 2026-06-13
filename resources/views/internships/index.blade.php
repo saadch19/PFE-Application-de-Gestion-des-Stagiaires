@@ -63,13 +63,13 @@
                             </td>
                             <td class="text-end">
                                 <div class="d-inline-flex align-items-center justify-content-end gap-1 flex-nowrap">
-                                    <a href="{{ route('internships.edit', $internship) }}" class="btn btn-sm btn-outline-primary">Modifier</a>
-                                    <a href="{{ route('internships.convention', $internship) }}" class="btn btn-sm btn-outline-info text-nowrap">Convention</a>
+                                    <a href="{{ route('internships.edit', $internship) }}" class="btn btn-sm btn-outline-primary" title="Modifier"><i class="bi bi-pencil"></i></a>
+                                    <a href="{{ route('internships.convention', $internship) }}" class="btn btn-sm btn-outline-info" title="Convention"><i class="bi bi-file-earmark-text"></i></a>
                                     @unless($isHr)
-                                        <form action="{{ route('internships.destroy', $internship) }}" method="POST" class="m-0" onsubmit="return confirm('Supprimer ce stage ?')">
+                                        <form action="{{ route('internships.destroy', $internship) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('DELETE')
-                                            <button class="btn btn-sm btn-outline-danger text-nowrap" type="submit">Supprimer</button>
+                                            <button class="btn btn-sm btn-outline-danger" type="submit" title="Supprimer" data-confirm="Supprimer ce stage ?"><i class="bi bi-trash"></i></button>
                                         </form>
                                     @endunless
                                 </div>

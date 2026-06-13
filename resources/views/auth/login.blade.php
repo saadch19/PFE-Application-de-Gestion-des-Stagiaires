@@ -8,9 +8,9 @@
         <div class="card card-soft">
             <div class="card-body p-4 p-md-5">
                 <div class="text-center">
-                    <img src="{{ asset('images/ALTEN-Logo.wine.png') }}" alt="Alten Logo" class="auth-logo mx-auto">
-                    <div class="page-kicker justify-content-center"><i class="bi bi-shield-lock"></i> Espace interne</div>
-                    <h1 class="h4 mb-2">Connexion</h1>
+                    <img src="{{ asset('images/ALTEN-Logo.wine.png') }}" alt="Alten Logo" class="auth-logo mx-auto d-block">
+                    <div class="page-kicker justify-content-center mt-2"><i class="bi bi-shield-lock"></i> Espace interne</div>
+                    <h1 class="h4 mb-2 mt-1">Connexion</h1>
                     <p class="text-muted mb-4">Accedez a la plateforme de gestion des stagiaires.</p>
                 </div>
 
@@ -38,7 +38,7 @@
                 </form>
 
                 <div class="text-center mt-3">
-                    <a href="{{ route('forgot.options') }}" class="small">Identifiant ou mot de passe oublie ?</a>
+                    <a href="{{ route('forgot.password') }}" class="small">Mot de passe oublié ?</a>
                 </div>
 
                 <div class="mt-4 small text-muted">

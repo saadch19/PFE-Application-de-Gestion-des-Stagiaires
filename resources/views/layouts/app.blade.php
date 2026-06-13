@@ -4,6 +4,16 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script>
+        (function () {
+            try {
+                const collapsed = localStorage.getItem('sidebar-collapsed') === 'true';
+                if (collapsed) {
+                    document.documentElement.classList.add('sidebar-init-collapsed');
+                }
+            } catch (e) {}
+        })();
+    </script>
     <title>@yield('title', 'Gestion des Stagiaires')</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
@@ -38,94 +48,361 @@
             font-size: 0.96rem;
         }
 
-        .app-navbar {
-            background: linear-gradient(120deg, #163b45, #205f69 55%, #2f5b85);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+        /* ── Sidebar Layout ─────────────────────────────── */
+        .app-layout {
+            display: flex;
+            min-height: 100vh;
+            width: 100%;
         }
 
-        .app-navbar > .container,
-        main.container {
-            max-width: min(100% - 2rem, 1500px);
-        }
-
-        .app-navbar .navbar-brand {
-            min-width: 0;
-            white-space: nowrap;
-            font-size: 1rem;
-            margin-right: 1.5rem;
-            padding-top: 0.35rem;
-            padding-bottom: 0.35rem;
-        }
-
-        .app-navbar .navbar-brand img {
-            height: clamp(34px, 3.5vw, 44px) !important;
-            flex: 0 0 auto;
-            filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.16));
-            transform: scale(1.28);
-            transform-origin: center;
-        }
-
-        .app-navbar .navbar-brand span {
-            line-height: 1.15;
-            letter-spacing: 0;
-            font-weight: 700;
-        }
-
-        .app-navbar .nav-link {
-            display: inline-flex;
-            align-items: center;
-            border-radius: 0.4rem;
-            color: rgba(255, 255, 255, 0.76);
-            font-weight: 600;
-            padding: 0.42rem 0.58rem;
-            font-size: 0.92rem;
-            transition: color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
-        }
-
-        .app-navbar .nav-link:hover,
-        .app-navbar .nav-link.active {
-            color: #ffffff;
-            background: rgba(255, 255, 255, 0.14);
-        }
-
-        .app-navbar .nav-link.active {
-            box-shadow: inset 0 -2px 0 #e3ed73;
-            background: rgba(255, 255, 255, 0.16);
-        }
-
-        .app-navbar .btn {
-            border-radius: 0.45rem;
-            font-weight: 600;
-            padding: 0.5rem 0.7rem;
-        }
-
-        .app-navbar .dropdown-menu {
-            border: 1px solid var(--border-soft);
-            border-radius: 0.65rem;
-            box-shadow: 0 18px 36px rgba(31, 41, 51, 0.12);
-            padding: 0.45rem;
-        }
-
-        .app-navbar .dropdown-item {
-            border-radius: 0.45rem;
-            font-weight: 600;
-            padding: 0.55rem 0.75rem;
-        }
-
-        .app-navbar .dropdown-item.active,
-        .app-navbar .dropdown-item:active {
-            background: var(--brand);
-        }
-
-        .navbar-user-actions {
+        .app-sidebar {
+            width: 260px;
+            min-height: 100vh;
             flex-shrink: 0;
+            background: linear-gradient(180deg, #163b45, #205f69 70%, #2f5b85);
+            border-right: 1px solid rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 1030;
+            transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
+        .app-main-content {
+            flex-grow: 1;
+            padding-left: 260px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: padding-left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Anti-flashing rules matching localStorage state */
+        html.sidebar-init-collapsed .app-sidebar {
+            width: 70px !important;
+        }
+        html.sidebar-init-collapsed .app-main-content {
+            padding-left: 70px !important;
+        }
+
+        /* Collapsed Sidebar State */
+        .app-sidebar.collapsed {
+            width: 70px;
+        }
+
+        .app-main-content.collapsed {
+            padding-left: 70px;
+        }
+
+        /* Sidebar Header */
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.25rem 1.15rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            gap: 0.5rem;
+            height: 72px;
+        }
+
+        .app-sidebar.collapsed .sidebar-header {
+            padding: 1.25rem 0.5rem;
+            justify-content: center;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            color: #ffffff;
+            text-decoration: none;
+            overflow: hidden;
+            white-space: nowrap;
+            gap: 0.75rem;
+            flex-grow: 1;
+        }
+
+        .app-sidebar.collapsed .sidebar-brand {
+            justify-content: center;
+        }
+
+        .sidebar-brand img {
+            height: 38px !important;
+            flex: 0 0 auto;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.16));
+        }
+
+        .sidebar-brand span.brand-text {
+            font-weight: 700;
+            font-size: 1.05rem;
+            line-height: 1.15;
+            transition: opacity 0.2s, max-width 0.2s;
+            opacity: 1;
+            max-width: 200px;
+            overflow: hidden;
+        }
+
+        .app-sidebar.collapsed .sidebar-brand span.brand-text {
+            opacity: 0;
+            max-width: 0;
+            display: none;
+        }
+
+        /* Sidebar Navigation links */
+        .sidebar-nav {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 0.75rem 0.5rem;
+        }
+
+        .sidebar-nav .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            color: rgba(255, 255, 255, 0.74);
+            font-weight: 600;
+            padding: 0.65rem 0.85rem;
+            border-radius: 0.45rem;
+            font-size: 0.92rem;
+            margin-bottom: 0.25rem;
+            transition: color 0.15s, background-color 0.15s;
+            white-space: nowrap;
+            text-decoration: none;
+        }
+
+        .sidebar-nav .nav-link:hover,
+        .sidebar-nav .nav-link.active {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .sidebar-nav .nav-link.active {
+            background: rgba(255, 255, 255, 0.18);
+            box-shadow: inset 3px 0 0 #e3ed73;
+        }
+
+        .sidebar-nav .nav-icon {
+            font-size: 1.15rem;
+            flex-shrink: 0;
+            width: 1.5rem;
+            text-align: center;
+        }
+
+        .sidebar-nav .nav-text {
+            transition: opacity 0.18s, max-width 0.18s;
+            opacity: 1;
+            max-width: 200px;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .app-sidebar.collapsed .sidebar-nav .nav-text {
+            opacity: 0;
+            max-width: 0;
+            display: none;
+        }
+
+        .app-sidebar.collapsed .sidebar-nav .nav-link {
+            justify-content: center;
+            padding: 0.65rem 0;
+        }
+
+        /* Sidebar Footer */
+        .sidebar-footer {
+            padding: 1rem 0.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            gap: 0.5rem;
+        }
+
+        .app-sidebar.collapsed .sidebar-footer {
+            flex-direction: column;
+            padding: 1rem 0;
+            gap: 0.75rem;
+        }
+
+        /* Toggle Row */
+        .sidebar-toggle-row {
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 0.5rem;
+        }
+
+        .sidebar-toggle-action {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.74);
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            padding: 0.65rem 0.85rem;
+            font-weight: 600;
+            font-size: 0.92rem;
+            border-radius: 0.45rem;
+            cursor: pointer;
+            transition: color 0.15s, background-color 0.15s;
+            white-space: nowrap;
+        }
+
+        .sidebar-toggle-action:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .app-sidebar.collapsed .sidebar-toggle-action {
+            justify-content: center;
+            padding: 0.65rem 0;
+        }
+
+        .app-sidebar.collapsed .sidebar-toggle-row .toggle-text {
+            display: none;
+        }
+
+        /* Mobile Header & Responsive Drawer Drawer styling */
+        .app-mobile-header {
+            background: linear-gradient(120deg, #163b45, #205f69 55%, #2f5b85);
+            color: #ffffff;
+            padding: 0.75rem 1rem;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 1020;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            height: 60px;
+        }
+
+        .sidebar-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 1025;
+            display: none;
+            backdrop-filter: blur(2px);
+        }
+
+        .sidebar-backdrop.show {
+            display: block;
+        }
+
+        @media (max-width: 991.98px) {
+            .app-mobile-header {
+                display: flex;
+            }
+            .app-sidebar {
+                transform: translateX(-100%);
+                width: 260px !important;
+                transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .app-sidebar.mobile-open {
+                transform: translateX(0);
+                box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            }
+            .app-main-content {
+                padding-left: 0 !important;
+            }
+            .sidebar-toggle-row {
+                display: none !important;
+            }
+        }
+
+        /* ── Notification Bell ─────────────────────────────── */
+        .notif-btn {
+            position: relative;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.18);
+            color: rgba(255,255,255,0.85);
+            border-radius: 0.45rem;
+            width: 2.15rem;
+            height: 2.15rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.18s, color 0.18s;
+            padding: 0;
+            font-size: 1rem;
+        }
+        .notif-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
+        .notif-badge {
+            position: absolute;
+            top: -4px; right: -4px;
+            min-width: 1rem; height: 1rem;
+            border-radius: 999px;
+            background: #f59e0b;
+            color: #fff;
+            font-size: 0.6rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 3px;
+            border: 2px solid #1c545f;
+        }
+        .notif-dropdown {
+            width: min(360px, calc(100vw - 2rem));
+            max-height: 480px;
+            overflow-y: auto;
+            border-radius: 0.75rem;
+            border: 1px solid var(--border-soft);
+            box-shadow: 0 18px 40px rgba(31,41,51,0.15);
+            padding: 0;
+        }
+        .notif-header {
+            padding: 0.65rem 0.9rem;
+            background: var(--surface-muted);
+            border-bottom: 1px solid var(--border-soft);
+            border-radius: 0.75rem 0.75rem 0 0;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: var(--text-main);
+        }
+        .notif-item {
+            padding: 0.7rem 0.9rem;
+            border-bottom: 1px solid #f0f4f8;
+            font-size: 0.82rem;
+            text-align: left;
+        }
+        .notif-item:last-child { border-bottom: none; border-radius: 0 0 0.75rem 0.75rem; }
+        .notif-item-name { font-weight: 700; color: var(--text-main); }
+        .notif-item-msg { color: var(--text-muted); }
+        .notif-empty { padding: 1rem 0.9rem; text-align: center; color: var(--text-muted); font-size: 0.85rem; }
 
         .navbar-profile-btn {
-            max-width: 15rem;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            width: 2.15rem;
+            height: 2.15rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.45rem;
+            padding: 0;
+        }
+
+        .btn-deconnexion {
+            width: 2.15rem;
+            height: 2.15rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.45rem;
+            padding: 0;
+            transition: background-color 0.18s, border-color 0.18s, color 0.18s;
+        }
+        .btn-deconnexion:hover, .btn-deconnexion:focus {
+            background-color: #dc3545 !important;
+            border-color: #dc3545 !important;
+            color: #fff !important;
+        }
+
+        main.container {
+            max-width: min(100% - 2rem, 1500px);
+            width: 100%;
         }
 
         .card-soft {
@@ -581,144 +858,208 @@
                 'rh.profile'
             );
             $suiviActive = request()->routeIs('tasks.*', 'requests.*', 'daily-log.*');
+
+            $profileLabel = $authUser->full_name . ' (' . ($authUser->role?->name ?? '-') . ')';
+            if ($authUser->hasRole('Stagiaire') && $authUser->intern !== null) {
+                $isActiveIntern = $authUser->intern
+                    ->internships()
+                    ->where('status', 'en_cours')
+                    ->exists();
+                $profileLabel = $authUser->full_name
+                    . ' (' . ($authUser->role?->name ?? '-') . '/' . ($isActiveIntern ? 'actif' : 'inactif') . ')';
+            }
+            // Load smart alerts for notification bell (only for roles that can see them)
+            $navAlerts = [];
+            if ($authUser->hasRole('Administrateur', 'Responsable RH', 'Responsable de competence', 'Encadrant')) {
+                $navAlerts = app(App\Http\Controllers\DashboardController::class)->getSmartAlertsForNav($authUser);
+            }
+            // Pending password reset requests count (admin only)
+            $pendingResets = $authUser->hasRole('Administrateur')
+                ? \App\Models\PasswordResetRequest::where('status','en_attente')->count()
+                : 0;
+            $totalNotifCount = count($navAlerts) + $pendingResets;
         @endphp
-        <nav class="navbar navbar-expand-xl navbar-dark app-navbar shadow-sm">
-            <div class="container">
-                <a class="navbar-brand fw-semibold d-flex align-items-center" href="{{ route('dashboard') }}">
-                    <img src="{{ asset('images/ALTEN-Logo.wine.png') }}" alt="Alten Logo" style="height: 44px; margin-right: 10px;">
-                    <span>Gestion des Stagiaires</span>
-                </a>
 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-
-                <div class="collapse navbar-collapse" id="mainNavbar">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">Dashboard</a>
-                        </li>
-
-                        @if($authUser->hasRole('Administrateur', 'Responsable RH', 'Responsable de competence', 'Encadrant'))
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle {{ $gestionActive ? 'active' : '' }}" href="#" id="gestionDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Gestion</a>
-                            <ul class="dropdown-menu" aria-labelledby="gestionDropdown">
-                                @if($authUser->hasRole('Administrateur'))
-                                    <li><a class="dropdown-item {{ request()->routeIs('users.*') ? 'active' : '' }}" href="{{ route('users.index') }}">Utilisateurs</a></li>
-                                @endif
-                                @if($authUser->hasRole('Administrateur', 'Responsable RH', 'Responsable de competence'))
-                                    <li><a class="dropdown-item {{ request()->routeIs('interns.*') ? 'active' : '' }}" href="{{ route('interns.index') }}">Stagiaires</a></li>
-                                @endif
-                                @if($authUser->hasRole('Administrateur', 'Responsable de competence'))
-                                    <li><a class="dropdown-item {{ request()->routeIs('internships.*') ? 'active' : '' }}" href="{{ route('internships.index') }}">Stages</a></li>
-                                @endif
-                                @if($authUser->hasRole('Encadrant'))
-                                    <li><a class="dropdown-item {{ request()->routeIs('supervisor.interns', 'supervisor.interns.show') ? 'active' : '' }}" href="{{ route('supervisor.interns') }}">Mes stagiaires</a></li>
-                                    <li><a class="dropdown-item {{ request()->routeIs('supervisor.internships', 'supervisor.internships.show') ? 'active' : '' }}" href="{{ route('supervisor.internships') }}">Mes stages</a></li>
-                                @endif
-                                @if($authUser->hasRole('Administrateur', 'Responsable RH', 'Responsable de competence'))
-                                    <li><a class="dropdown-item {{ request()->routeIs('absences.*') ? 'active' : '' }}" href="{{ route('absences.index') }}">Absences</a></li>
-                                @endif
-                                @if($authUser->hasRole('Responsable RH'))
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item {{ request()->routeIs('rh.attestations.*') ? 'active' : '' }}" href="{{ route('rh.attestations.index') }}">Attestations</a></li>
-                                    <li><a class="dropdown-item {{ request()->routeIs('rh.archives.*') ? 'active' : '' }}" href="{{ route('rh.archives.index') }}">Archives</a></li>
-                                    <li><a class="dropdown-item {{ request()->routeIs('rh.profile') ? 'active' : '' }}" href="{{ route('rh.profile') }}">Profil RH</a></li>
-                                @endif
-                            </ul>
-                        </li>
-                        @endif
-
-                        @if(! $authUser->hasRole('Responsable RH'))
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle {{ $suiviActive ? 'active' : '' }}" href="#" id="suiviDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Suivi</a>
-                            <ul class="dropdown-menu" aria-labelledby="suiviDropdown">
-                                @if(! $authUser->hasRole('Responsable de competence', 'Responsable RH'))
-                                    <li><a class="dropdown-item {{ request()->routeIs('tasks.*') ? 'active' : '' }}" href="{{ route('tasks.index') }}">Tâches</a></li>
-                                @endif
-                                @if($authUser->hasRole('Stagiaire'))
-                                    <li><a class="dropdown-item {{ request()->routeIs('daily-log.*') ? 'active' : '' }}" href="{{ route('daily-log.index') }}">📓 Mon Journal</a></li>
-                                @endif
-                                @if($authUser->hasRole('Administrateur', 'Responsable de competence', 'Encadrant', 'Stagiaire'))
-                                    <li><a class="dropdown-item {{ request()->routeIs('requests.*') ? 'active' : '' }}" href="{{ route('requests.index') }}">Demandes</a></li>
-                                @endif
-                            </ul>
-                        </li>
-                        @endif
-
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('messages.*') ? 'active' : '' }}" href="{{ route('messages.index') }}">Messages</a>
-                        </li>
-                    </ul>
-
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0 d-none">
-                        <li class="nav-item"><a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">Dashboard</a></li>
-
-                        @if($authUser->hasRole('Administrateur'))
-                            <li class="nav-item"><a class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}" href="{{ route('users.index') }}">Utilisateurs</a></li>
-                        @endif
-
-                        @if($authUser->hasRole('Administrateur', 'Responsable RH', 'Responsable de competence'))
-                            <li class="nav-item"><a class="nav-link {{ request()->routeIs('interns.*') ? 'active' : '' }}" href="{{ route('interns.index') }}">Stagiaires</a></li>
-                        @endif
-
-                        @if($authUser->hasRole('Administrateur', 'Responsable de competence'))
-                            <li class="nav-item"><a class="nav-link {{ request()->routeIs('internships.*') ? 'active' : '' }}" href="{{ route('internships.index') }}">Stages</a></li>
-                        @endif
-
-                        @if($authUser->hasRole('Administrateur', 'Responsable RH', 'Responsable de competence'))
-                            <li class="nav-item"><a class="nav-link {{ request()->routeIs('absences.*') ? 'active' : '' }}" href="{{ route('absences.index') }}">Absences</a></li>
-                        @endif
-
-                        @if($authUser->hasRole('Responsable RH'))
-                            <li class="nav-item"><a class="nav-link {{ request()->routeIs('rh.attestations.*') ? 'active' : '' }}" href="{{ route('rh.attestations.index') }}">Attestations</a></li>
-                            <li class="nav-item"><a class="nav-link {{ request()->routeIs('rh.archives.*') ? 'active' : '' }}" href="{{ route('rh.archives.index') }}">Archives</a></li>
-                            <li class="nav-item"><a class="nav-link {{ request()->routeIs('rh.profile') ? 'active' : '' }}" href="{{ route('rh.profile') }}">Profil RH</a></li>
-                        @endif
-
-                        @if($authUser->hasRole('Encadrant'))
-                            <li class="nav-item"><a class="nav-link {{ request()->routeIs('supervisor.interns', 'supervisor.interns.show') ? 'active' : '' }}" href="{{ route('supervisor.interns') }}">Stagiaires</a></li>
-                            <li class="nav-item"><a class="nav-link {{ request()->routeIs('supervisor.internships', 'supervisor.internships.show') ? 'active' : '' }}" href="{{ route('supervisor.internships') }}">Stages</a></li>
-                        @endif
-
-                        @if(! $authUser->hasRole('Responsable de competence', 'Responsable RH'))
-                            <li class="nav-item"><a class="nav-link {{ request()->routeIs('tasks.*') ? 'active' : '' }}" href="{{ route('tasks.index') }}">Tâches</a></li>
-                        @endif
-                        @if($authUser->hasRole('Administrateur', 'Responsable de competence', 'Encadrant', 'Stagiaire'))
-                            <li class="nav-item"><a class="nav-link {{ request()->routeIs('requests.*') ? 'active' : '' }}" href="{{ route('requests.index') }}">Demandes</a></li>
-                        @endif
-                        <li class="nav-item"><a class="nav-link {{ request()->routeIs('messages.*') ? 'active' : '' }}" href="{{ route('messages.index') }}">Messages</a></li>
-                    </ul>
-
-                    <div class="navbar-user-actions d-flex align-items-center gap-2 text-white">
-                        @php
-                            $profileLabel = $authUser->full_name . ' (' . ($authUser->role?->name ?? '-') . ')';
-                            if ($authUser->hasRole('Stagiaire') && $authUser->intern !== null) {
-                                $isActiveIntern = $authUser->intern
-                                    ->internships()
-                                    ->where('status', 'en_cours')
-                                    ->exists();
-                                $profileLabel = $authUser->full_name
-                                    . ' (' . ($authUser->role?->name ?? '-') . '/' . ($isActiveIntern ? 'actif' : 'inactif') . ')';
-                            }
-                        @endphp
-                        <a class="btn btn-sm btn-outline-light navbar-profile-btn" href="{{ route('profile.edit') }}" title="{{ $profileLabel }}">
-                            {{ $profileLabel }}
-                        </a>
-                        <form action="{{ route('logout') }}" method="POST">
-                            @csrf
-                            <button class="btn btn-sm btn-light text-nowrap" type="submit">Déconnexion</button>
-                        </form>
-                    </div>
+        <div class="app-layout">
+            {{-- Sidebar --}}
+            <aside id="appSidebar" class="app-sidebar">
+                <div class="sidebar-header">
+                    <a class="sidebar-brand" href="{{ route('dashboard') }}">
+                        <img src="{{ asset('images/ALTEN-Logo.wine.png') }}" alt="Alten Logo">
+                        <span class="brand-text">Gestion des Stagiaires</span>
+                    </a>
                 </div>
-            </div>
-        </nav>
-    @endauth
 
-    <main class="container py-4">
-        @include('partials.alerts')
-        @yield('content')
-    </main>
+                <div class="sidebar-nav">
+                    <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}" title="Dashboard">
+                        <i class="bi bi-speedometer2 nav-icon"></i>
+                        <span class="nav-text">Dashboard</span>
+                    </a>
+
+                    @if($authUser->hasRole('Administrateur'))
+                        <a class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}" href="{{ route('users.index') }}" title="Utilisateurs">
+                            <i class="bi bi-people nav-icon"></i>
+                            <span class="nav-text">Utilisateurs</span>
+                        </a>
+                    @endif
+
+                    @if($authUser->hasRole('Administrateur', 'Responsable RH', 'Responsable de competence'))
+                        <a class="nav-link {{ request()->routeIs('interns.*') ? 'active' : '' }}" href="{{ route('interns.index') }}" title="Stagiaires">
+                            <i class="bi bi-person-badge nav-icon"></i>
+                            <span class="nav-text">Stagiaires</span>
+                        </a>
+                    @endif
+
+                    @if($authUser->hasRole('Administrateur', 'Responsable de competence'))
+                        <a class="nav-link {{ request()->routeIs('internships.*') ? 'active' : '' }}" href="{{ route('internships.index') }}" title="Stages">
+                            <i class="bi bi-briefcase nav-icon"></i>
+                            <span class="nav-text">Stages</span>
+                        </a>
+                    @endif
+
+                    @if($authUser->hasRole('Encadrant'))
+                        <a class="nav-link {{ request()->routeIs('supervisor.interns', 'supervisor.interns.show') ? 'active' : '' }}" href="{{ route('supervisor.interns') }}" title="Mes stagiaires">
+                            <i class="bi bi-people-fill nav-icon"></i>
+                            <span class="nav-text">Mes stagiaires</span>
+                        </a>
+                        <a class="nav-link {{ request()->routeIs('supervisor.internships', 'supervisor.internships.show') ? 'active' : '' }}" href="{{ route('supervisor.internships') }}" title="Mes stages">
+                            <i class="bi bi-briefcase-fill nav-icon"></i>
+                            <span class="nav-text">Mes stages</span>
+                        </a>
+                    @endif
+
+                    @if($authUser->hasRole('Administrateur', 'Responsable RH', 'Responsable de competence'))
+                        <a class="nav-link {{ request()->routeIs('absences.*') ? 'active' : '' }}" href="{{ route('absences.index') }}" title="Absences">
+                            <i class="bi bi-calendar-x nav-icon"></i>
+                            <span class="nav-text">Absences</span>
+                        </a>
+                    @endif
+
+                    @if($authUser->hasRole('Responsable RH'))
+                        <a class="nav-link {{ request()->routeIs('rh.attestations.*') ? 'active' : '' }}" href="{{ route('rh.attestations.index') }}" title="Attestations">
+                            <i class="bi bi-file-earmark-pdf nav-icon"></i>
+                            <span class="nav-text">Attestations</span>
+                        </a>
+                        <a class="nav-link {{ request()->routeIs('rh.archives.*') ? 'active' : '' }}" href="{{ route('rh.archives.index') }}" title="Archives">
+                            <i class="bi bi-archive nav-icon"></i>
+                            <span class="nav-text">Archives</span>
+                        </a>
+                        <a class="nav-link {{ request()->routeIs('rh.profile') ? 'active' : '' }}" href="{{ route('rh.profile') }}" title="Profil RH">
+                            <i class="bi bi-person-vcard nav-icon"></i>
+                            <span class="nav-text">Profil RH</span>
+                        </a>
+                    @endif
+
+                    @if(! $authUser->hasRole('Responsable de competence', 'Responsable RH'))
+                        <a class="nav-link {{ request()->routeIs('tasks.*') ? 'active' : '' }}" href="{{ route('tasks.index') }}" title="Tâches">
+                            <i class="bi bi-list-task nav-icon"></i>
+                            <span class="nav-text">Tâches</span>
+                        </a>
+                    @endif
+
+                    @if($authUser->hasRole('Stagiaire'))
+                        <a class="nav-link {{ request()->routeIs('daily-log.*') ? 'active' : '' }}" href="{{ route('daily-log.index') }}" title="Mon Journal">
+                            <i class="bi bi-journal-bookmark nav-icon"></i>
+                            <span class="nav-text">Mon Journal</span>
+                        </a>
+                    @endif
+
+                    @if($authUser->hasRole('Administrateur', 'Responsable de competence', 'Encadrant', 'Stagiaire'))
+                        <a class="nav-link {{ request()->routeIs('requests.*') ? 'active' : '' }}" href="{{ route('requests.index') }}" title="Demandes">
+                            <i class="bi bi-question-circle nav-icon"></i>
+                            <span class="nav-text">Demandes</span>
+                        </a>
+                    @endif
+
+                    <a class="nav-link {{ request()->routeIs('messages.*') ? 'active' : '' }}" href="{{ route('messages.index') }}" title="Messages">
+                        <i class="bi bi-chat-dots nav-icon"></i>
+                        <span class="nav-text">Messages</span>
+                    </a>
+                </div>
+
+                {{-- Sidebar Footer --}}
+                <div class="sidebar-footer">
+                    <div class="dropup">
+                        <button class="notif-btn" data-bs-toggle="dropdown" aria-expanded="false" title="Alertes">
+                            <i class="bi bi-bell"></i>
+                            @if($totalNotifCount > 0)
+                                <span class="notif-badge">{{ $totalNotifCount > 99 ? '99+' : $totalNotifCount }}</span>
+                            @endif
+                        </button>
+                        <div class="dropdown-menu notif-dropdown shadow-lg">
+                            <div class="notif-header">
+                                <i class="bi bi-bell me-1"></i> Alertes
+                                @if($totalNotifCount > 0)
+                                    <span class="badge text-bg-warning ms-1">{{ $totalNotifCount }}</span>
+                                @endif
+                            </div>
+                            @if($pendingResets > 0)
+                                <a href="{{ route('admin.password-reset.index') }}" class="notif-item d-block text-decoration-none">
+                                    <div class="notif-item-name"><i class="bi bi-key text-warning me-1"></i> Réinitialisations en attente</div>
+                                    <div class="notif-item-msg">{{ $pendingResets }} demande(s) de mot de passe à valider.</div>
+                                </a>
+                            @endif
+                            @forelse($navAlerts as $alertItem)
+                                <div class="notif-item">
+                                    <div class="notif-item-name">{{ $alertItem['intern']->user?->full_name ?? 'Stagiaire' }}</div>
+                                    <div class="notif-item-msg">{{ $alertItem['alert']['message'] }}</div>
+                                </div>
+                            @empty
+                                @if($pendingResets === 0)
+                                    <div class="notif-empty"><i class="bi bi-check-circle text-success me-1"></i>Aucune alerte détectée.</div>
+                                @endif
+                            @endforelse
+                        </div>
+                    </div>
+
+                    <a class="btn btn-sm btn-outline-light navbar-profile-btn" href="{{ route('profile.edit') }}" title="{{ $profileLabel }}">
+                        <i class="bi bi-person-circle" style="font-size: 1.1rem;"></i>
+                    </a>
+
+                    <form action="{{ route('logout') }}" method="POST" class="m-0">
+                        @csrf
+                        <button class="btn btn-sm btn-outline-light btn-deconnexion text-nowrap" type="submit" title="Déconnexion">
+                            <i class="bi bi-box-arrow-right" style="font-size: 1.1rem;"></i>
+                        </button>
+                    </form>
+                </div>
+
+                {{-- Sidebar Toggle row (desktop only) --}}
+                <div class="sidebar-toggle-row">
+                    <button type="button" class="sidebar-toggle-action" id="sidebarToggle" title="Réduire le menu">
+                        <i class="bi bi-chevron-left toggle-icon"></i>
+                        <span class="toggle-text">Réduire le menu</span>
+                    </button>
+                </div>
+            </aside>
+
+            {{-- Main content area --}}
+            <div class="app-main-content" id="appMainContent">
+                {{-- Mobile top header --}}
+                <div class="app-mobile-header">
+                    <button class="btn btn-link text-white p-0" id="mobileSidebarToggle" style="font-size: 1.5rem;">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <a class="d-flex align-items-center text-white text-decoration-none" href="{{ route('dashboard') }}">
+                        <img src="{{ asset('images/ALTEN-Logo.wine.png') }}" alt="Alten Logo" style="height: 34px; margin-right: 8px;">
+                        <span class="fw-bold" style="font-size: 1rem;">Gestion des Stagiaires</span>
+                    </a>
+                    <div style="width: 24px;"></div>
+                </div>
+
+                <main class="container py-4 flex-grow-1">
+                    @include('partials.alerts')
+                    @yield('content')
+                </main>
+            </div>
+        </div>
+        <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+    @else
+        <main class="container py-4">
+            @include('partials.alerts')
+            @yield('content')
+        </main>
+    @endauth
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>
@@ -734,6 +1075,10 @@
                     locale: 'fr'
                 });
             }
+            // Initialize Bootstrap tooltips on all elements with a title attribute
+            document.querySelectorAll('[title]').forEach(function (el) {
+                new bootstrap.Tooltip(el, { trigger: 'hover' });
+            });
         });
     </script>
     @stack('scripts')
@@ -1354,6 +1699,147 @@
             return html;
         }
     });
+    </script>
+    {{-- ══════════════════════════════════════════════════════════════════════
+         Custom Confirm Dialog — replaces browser native confirm()
+    ══════════════════════════════════════════════════════════════════════ --}}
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius:0.85rem;">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h6 class="modal-title fw-bold" id="confirmModalLabel">
+                        <i class="bi bi-shield-lock me-2 text-muted"></i>Gestion des Stagiaires
+                    </h6>
+                </div>
+                <div class="modal-body pt-2 pb-3">
+                    <p id="confirmModalMessage" class="mb-0"></p>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="confirmModalCancel">Annuler</button>
+                    <button type="button" class="btn btn-sm btn-danger" id="confirmModalOk">Confirmer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // ── Auto-dismiss success flash messages after 2 seconds ──────────────
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.alert.alert-success').forEach(function (el) {
+            setTimeout(function () {
+                const bsAlert = bootstrap.Alert.getOrCreateInstance(el);
+                bsAlert.close();
+            }, 2000);
+        });
+
+        // Close notification dropdown when clicking outside of it
+        document.addEventListener('click', function (event) {
+            const notifBtn = document.querySelector('.notif-btn');
+            const notifDropdown = document.querySelector('.notif-dropdown');
+            if (notifBtn && notifDropdown) {
+                const isClickInside = notifBtn.contains(event.target) || notifDropdown.contains(event.target);
+                if (!isClickInside && notifDropdown.classList.contains('show')) {
+                    const dropdownInstance = bootstrap.Dropdown.getOrCreateInstance(notifBtn);
+                    if (dropdownInstance) {
+                        dropdownInstance.hide();
+                    }
+                }
+            }
+        });
+
+        // ── Sidebar Interactivity ──
+        const sidebar = document.getElementById('appSidebar');
+        const mainContent = document.getElementById('appMainContent');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const mobileSidebarToggle = document.getElementById('mobileSidebarToggle');
+        const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+
+        if (sidebar && mainContent && sidebarToggle) {
+            const isCollapsed = localStorage.getItem('sidebar-collapsed') === 'true';
+            if (isCollapsed) {
+                sidebar.classList.add('collapsed');
+                mainContent.classList.add('collapsed');
+                const toggleIcon = sidebarToggle.querySelector('.toggle-icon');
+                if (toggleIcon) toggleIcon.className = 'bi bi-chevron-right toggle-icon';
+            }
+            document.documentElement.classList.remove('sidebar-init-collapsed');
+
+            sidebarToggle.addEventListener('click', function () {
+                const collapsed = sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('collapsed');
+                localStorage.setItem('sidebar-collapsed', collapsed);
+                const toggleIcon = sidebarToggle.querySelector('.toggle-icon');
+                if (toggleIcon) {
+                    toggleIcon.className = collapsed 
+                        ? 'bi bi-chevron-right toggle-icon' 
+                        : 'bi bi-chevron-left toggle-icon';
+                }
+            });
+        }
+
+        if (mobileSidebarToggle && sidebar && sidebarBackdrop) {
+            mobileSidebarToggle.addEventListener('click', function () {
+                sidebar.classList.add('mobile-open');
+                sidebarBackdrop.classList.add('show');
+            });
+            sidebarBackdrop.addEventListener('click', function () {
+                sidebar.classList.remove('mobile-open');
+                sidebarBackdrop.classList.remove('show');
+            });
+        }
+    });
+
+    // ── Override window.confirm() with a Bootstrap modal ─────────────────
+    (function () {
+        let _resolve = null;
+
+        const modalEl = document.getElementById('confirmModal');
+        if (!modalEl) return;
+
+        const bsModal = new bootstrap.Modal(modalEl, { backdrop: 'static', keyboard: false });
+        const msgEl   = document.getElementById('confirmModalMessage');
+        const okBtn   = document.getElementById('confirmModalOk');
+        const cancelBtn = document.getElementById('confirmModalCancel');
+
+        okBtn.addEventListener('click', function () {
+            bsModal.hide();
+            if (_resolve) _resolve(true);
+        });
+        cancelBtn.addEventListener('click', function () {
+            bsModal.hide();
+            if (_resolve) _resolve(false);
+        });
+        modalEl.addEventListener('hidden.bs.modal', function () {
+            if (_resolve) _resolve(false);
+            _resolve = null;
+        });
+
+        window.confirm = function (message) {
+            // Synchronous confirm() is fundamentally async-incompatible with modals.
+            // We store the resolve fn and return a Promise; callers using
+            // onsubmit="return confirm(...)" need special handling below.
+            return false; // Default false; handled via data-confirm below
+        };
+
+        // Handle all elements with data-confirm or onsubmit containing confirm()
+        document.addEventListener('click', function (e) {
+            const btn = e.target.closest('[data-confirm]');
+            if (!btn) return;
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            if (msgEl) msgEl.textContent = btn.dataset.confirm;
+            bsModal.show();
+            okBtn.onclick = function () {
+                bsModal.hide();
+                // Submit the parent form if there is one
+                const form = btn.closest('form');
+                if (form) {
+                    btn.removeAttribute('data-confirm');
+                    btn.click(); // re-click without the handler
+                }
+            };
+        });
+    })();
     </script>
     @endauth
 </body>

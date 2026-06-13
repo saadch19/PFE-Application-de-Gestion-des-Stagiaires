@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PasswordResetRequest;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -84,8 +85,8 @@ class AuthController extends Controller
     {
         $validated = $request->validate([
             'full_name' => ['required', 'string', 'max:120'],
-            'email' => ['nullable', 'email', 'max:120'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'email'     => ['nullable', 'email', 'max:120'],
+            'password'  => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
         $query = User::query()
@@ -99,8 +100,8 @@ class AuthController extends Controller
         $users = $query->limit(2)->get();
 
         if ($users->isEmpty()) {
-        return back()
-            ->withErrors(['full_name' => 'Aucun compte actif ne correspond aux informations saisies.'])
+            return back()
+                ->withErrors(['full_name' => 'Aucun compte actif ne correspond aux informations saisies.'])
                 ->onlyInput('full_name', 'email');
         }
 
@@ -110,13 +111,24 @@ class AuthController extends Controller
                 ->onlyInput('full_name', 'email');
         }
 
-        $users->first()->update([
-            'password_hash' => Hash::make($validated['password']),
+        $user = $users->first();
+
+        // Cancel any previous pending reset for this user
+        PasswordResetRequest::query()
+            ->where('user_id', $user->id)
+            ->where('status', 'en_attente')
+            ->delete();
+
+        // Create a new pending reset request — admin must approve it
+        PasswordResetRequest::query()->create([
+            'user_id'               => $user->id,
+            'pending_password_hash' => Hash::make($validated['password']),
+            'status'                => 'en_attente',
         ]);
 
         return redirect()
             ->route('login')
-            ->with('success', 'Mot de passe réinitialisé. Vous pouvez vous connecter.');
+            ->with('success', 'Demande de réinitialisation envoyée. Votre mot de passe sera mis à jour après validation par un administrateur.');
     }
 
     public function logout(Request $request): RedirectResponse

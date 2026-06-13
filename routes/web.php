@@ -14,6 +14,7 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RhDocumentController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\PasswordResetRequestController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -46,6 +47,9 @@ Route::middleware('auth')->group(function (): void {
 
     Route::middleware('role:Administrateur')->group(function (): void {
         Route::resource('users', UserController::class)->except(['show']);
+        // Password reset approval
+        Route::redirect('/admin/reset-mdp', '/requests?resets_page=1')->name('admin.password-reset.index');
+        Route::patch('/admin/reset-mdp/{passwordResetRequest}', [PasswordResetRequestController::class, 'process'])->name('admin.password-reset.process');
     });
 
     Route::middleware('role:Administrateur,Responsable RH,Responsable de competence')->group(function (): void {

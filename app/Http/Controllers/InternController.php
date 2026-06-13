@@ -27,6 +27,7 @@ class InternController extends Controller
         $interns = Intern::query()
             ->with(['user', 'internships', 'requests'])
             ->when(! $showArchived, fn ($query) => $query->where('is_archived', false))
+            ->when($showArchived, fn ($query) => $query->where('is_archived', true))
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($subQuery) use ($search) {
                     $subQuery->where('cin', 'like', "%{$search}%")

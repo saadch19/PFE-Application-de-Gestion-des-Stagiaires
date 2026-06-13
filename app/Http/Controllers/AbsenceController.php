@@ -10,22 +10,30 @@ use Illuminate\View\View;
 
 class AbsenceController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $search = (string) $request->string('search');
+
         $absencesQuery = Absence::query()
             ->with(['intern.user', 'recordedBy'])
+            ->when($search !== '', function ($query) use ($search) {
+                $query->whereHas('intern', function ($subQuery) use ($search) {
+                    $subQuery->where('cin', 'like', "%{$search}%")
+                        ->orWhereHas('user', fn ($uq) => $uq->where('full_name', 'like', "%{$search}%"));
+                })->orWhere('reason', 'like', "%{$search}%");
+            })
             ->latest('date_absence');
 
         $absenceStats = [
-            'total' => (clone $absencesQuery)->count(),
-            'unjustified' => (clone $absencesQuery)->where('justified', false)->count(),
+            'total'       => Absence::query()->count(),
+            'unjustified' => Absence::query()->where('justified', false)->count(),
         ];
 
         $absences = $absencesQuery
-            ->with(['intern.user', 'recordedBy'])
-            ->paginate(12);
+            ->paginate(12)
+            ->withQueryString();
 
-        return view('absences.index', compact('absences', 'absenceStats'));
+        return view('absences.index', compact('absences', 'absenceStats', 'search'));
     }
 
     public function create(): View

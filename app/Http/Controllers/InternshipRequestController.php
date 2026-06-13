@@ -18,6 +18,7 @@ class InternshipRequestController extends Controller
     public function index(Request $request): View
     {
         $user = $request->user();
+        $isAdmin = $user->hasRole('Administrateur');
 
         $requests = InternshipRequest::query()
             ->with(['intern.user', 'intern.internships', 'processedBy', 'supervisorValidator', 'rcValidator', 'rhProcessor'])
@@ -28,9 +29,24 @@ class InternshipRequestController extends Controller
             })
             ->orderByRaw("CASE WHEN status = 'en_attente' THEN 0 ELSE 1 END")
             ->latest()
-            ->paginate(12);
+            ->paginate(12, ['*'], 'stages_page')
+            ->withQueryString();
 
-        return view('requests.index', compact('requests'));
+        $passwordResets = collect();
+        $pendingResetsCount = 0;
+
+        if ($isAdmin) {
+            $passwordResets = \App\Models\PasswordResetRequest::query()
+                ->with(['user', 'processedBy'])
+                ->orderByRaw("CASE WHEN status = 'en_attente' THEN 0 ELSE 1 END")
+                ->latest()
+                ->paginate(12, ['*'], 'resets_page')
+                ->withQueryString();
+
+            $pendingResetsCount = \App\Models\PasswordResetRequest::where('status', 'en_attente')->count();
+        }
+
+        return view('requests.index', compact('requests', 'passwordResets', 'pendingResetsCount', 'isAdmin'));
     }
 
     public function create(Request $request): View

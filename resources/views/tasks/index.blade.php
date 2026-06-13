@@ -133,11 +133,11 @@
                                                 @endif
                                                 @if($canManage)
                                                     <div class="d-flex flex-wrap gap-2 mt-3">
-                                                        <a href="{{ route('tasks.edit', $task) }}" class="btn btn-sm btn-outline-primary">Modifier</a>
-                                                        <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="m-0" onsubmit="return confirm('Supprimer cette tâche ?')">
+                                                        <a href="{{ route('tasks.edit', $task) }}" class="btn btn-sm btn-outline-primary" title="Modifier"><i class="bi bi-pencil"></i></a>
+                                                        <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="d-inline">
                                                             @csrf
                                                             @method('DELETE')
-                                                            <button class="btn btn-sm btn-outline-danger" type="submit">Supprimer</button>
+                                                            <button class="btn btn-sm btn-outline-danger" type="submit" title="Supprimer" data-confirm="Supprimer cette tâche ?"><i class="bi bi-trash"></i></button>
                                                         </form>
                                                     </div>
                                                 @endif
@@ -207,11 +207,11 @@
                                 <td class="text-end">
                                     @if($canManage)
                                         <div class="d-inline-flex align-items-center justify-content-end gap-1 flex-nowrap">
-                                            <a href="{{ route('tasks.edit', $task) }}" class="btn btn-sm btn-outline-primary">Modifier</a>
-                                            <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="m-0" onsubmit="return confirm('Supprimer cette tâche ?')">
+                                            <a href="{{ route('tasks.edit', $task) }}" class="btn btn-sm btn-outline-primary" title="Modifier"><i class="bi bi-pencil"></i></a>
+                                            <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="d-inline">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button class="btn btn-sm btn-outline-danger text-nowrap" type="submit">Supprimer</button>
+                                                <button class="btn btn-sm btn-outline-danger" type="submit" title="Supprimer" data-confirm="Supprimer cette tâche ?"><i class="bi bi-trash"></i></button>
                                             </form>
                                         </div>
                                     @endif
