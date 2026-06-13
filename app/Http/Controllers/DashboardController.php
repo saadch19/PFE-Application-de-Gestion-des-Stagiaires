@@ -15,6 +15,7 @@ use Illuminate\View\View;
 class DashboardController extends Controller
 {
     private const RECENT_LIMIT = 3;
+    private const SCORES_LIMIT = 4;
 
     public function index(): View
     {
@@ -208,9 +209,9 @@ class DashboardController extends Controller
         $scoresPage = max(1, (int) request()->query('scores_page', 1));
 
         $evaluatedInterns = new LengthAwarePaginator(
-            $sortedInternsByScore->forPage($scoresPage, self::RECENT_LIMIT)->values(),
+            $sortedInternsByScore->forPage($scoresPage, self::SCORES_LIMIT)->values(),
             $sortedInternsByScore->count(),
-            self::RECENT_LIMIT,
+            self::SCORES_LIMIT,
             $scoresPage,
             [
                 'path' => request()->url(),
