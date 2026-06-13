@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\PasswordResetRequest;
+use App\Support\NotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -44,6 +45,9 @@ class PasswordResetRequestController extends Controller
             'processed_by' => $user->id,
             'processed_at' => now(),
         ]);
+
+        // Notify the user about the outcome
+        NotificationService::passwordResetProcessed($passwordResetRequest->fresh('user'));
 
         $label = $validated['action'] === 'acceptee' ? 'acceptée et mot de passe mis à jour' : 'refusée';
 

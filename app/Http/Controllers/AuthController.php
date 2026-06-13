@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PasswordResetRequest;
 use App\Models\User;
+use App\Support\NotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -125,6 +126,9 @@ class AuthController extends Controller
             'pending_password_hash' => Hash::make($validated['password']),
             'status'                => 'en_attente',
         ]);
+
+        // Notify all admins about the pending reset
+        NotificationService::passwordResetRequested();
 
         return redirect()
             ->route('login')

@@ -90,6 +90,16 @@ class User extends Authenticatable
         return $this->hasMany(InternshipRequest::class, 'processed_by');
     }
 
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    public function unreadNotificationsCount(): int
+    {
+        return $this->notifications()->where('is_read', false)->count();
+    }
+
     public function hasRole(string ...$roles): bool
     {
         $roleName = $this->role?->name;

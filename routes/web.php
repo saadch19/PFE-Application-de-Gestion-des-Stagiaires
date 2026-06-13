@@ -11,6 +11,7 @@ use App\Http\Controllers\InternController;
 use App\Http\Controllers\InternshipController;
 use App\Http\Controllers\InternshipRequestController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RhDocumentController;
 use App\Http\Controllers\TaskController;
@@ -37,6 +38,10 @@ Route::middleware('auth')->group(function (): void {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    // ── Notifications ───────────────────────────────────────────────────────
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
     // ── AI Chat assistant (available to all authenticated users) ──
     Route::post('/chat/send', [ChatController::class, 'send'])->name('chat.send');
     Route::get('/chat/models', [ChatController::class, 'models'])->name('chat.models');

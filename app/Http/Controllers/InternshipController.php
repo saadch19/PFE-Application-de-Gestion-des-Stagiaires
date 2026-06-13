@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Intern;
 use App\Models\Internship;
 use App\Models\User;
+use App\Support\NotificationService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -185,6 +186,9 @@ class InternshipController extends Controller
         $internship = Internship::query()->create($validated);
         $internship->interns()->sync($internIds);
 
+        // Notify newly assigned interns and encadrant
+        NotificationService::internshipAssigned($internship->fresh(['interns.user', 'supervisor']));
+
         return redirect()->route('internships.index')->with('success', 'Stage créé avec succès.');
     }
 
@@ -289,8 +293,19 @@ class InternshipController extends Controller
         $internIds = $validated['intern_ids'];
         unset($validated['intern_ids']);
 
+        // Capture previous state for notification diff
+        $previousInternIds     = $internship->interns()->pluck('interns.id')->toArray();
+        $previousSupervisorId  = $internship->supervisor_id;
+
         $internship->update($validated);
         $internship->interns()->sync($internIds);
+
+        // Notify newly assigned interns / new encadrant
+        NotificationService::internshipAssigned(
+            $internship->fresh(['interns.user', 'supervisor']),
+            $previousInternIds,
+            $previousSupervisorId
+        );
 
         return redirect()->route('internships.index')->with('success', 'Stage mis à jour.');
     }

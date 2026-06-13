@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use App\Support\NotificationService;
 
 class Message extends Model
 {
@@ -31,6 +32,8 @@ class Message extends Model
     {
         static::created(function (Message $message): void {
             $message->sendEmailCopy();
+            // Also create an in-app notification for the receiver
+            NotificationService::messageReceived($message);
         });
     }
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Absence;
 use App\Models\InternshipRequest;
 use App\Models\Message;
+use App\Support\NotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -139,6 +140,16 @@ class InternshipRequestController extends Controller
             'workflow_status' => $validated['type'] === 'attestation' ? 'attente_validation_encadrant' : null,
         ]);
 
+        // Notify admins + encadrant about the new request
+        $newRequest = InternshipRequest::query()
+            ->with(['intern.user', 'intern.internships.supervisor'])
+            ->where('intern_id', $user->intern->id)
+            ->latest()
+            ->first();
+        if ($newRequest) {
+            NotificationService::requestSubmitted($newRequest);
+        }
+
         return redirect()->route('requests.index')->with('success', 'Demande envoyée.');
     }
 
@@ -181,6 +192,9 @@ class InternshipRequestController extends Controller
             }
         });
 
+        // Notify the intern about the outcome
+        NotificationService::requestProcessed($requestItem->fresh(['intern.user']));
+
         return back()->with('success', 'Demande traitée.');
     }
 
@@ -212,6 +226,8 @@ class InternshipRequestController extends Controller
             'supervisor_grade' => $validated['supervisor_grade'],
         ]);
 
+        NotificationService::attestationStep($requestItem->fresh(['intern.user', 'intern.internships.responsible']), 'supervisor');
+
         return back()->with('success', 'Rapport validé. La demande est transmise au responsable de compétence.');
     }
 
@@ -242,6 +258,8 @@ class InternshipRequestController extends Controller
             'rc_validated_at' => now(),
             'sent_to_rh_at' => now(),
         ]);
+
+        NotificationService::attestationStep($requestItem->fresh(['intern.user', 'intern.internships.responsible']), 'rc');
 
         return back()->with('success', 'Rapport validé et transmis au RH.');
     }
@@ -304,6 +322,8 @@ class InternshipRequestController extends Controller
                 ]);
             }
         });
+
+        NotificationService::attestationStep($requestItem->fresh(['intern.user']), 'rh');
 
         return redirect()
             ->route('attestations.show', $requestItem->intern)

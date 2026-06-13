@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Internship;
 use App\Models\Task;
 use App\Models\User;
+use App\Support\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -105,6 +106,12 @@ class TaskController extends Controller
 
         Task::query()->create($validated + ['assigned_by' => $request->user()->id]);
 
+        // Notify the assigned intern
+        $task = Task::query()->with(['assignedTo', 'assignedBy', 'internship'])->latest()->first();
+        if ($task) {
+            NotificationService::taskAssigned($task);
+        }
+
         return redirect()->route('tasks.index')->with('success', 'Tâche créée avec succès.');
     }
 
@@ -178,6 +185,11 @@ class TaskController extends Controller
         ]);
 
         $task->update(['status' => $validated['status']]);
+
+        // Notify encadrant + admin if task is marked as done
+        if ($validated['status'] === 'termine') {
+            NotificationService::taskCompleted($task->fresh(['assignedTo', 'assignedBy', 'internship.supervisor']));
+        }
 
         return response()->json(['message' => 'Statut de la tâche mis à jour.']);
     }

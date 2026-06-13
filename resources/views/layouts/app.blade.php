@@ -367,15 +367,34 @@
             padding: 0.35rem 0.9rem;
         }
         .notif-item {
-            padding: 0.7rem 0.9rem;
+            padding: 0.65rem 0.9rem;
             border-bottom: 1px solid #f0f4f8;
             font-size: 0.82rem;
             text-align: left;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.6rem;
+            text-decoration: none;
+            color: inherit;
+            cursor: pointer;
+            transition: background 0.12s;
         }
+        .notif-item:hover { background: #f7fbf9; }
+        .notif-item.is-unread { background: #f0f8f5; }
+        .notif-item-icon {
+            width: 2rem; height: 2rem;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            background: #eef8f6;
+            font-size: 1rem;
+        }
+        .notif-item-body { flex: 1; min-width: 0; }
+        .notif-item-title { font-weight: 700; color: var(--text-main); line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .notif-item-msg { color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .notif-item-time { color: #a0aec0; font-size: 0.72rem; white-space: nowrap; }
         .notif-item:last-child { border-bottom: none; border-radius: 0 0 0.75rem 0.75rem; }
-        .notif-item-name { font-weight: 700; color: var(--text-main); }
-        .notif-item-msg { color: var(--text-muted); }
-        .notif-empty { padding: 1rem 0.9rem; text-align: center; color: var(--text-muted); font-size: 0.85rem; }
+        .notif-empty { padding: 1.5rem 0.9rem; text-align: center; color: var(--text-muted); font-size: 0.85rem; }
 
         /* Styled via app-upper-bar class */
 
@@ -847,16 +866,9 @@
                 $profileLabel = $authUser->full_name
                     . ' (' . ($authUser->role?->name ?? '-') . '/' . ($isActiveIntern ? 'actif' : 'inactif') . ')';
             }
-            // Load smart alerts for notification bell (only for roles that can see them)
-            $navAlerts = [];
-            if ($authUser->hasRole('Administrateur', 'Responsable RH', 'Responsable de competence', 'Encadrant')) {
-                $navAlerts = app(App\Http\Controllers\DashboardController::class)->getSmartAlertsForNav($authUser);
-            }
-            // Pending password reset requests count (admin only)
-            $pendingResets = $authUser->hasRole('Administrateur')
-                ? \App\Models\PasswordResetRequest::where('status','en_attente')->count()
-                : 0;
-            $totalNotifCount = count($navAlerts) + $pendingResets;
+
+            // Real DB-backed notification count
+            $unreadNotifCount = $authUser->unreadNotificationsCount();
         @endphp
 
         {{-- Full-width upper bar — spans across sidebar + content --}}
@@ -876,39 +888,27 @@
             {{-- Right: User controls (visible on all screens) --}}
             <div class="d-flex align-items-center gap-2">
                 {{-- Notification Bell --}}
-                <div class="dropdown">
-                    <button class="notif-btn" data-bs-toggle="dropdown" aria-expanded="false" title="Alertes">
+                <div class="dropdown" id="notifDropdownWrapper">
+                    <button class="notif-btn" id="notifBellBtn" data-bs-toggle="dropdown" aria-expanded="false"
+                            data-bs-auto-close="outside" title="Notifications">
                         <i class="bi bi-bell"></i>
-                        @if($totalNotifCount > 0)
-                            <span class="notif-badge">{{ $totalNotifCount > 99 ? '99+' : $totalNotifCount }}</span>
-                        @endif
+                        <span class="notif-badge" id="notifBadge" style="{{ $unreadNotifCount > 0 ? '' : 'display:none' }}">
+                            {{ $unreadNotifCount > 99 ? '99+' : $unreadNotifCount }}
+                        </span>
                     </button>
-                    <div class="dropdown-menu notif-dropdown shadow-lg dropdown-menu-end">
-                        <div class="notif-header">
-                            <i class="bi bi-bell me-1"></i> Alertes
-                            @if($totalNotifCount > 0)
-                                <span class="badge text-bg-warning ms-1">{{ $totalNotifCount }}</span>
-                            @endif
+                    <div class="dropdown-menu notif-dropdown shadow-lg dropdown-menu-end" id="notifDropdownMenu">
+                        <div class="notif-header d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-bell me-1"></i> Notifications</span>
+                            <button type="button" class="btn btn-sm btn-link text-muted p-0" id="notifMarkAllBtn"
+                                    style="font-size:0.75rem;">Tout marquer lu</button>
                         </div>
                         <div class="notif-search-container">
-                            <input type="text" id="notifSearchInput" class="form-control form-control-sm" placeholder="Rechercher une alerte..." style="font-size: 0.78rem;">
+                            <input type="text" id="notifSearchInput" class="form-control form-control-sm"
+                                   placeholder="Rechercher..." style="font-size:0.78rem;" autocomplete="off">
                         </div>
-                        @if($pendingResets > 0)
-                            <a href="{{ route('admin.password-reset.index') }}" class="notif-item d-block text-decoration-none">
-                                <div class="notif-item-name"><i class="bi bi-key text-warning me-1"></i> Réinitialisations en attente</div>
-                                <div class="notif-item-msg">{{ $pendingResets }} demande(s) de mot de passe à valider.</div>
-                            </a>
-                        @endif
-                        @forelse($navAlerts as $alertItem)
-                            <div class="notif-item">
-                                <div class="notif-item-name">{{ $alertItem['intern']->user?->full_name ?? 'Stagiaire' }}</div>
-                                <div class="notif-item-msg">{{ $alertItem['alert']['message'] }}</div>
-                            </div>
-                        @empty
-                            @if($pendingResets === 0)
-                                <div class="notif-empty"><i class="bi bi-check-circle text-success me-1"></i>Aucune alerte détectée.</div>
-                            @endif
-                        @endforelse
+                        <div id="notifList">
+                            <div class="notif-empty"><i class="bi bi-check-circle text-success me-1"></i>Chargement...</div>
+                        </div>
                     </div>
                 </div>
 
@@ -1767,41 +1767,156 @@
             });
         }
 
-        // ── Notification Alerts Search ──
+        // ── Notifications System (Fetch & Render) ──
+        const notifBellBtn = document.getElementById('notifBellBtn');
+        const notifDropdownWrapper = document.getElementById('notifDropdownWrapper');
+        const notifList = document.getElementById('notifList');
+        const notifBadge = document.getElementById('notifBadge');
+        const notifMarkAllBtn = document.getElementById('notifMarkAllBtn');
         const notifSearch = document.getElementById('notifSearchInput');
-        if (notifSearch) {
-            notifSearch.addEventListener('click', function(e) {
-                e.stopPropagation();
-            });
-            notifSearch.addEventListener('input', function() {
-                const query = this.value.toLowerCase().trim();
-                const items = document.querySelectorAll('.notif-dropdown .notif-item');
-                let visibleCount = 0;
-                items.forEach(function(item) {
-                    const text = item.textContent.toLowerCase();
-                    if (text.includes(query)) {
-                        item.style.setProperty('display', 'block', 'important');
-                        visibleCount++;
-                    } else {
-                        item.style.setProperty('display', 'none', 'important');
+        
+        let notifData = []; // Store notifications for search filtering
+
+        function renderNotifications(notifications) {
+            notifList.innerHTML = '';
+            
+            if (notifications.length === 0) {
+                notifList.innerHTML = '<div class="notif-empty"><i class="bi bi-check-circle text-success me-1"></i>Aucune notification.</div>';
+                return;
+            }
+
+            notifications.forEach(n => {
+                // Parse date for relative time (very basic relative time implementation)
+                const dateObj = new Date(n.created_at);
+                const diffMs = Date.now() - dateObj.getTime();
+                const diffMins = Math.floor(diffMs / 60000);
+                const diffHrs = Math.floor(diffMins / 60);
+                const diffDays = Math.floor(diffHrs / 24);
+                let timeStr = '';
+                if (diffMins < 1) timeStr = 'À l\'instant';
+                else if (diffMins < 60) timeStr = `Il y a ${diffMins} min`;
+                else if (diffHrs < 24) timeStr = `Il y a ${diffHrs} h`;
+                else timeStr = `Il y a ${diffDays} j`;
+
+                const a = document.createElement('a');
+                a.className = `notif-item ${n.is_read ? '' : 'is-unread'}`;
+                a.href = n.url || '#';
+                a.dataset.id = n.id;
+                
+                a.innerHTML = `
+                    <div class="notif-item-icon ${n.color}">
+                        <i class="bi ${n.icon}"></i>
+                    </div>
+                    <div class="notif-item-body">
+                        <div class="notif-item-title">${n.title}</div>
+                        <div class="notif-item-msg" title="${n.body}">${n.body}</div>
+                        <div class="notif-item-time mt-1">${timeStr}</div>
+                    </div>
+                `;
+
+                // Add click handler to mark as read
+                a.addEventListener('click', function(e) {
+                    if (!n.is_read) {
+                        fetch(`/notifications/${n.id}/read`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                'Accept': 'application/json'
+                            }
+                        }).then(() => {
+                            // Update badge locally before navigation
+                            const currentCount = parseInt(notifBadge.textContent) || 0;
+                            if (currentCount > 1) {
+                                notifBadge.textContent = currentCount - 1;
+                            } else {
+                                notifBadge.style.display = 'none';
+                            }
+                        });
                     }
                 });
-                
-                let emptyState = document.getElementById('notifSearchEmpty');
-                if (visibleCount === 0) {
-                    if (!emptyState) {
-                        const emptyDiv = document.createElement('div');
-                        emptyDiv.id = 'notifSearchEmpty';
-                        emptyDiv.className = 'notif-empty text-center py-3 text-muted small';
-                        emptyDiv.innerHTML = '<i class="bi bi-search me-1"></i>Aucune alerte correspondante.';
-                        document.querySelector('.notif-dropdown').appendChild(emptyDiv);
-                    }
-                } else {
-                    if (emptyState) {
-                        emptyState.remove();
-                    }
-                }
+
+                notifList.appendChild(a);
             });
+        }
+
+        function filterNotifications(query) {
+            if (!query) {
+                renderNotifications(notifData);
+                return;
+            }
+            query = query.toLowerCase();
+            const filtered = notifData.filter(n => 
+                (n.title && n.title.toLowerCase().includes(query)) || 
+                (n.body && n.body.toLowerCase().includes(query))
+            );
+            renderNotifications(filtered);
+        }
+
+        function fetchNotifications() {
+            fetch('/notifications', {
+                headers: { 'Accept': 'application/json' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                notifData = data.notifications;
+                
+                // Update Badge
+                if (data.unread_count > 0) {
+                    notifBadge.textContent = data.unread_count > 99 ? '99+' : data.unread_count;
+                    notifBadge.style.display = 'flex';
+                } else {
+                    notifBadge.style.display = 'none';
+                }
+
+                // If dropdown is open or search has text, re-render immediately
+                if (notifDropdownWrapper && notifDropdownWrapper.querySelector('.dropdown-menu.show') || (notifSearch && notifSearch.value.trim() !== '')) {
+                     filterNotifications(notifSearch ? notifSearch.value.trim() : '');
+                }
+            })
+            .catch(err => console.error('Error fetching notifications:', err));
+        }
+
+        if (notifBellBtn) {
+            // Fetch when opening dropdown
+            notifBellBtn.addEventListener('show.bs.dropdown', function () {
+                // Initial render right away if we have data, otherwise loading state is shown
+                if (notifData.length > 0) {
+                     filterNotifications(notifSearch ? notifSearch.value.trim() : '');
+                }
+                fetchNotifications(); // Refresh data
+            });
+
+            // Mark all read
+            if (notifMarkAllBtn) {
+                notifMarkAllBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    fetch('/notifications/read-all', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json'
+                        }
+                    }).then(() => {
+                        notifBadge.style.display = 'none';
+                        notifData.forEach(n => n.is_read = true);
+                        filterNotifications(notifSearch ? notifSearch.value.trim() : '');
+                    });
+                });
+            }
+
+            // Search filtering
+            if (notifSearch) {
+                notifSearch.addEventListener('click', e => e.stopPropagation());
+                notifSearch.addEventListener('input', function() {
+                    filterNotifications(this.value.trim());
+                });
+            }
+
+            // Poll every 60 seconds
+            setInterval(fetchNotifications, 60000);
+            
+            // Initial fetch on load
+            fetchNotifications();
         }
     });
 
