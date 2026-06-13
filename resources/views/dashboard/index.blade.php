@@ -148,19 +148,11 @@
                                 <p class="text-muted mb-0">Aucune tâche pour le moment.</p>
                             @endforelse
                         </div>
-                        @if($latestTasks->hasPages())
-                            <div class="d-flex justify-content-between align-items-center gap-2 mt-3">
-                                <a
-                                    href="{{ $latestTasks->previousPageUrl() ?? '#' }}"
-                                    class="btn btn-sm btn-outline-secondary {{ $latestTasks->onFirstPage() ? 'disabled' : '' }}"
-                                >Précédent</a>
-                                <span class="text-muted small">Page {{ $latestTasks->currentPage() }} / {{ $latestTasks->lastPage() }}</span>
-                                <a
-                                    href="{{ $latestTasks->nextPageUrl() ?? '#' }}"
-                                    class="btn btn-sm btn-outline-secondary {{ $latestTasks->hasMorePages() ? '' : 'disabled' }}"
-                                >Suivant</a>
-                            </div>
-                        @endif
+                        <div class="mt-3 text-end">
+                            <a href="{{ route('tasks.index') }}" class="btn btn-sm btn-outline-primary">
+                                Aller vers la page <i class="bi bi-arrow-right ms-1"></i>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -187,19 +179,17 @@
                             <p class="text-muted mb-0">Aucune demande récente.</p>
                         @endforelse
                     </div>
-                    @if($latestRequests->hasPages())
-                        <div class="d-flex justify-content-between align-items-center gap-2 mt-3">
-                            <a
-                                href="{{ $latestRequests->previousPageUrl() ?? '#' }}"
-                                class="btn btn-sm btn-outline-secondary {{ $latestRequests->onFirstPage() ? 'disabled' : '' }}"
-                            >Précédent</a>
-                            <span class="text-muted small">Page {{ $latestRequests->currentPage() }} / {{ $latestRequests->lastPage() }}</span>
-                            <a
-                                href="{{ $latestRequests->nextPageUrl() ?? '#' }}"
-                                class="btn btn-sm btn-outline-secondary {{ $latestRequests->hasMorePages() ? '' : 'disabled' }}"
-                            >Suivant</a>
-                        </div>
-                    @endif
+                    <div class="mt-3 text-end">
+                        @if(auth()->user()->hasRole('Responsable RH'))
+                            <a href="{{ route('rh.attestations.index') }}" class="btn btn-sm btn-outline-primary">
+                                Aller vers la page <i class="bi bi-arrow-right ms-1"></i>
+                            </a>
+                        @else
+                            <a href="{{ route('requests.index') }}" class="btn btn-sm btn-outline-primary">
+                                Aller vers la page <i class="bi bi-arrow-right ms-1"></i>
+                            </a>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
@@ -226,19 +216,11 @@
                                 <p class="text-muted mb-0">Aucune tâche pour le moment.</p>
                             @endforelse
                         </div>
-                        @if($latestTasks->hasPages())
-                            <div class="d-flex justify-content-between align-items-center gap-2 mt-3">
-                                <a
-                                    href="{{ $latestTasks->previousPageUrl() ?? '#' }}"
-                                    class="btn btn-sm btn-outline-secondary {{ $latestTasks->onFirstPage() ? 'disabled' : '' }}"
-                                >Précédent</a>
-                                <span class="text-muted small">Page {{ $latestTasks->currentPage() }} / {{ $latestTasks->lastPage() }}</span>
-                                <a
-                                    href="{{ $latestTasks->nextPageUrl() ?? '#' }}"
-                                    class="btn btn-sm btn-outline-secondary {{ $latestTasks->hasMorePages() ? '' : 'disabled' }}"
-                                >Suivant</a>
-                            </div>
-                        @endif
+                        <div class="mt-3 text-end">
+                            <a href="{{ route('tasks.index') }}" class="btn btn-sm btn-outline-primary">
+                                Aller vers la page <i class="bi bi-arrow-right ms-1"></i>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -263,19 +245,17 @@
                             <p class="text-muted mb-0">Aucune demande récente.</p>
                         @endforelse
                     </div>
-                    @if($latestRequests->hasPages())
-                        <div class="d-flex justify-content-between align-items-center gap-2 mt-3">
-                            <a
-                                href="{{ $latestRequests->previousPageUrl() ?? '#' }}"
-                                class="btn btn-sm btn-outline-secondary {{ $latestRequests->onFirstPage() ? 'disabled' : '' }}"
-                            >Précédent</a>
-                            <span class="text-muted small">Page {{ $latestRequests->currentPage() }} / {{ $latestRequests->lastPage() }}</span>
-                            <a
-                                href="{{ $latestRequests->nextPageUrl() ?? '#' }}"
-                                class="btn btn-sm btn-outline-secondary {{ $latestRequests->hasMorePages() ? '' : 'disabled' }}"
-                            >Suivant</a>
-                        </div>
-                    @endif
+                    <div class="mt-3 text-end">
+                        @if(auth()->user()->hasRole('Responsable RH'))
+                            <a href="{{ route('rh.attestations.index') }}" class="btn btn-sm btn-outline-primary">
+                                Aller vers la page <i class="bi bi-arrow-right ms-1"></i>
+                            </a>
+                        @else
+                            <a href="{{ route('requests.index') }}" class="btn btn-sm btn-outline-primary">
+                                Aller vers la page <i class="bi bi-arrow-right ms-1"></i>
+                            </a>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>

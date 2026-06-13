@@ -101,27 +101,30 @@
         /* Sidebar Header */
         .sidebar-header {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: space-between;
-            padding: 1.25rem 1.15rem;
+            justify-content: center;
+            padding: 1rem 0.5rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            gap: 0.5rem;
-            height: 72px;
+            gap: 0.4rem;
+            min-height: 96px;
         }
 
         .app-sidebar.collapsed .sidebar-header {
-            padding: 1.25rem 0.5rem;
+            padding: 1rem 0.5rem;
             justify-content: center;
+            min-height: 72px;
         }
 
         .sidebar-brand {
             display: flex;
+            flex-direction: column;
             align-items: center;
             color: #ffffff;
             text-decoration: none;
             overflow: hidden;
             white-space: nowrap;
-            gap: 0.75rem;
+            gap: 0.4rem;
             flex-grow: 1;
         }
 
@@ -137,12 +140,13 @@
 
         .sidebar-brand span.brand-text {
             font-weight: 700;
-            font-size: 1.05rem;
+            font-size: 0.92rem;
             line-height: 1.15;
             transition: opacity 0.2s, max-width 0.2s;
             opacity: 1;
             max-width: 200px;
             overflow: hidden;
+            text-align: center;
         }
 
         .app-sidebar.collapsed .sidebar-brand span.brand-text {
@@ -267,7 +271,7 @@
         .app-mobile-header {
             background: linear-gradient(120deg, #163b45, #205f69 55%, #2f5b85);
             color: #ffffff;
-            padding: 0.75rem 1rem;
+            padding: 0.35rem 1rem;
             display: none;
             align-items: center;
             justify-content: space-between;
@@ -275,7 +279,7 @@
             top: 0;
             z-index: 1020;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            height: 60px;
+            min-height: 60px;
         }
 
         .sidebar-backdrop {
@@ -362,6 +366,14 @@
             font-weight: 700;
             font-size: 0.85rem;
             color: var(--text-main);
+        }
+        .notif-search-container {
+            position: sticky;
+            top: 0;
+            background: var(--surface-muted);
+            border-bottom: 1px solid var(--border-soft);
+            z-index: 10;
+            padding: 0.35rem 0.9rem;
         }
         .notif-item {
             padding: 0.7rem 0.9rem;
@@ -993,6 +1005,9 @@
                                     <span class="badge text-bg-warning ms-1">{{ $totalNotifCount }}</span>
                                 @endif
                             </div>
+                            <div class="notif-search-container">
+                                <input type="text" id="notifSearchInput" class="form-control form-control-sm" placeholder="Rechercher une alerte..." style="font-size: 0.78rem;">
+                            </div>
                             @if($pendingResets > 0)
                                 <a href="{{ route('admin.password-reset.index') }}" class="notif-item d-block text-decoration-none">
                                     <div class="notif-item-name"><i class="bi bi-key text-warning me-1"></i> Réinitialisations en attente</div>
@@ -1040,9 +1055,9 @@
                     <button class="btn btn-link text-white p-0" id="mobileSidebarToggle" style="font-size: 1.5rem;">
                         <i class="bi bi-list"></i>
                     </button>
-                    <a class="d-flex align-items-center text-white text-decoration-none" href="{{ route('dashboard') }}">
-                        <img src="{{ asset('images/ALTEN-Logo.wine.png') }}" alt="Alten Logo" style="height: 34px; margin-right: 8px;">
-                        <span class="fw-bold" style="font-size: 1rem;">Gestion des Stagiaires</span>
+                    <a class="d-flex flex-column align-items-center text-white text-decoration-none" href="{{ route('dashboard') }}">
+                        <img src="{{ asset('images/ALTEN-Logo.wine.png') }}" alt="Alten Logo" style="height: 30px;">
+                        <span class="fw-bold" style="font-size: 0.72rem; line-height: 1.1; margin-top: 1px;">Gestion des Stagiaires</span>
                     </a>
                     <div style="width: 24px;"></div>
                 </div>
@@ -1785,6 +1800,43 @@
             sidebarBackdrop.addEventListener('click', function () {
                 sidebar.classList.remove('mobile-open');
                 sidebarBackdrop.classList.remove('show');
+            });
+        }
+
+        // ── Notification Alerts Search ──
+        const notifSearch = document.getElementById('notifSearchInput');
+        if (notifSearch) {
+            notifSearch.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+            notifSearch.addEventListener('input', function() {
+                const query = this.value.toLowerCase().trim();
+                const items = document.querySelectorAll('.notif-dropdown .notif-item');
+                let visibleCount = 0;
+                items.forEach(function(item) {
+                    const text = item.textContent.toLowerCase();
+                    if (text.includes(query)) {
+                        item.style.setProperty('display', 'block', 'important');
+                        visibleCount++;
+                    } else {
+                        item.style.setProperty('display', 'none', 'important');
+                    }
+                });
+                
+                let emptyState = document.getElementById('notifSearchEmpty');
+                if (visibleCount === 0) {
+                    if (!emptyState) {
+                        const emptyDiv = document.createElement('div');
+                        emptyDiv.id = 'notifSearchEmpty';
+                        emptyDiv.className = 'notif-empty text-center py-3 text-muted small';
+                        emptyDiv.innerHTML = '<i class="bi bi-search me-1"></i>Aucune alerte correspondante.';
+                        document.querySelector('.notif-dropdown').appendChild(emptyDiv);
+                    }
+                } else {
+                    if (emptyState) {
+                        emptyState.remove();
+                    }
+                }
             });
         }
     });
