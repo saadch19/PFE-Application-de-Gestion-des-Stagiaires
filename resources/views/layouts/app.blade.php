@@ -58,7 +58,6 @@
 
         .app-sidebar {
             width: 260px;
-            min-height: 100vh;
             flex-shrink: 0;
             background: linear-gradient(180deg, #163b45, #205f69 70%, #2f5b85);
             border-right: 1px solid rgba(255, 255, 255, 0.12);
@@ -67,7 +66,7 @@
             flex-direction: column;
             position: fixed;
             left: 0;
-            top: 0;
+            top: 56px; /* starts below the upper bar */
             bottom: 0;
             z-index: 1030;
             transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
@@ -76,6 +75,7 @@
         .app-main-content {
             flex-grow: 1;
             padding-left: 260px;
+            padding-top: 56px; /* space for fixed upper bar */
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -99,61 +99,33 @@
             padding-left: 70px;
         }
 
-        /* Sidebar Header */
-        .sidebar-header {
+        /* ── Upper Bar Brand Zone ───────────────────────── */
+        .upper-bar-brand {
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem 0.5rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            gap: 0.4rem;
-            min-height: 96px;
-        }
-
-        .app-sidebar.collapsed .sidebar-header {
-            padding: 1rem 0.5rem;
-            justify-content: center;
-            min-height: 72px;
-        }
-
-        .sidebar-brand {
-            display: flex;
-            flex-direction: column;
             align-items: center;
             color: #ffffff;
             text-decoration: none;
-            overflow: hidden;
+            gap: 0.65rem;
             white-space: nowrap;
-            gap: 0.4rem;
-            flex-grow: 1;
+            flex-shrink: 0;
         }
 
-        .app-sidebar.collapsed .sidebar-brand {
-            justify-content: center;
+        .upper-bar-brand:hover {
+            color: #ffffff;
+            text-decoration: none;
         }
 
-        .sidebar-brand img {
-            height: 38px !important;
+        .upper-bar-brand img {
+            height: 34px;
             flex: 0 0 auto;
-            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.16));
+            filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.2));
         }
 
-        .sidebar-brand span.brand-text {
+        .upper-bar-brand .brand-text {
             font-weight: 700;
-            font-size: 0.92rem;
-            line-height: 1.15;
-            transition: opacity 0.2s, max-width 0.2s;
-            opacity: 1;
-            max-width: 200px;
-            overflow: hidden;
-            text-align: center;
-        }
-
-        .app-sidebar.collapsed .sidebar-brand span.brand-text {
-            opacity: 0;
-            max-width: 0;
-            display: none;
+            font-size: 1rem;
+            letter-spacing: 0.01em;
+            opacity: 0.95;
         }
 
         /* Sidebar Navigation links */
@@ -268,19 +240,21 @@
             display: none;
         }
 
-        /* Mobile Header & Responsive Drawer Drawer styling */
-        .app-mobile-header {
-            background: linear-gradient(120deg, #163b45, #205f69 55%, #2f5b85);
-            color: #ffffff;
-            padding: 0.35rem 1rem;
-            display: none;
+        /* Upper Bar styling — full-width fixed bar at top */
+        .app-upper-bar {
+            height: 56px;
+            background: linear-gradient(90deg, #163b45, #1a4e58 40%, #205f69 70%, #2f5b85);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+            display: flex;
             align-items: center;
             justify-content: space-between;
-            position: sticky;
+            padding: 0 1.25rem;
+            position: fixed;
             top: 0;
-            z-index: 1020;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            min-height: 60px;
+            left: 0;
+            right: 0;
+            z-index: 1040;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
         }
 
         .sidebar-backdrop {
@@ -297,12 +271,10 @@
         }
 
         @media (max-width: 991.98px) {
-            .app-mobile-header {
-                display: flex;
-            }
             .app-sidebar {
                 transform: translateX(-100%);
                 width: 260px !important;
+                top: 56px;
                 transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
             }
             .app-sidebar.mobile-open {
@@ -315,27 +287,45 @@
             .sidebar-toggle-row {
                 display: none !important;
             }
+            .upper-bar-brand .brand-text {
+                display: inline;
+            }
         }
 
-        /* ── Notification Bell ─────────────────────────────── */
-        .notif-btn {
+        /* ── Notification Bell, Profile, Logout in Upper Bar ──────────────── */
+        .app-upper-bar .notif-btn,
+        .app-upper-bar .navbar-profile-btn,
+        .app-upper-bar .btn-deconnexion {
             position: relative;
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.18);
-            color: rgba(255,255,255,0.85);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            color: rgba(255, 255, 255, 0.85) !important;
             border-radius: 0.45rem;
-            width: 2.15rem;
-            height: 2.15rem;
-            display: flex;
+            width: 2.2rem;
+            height: 2.2rem;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: background 0.18s, color 0.18s;
+            transition: background-color 0.18s, border-color 0.18s, color 0.18s;
             padding: 0;
-            font-size: 1rem;
+            font-size: 1.05rem;
+            text-decoration: none;
         }
-        .notif-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
-        .notif-badge {
+
+        .app-upper-bar .notif-btn:hover,
+        .app-upper-bar .navbar-profile-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff !important;
+        }
+
+        .app-upper-bar .btn-deconnexion:hover {
+            background-color: #dc3545 !important;
+            border-color: #dc3545 !important;
+            color: #ffffff !important;
+        }
+
+        .app-upper-bar .notif-badge {
             position: absolute;
             top: -4px; right: -4px;
             min-width: 1rem; height: 1rem;
@@ -387,31 +377,7 @@
         .notif-item-msg { color: var(--text-muted); }
         .notif-empty { padding: 1rem 0.9rem; text-align: center; color: var(--text-muted); font-size: 0.85rem; }
 
-        .navbar-profile-btn {
-            width: 2.15rem;
-            height: 2.15rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 0.45rem;
-            padding: 0;
-        }
-
-        .btn-deconnexion {
-            width: 2.15rem;
-            height: 2.15rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 0.45rem;
-            padding: 0;
-            transition: background-color 0.18s, border-color 0.18s, color 0.18s;
-        }
-        .btn-deconnexion:hover, .btn-deconnexion:focus {
-            background-color: #dc3545 !important;
-            border-color: #dc3545 !important;
-            color: #fff !important;
-        }
+        /* Styled via app-upper-bar class */
 
         main.container {
             max-width: min(100% - 2rem, 1500px);
@@ -893,16 +859,75 @@
             $totalNotifCount = count($navAlerts) + $pendingResets;
         @endphp
 
+        {{-- Full-width upper bar — spans across sidebar + content --}}
+        <header class="app-upper-bar">
+            {{-- Left: Logo + Brand + Mobile hamburger --}}
+            <div class="d-flex align-items-center gap-2">
+                {{-- Mobile hamburger (visible on small screens only) --}}
+                <button class="btn btn-link text-white p-0 d-lg-none me-1" id="mobileSidebarToggle" style="font-size: 1.4rem;">
+                    <i class="bi bi-list"></i>
+                </button>
+                <a class="upper-bar-brand" href="{{ route('dashboard') }}">
+                    <img src="{{ asset('images/ALTEN-Logo.wine.png') }}" alt="Alten Logo">
+                    <span class="brand-text">Gestion des Stagiaires</span>
+                </a>
+            </div>
+
+            {{-- Right: User controls (visible on all screens) --}}
+            <div class="d-flex align-items-center gap-2">
+                {{-- Notification Bell --}}
+                <div class="dropdown">
+                    <button class="notif-btn" data-bs-toggle="dropdown" aria-expanded="false" title="Alertes">
+                        <i class="bi bi-bell"></i>
+                        @if($totalNotifCount > 0)
+                            <span class="notif-badge">{{ $totalNotifCount > 99 ? '99+' : $totalNotifCount }}</span>
+                        @endif
+                    </button>
+                    <div class="dropdown-menu notif-dropdown shadow-lg dropdown-menu-end">
+                        <div class="notif-header">
+                            <i class="bi bi-bell me-1"></i> Alertes
+                            @if($totalNotifCount > 0)
+                                <span class="badge text-bg-warning ms-1">{{ $totalNotifCount }}</span>
+                            @endif
+                        </div>
+                        <div class="notif-search-container">
+                            <input type="text" id="notifSearchInput" class="form-control form-control-sm" placeholder="Rechercher une alerte..." style="font-size: 0.78rem;">
+                        </div>
+                        @if($pendingResets > 0)
+                            <a href="{{ route('admin.password-reset.index') }}" class="notif-item d-block text-decoration-none">
+                                <div class="notif-item-name"><i class="bi bi-key text-warning me-1"></i> Réinitialisations en attente</div>
+                                <div class="notif-item-msg">{{ $pendingResets }} demande(s) de mot de passe à valider.</div>
+                            </a>
+                        @endif
+                        @forelse($navAlerts as $alertItem)
+                            <div class="notif-item">
+                                <div class="notif-item-name">{{ $alertItem['intern']->user?->full_name ?? 'Stagiaire' }}</div>
+                                <div class="notif-item-msg">{{ $alertItem['alert']['message'] }}</div>
+                            </div>
+                        @empty
+                            @if($pendingResets === 0)
+                                <div class="notif-empty"><i class="bi bi-check-circle text-success me-1"></i>Aucune alerte détectée.</div>
+                            @endif
+                        @endforelse
+                    </div>
+                </div>
+
+                <a class="navbar-profile-btn" href="{{ route('profile.edit') }}" title="{{ $profileLabel }}">
+                    <i class="bi bi-person-circle" style="font-size: 1.1rem;"></i>
+                </a>
+
+                <form action="{{ route('logout') }}" method="POST" class="m-0">
+                    @csrf
+                    <button class="btn-deconnexion" type="submit" title="Déconnexion">
+                        <i class="bi bi-box-arrow-right" style="font-size: 1.1rem;"></i>
+                    </button>
+                </form>
+            </div>
+        </header>
+
         <div class="app-layout">
             {{-- Sidebar --}}
             <aside id="appSidebar" class="app-sidebar">
-                <div class="sidebar-header">
-                    <a class="sidebar-brand" href="{{ route('dashboard') }}">
-                        <img src="{{ asset('images/ALTEN-Logo.wine.png') }}" alt="Alten Logo">
-                        <span class="brand-text">Gestion des Stagiaires</span>
-                    </a>
-                </div>
-
                 <div class="sidebar-nav">
                     <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}" title="Dashboard">
                         <i class="bi bi-speedometer2 nav-icon"></i>
@@ -990,56 +1015,6 @@
                     </a>
                 </div>
 
-                {{-- Sidebar Footer --}}
-                <div class="sidebar-footer">
-                    <div class="dropup">
-                        <button class="notif-btn" data-bs-toggle="dropdown" aria-expanded="false" title="Alertes">
-                            <i class="bi bi-bell"></i>
-                            @if($totalNotifCount > 0)
-                                <span class="notif-badge">{{ $totalNotifCount > 99 ? '99+' : $totalNotifCount }}</span>
-                            @endif
-                        </button>
-                        <div class="dropdown-menu notif-dropdown shadow-lg">
-                            <div class="notif-header">
-                                <i class="bi bi-bell me-1"></i> Alertes
-                                @if($totalNotifCount > 0)
-                                    <span class="badge text-bg-warning ms-1">{{ $totalNotifCount }}</span>
-                                @endif
-                            </div>
-                            <div class="notif-search-container">
-                                <input type="text" id="notifSearchInput" class="form-control form-control-sm" placeholder="Rechercher une alerte..." style="font-size: 0.78rem;">
-                            </div>
-                            @if($pendingResets > 0)
-                                <a href="{{ route('admin.password-reset.index') }}" class="notif-item d-block text-decoration-none">
-                                    <div class="notif-item-name"><i class="bi bi-key text-warning me-1"></i> Réinitialisations en attente</div>
-                                    <div class="notif-item-msg">{{ $pendingResets }} demande(s) de mot de passe à valider.</div>
-                                </a>
-                            @endif
-                            @forelse($navAlerts as $alertItem)
-                                <div class="notif-item">
-                                    <div class="notif-item-name">{{ $alertItem['intern']->user?->full_name ?? 'Stagiaire' }}</div>
-                                    <div class="notif-item-msg">{{ $alertItem['alert']['message'] }}</div>
-                                </div>
-                            @empty
-                                @if($pendingResets === 0)
-                                    <div class="notif-empty"><i class="bi bi-check-circle text-success me-1"></i>Aucune alerte détectée.</div>
-                                @endif
-                            @endforelse
-                        </div>
-                    </div>
-
-                    <a class="btn btn-sm btn-outline-light navbar-profile-btn" href="{{ route('profile.edit') }}" title="{{ $profileLabel }}">
-                        <i class="bi bi-person-circle" style="font-size: 1.1rem;"></i>
-                    </a>
-
-                    <form action="{{ route('logout') }}" method="POST" class="m-0">
-                        @csrf
-                        <button class="btn btn-sm btn-outline-light btn-deconnexion text-nowrap" type="submit" title="Déconnexion">
-                            <i class="bi bi-box-arrow-right" style="font-size: 1.1rem;"></i>
-                        </button>
-                    </form>
-                </div>
-
                 {{-- Sidebar Toggle row (desktop only) --}}
                 <div class="sidebar-toggle-row">
                     <button type="button" class="sidebar-toggle-action" id="sidebarToggle" title="Réduire le menu">
@@ -1051,18 +1026,6 @@
 
             {{-- Main content area --}}
             <div class="app-main-content" id="appMainContent">
-                {{-- Mobile top header --}}
-                <div class="app-mobile-header">
-                    <button class="btn btn-link text-white p-0" id="mobileSidebarToggle" style="font-size: 1.5rem;">
-                        <i class="bi bi-list"></i>
-                    </button>
-                    <a class="d-flex flex-column align-items-center text-white text-decoration-none" href="{{ route('dashboard') }}">
-                        <img src="{{ asset('images/ALTEN-Logo.wine.png') }}" alt="Alten Logo" style="height: 30px;">
-                        <span class="fw-bold" style="font-size: 0.72rem; line-height: 1.1; margin-top: 1px;">Gestion des Stagiaires</span>
-                    </a>
-                    <div style="width: 24px;"></div>
-                </div>
-
                 <main class="container py-4 flex-grow-1">
                     @include('partials.alerts')
                     @yield('content')
