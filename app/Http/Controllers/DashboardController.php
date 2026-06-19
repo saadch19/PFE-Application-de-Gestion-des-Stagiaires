@@ -106,7 +106,6 @@ class DashboardController extends Controller
                 ['label' => 'Stages terminés', 'value' => $stats['completed_internships'] ?? 0],
                 ['label' => 'Attestations à traiter', 'value' => $stats['attestations_to_process'] ?? 0],
                 ['label' => 'Attestations générées', 'value' => $stats['generated_attestations'] ?? 0],
-                ['label' => 'Demandes en attente', 'value' => $stats['pending_requests'] ?? 0],
             ];
         } elseif ($isManager) {
             $statCards = [

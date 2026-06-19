@@ -17,8 +17,9 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RoleSeeder::class,
             DefaultUsersSeeder::class,
-            InternsAndTasksSeeder::class,
-            AgentTestScenarioSeeder::class,
+            // InternsAndTasksSeeder::class,
+            // AgentTestScenarioSeeder::class,
+            RealisticDemoSeeder::class,
         ]);
     }
 }
